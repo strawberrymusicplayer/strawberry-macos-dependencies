@@ -1,0 +1,2720 @@
+name: Build
+on: [push, pull_request]
+
+env:
+  pkgconf_version: '2.0.2'
+
+  gmp_version: '6.3.0'
+
+  nasm_version: '2.16.01'
+
+  yasm_version: '1.3.0'
+
+  zlib_version: '1.3'
+
+  openssl_version: '3.1.2'
+
+  libpng_version: '1.6.40'
+
+  libjpeg_turbo_version: '3.0.0'
+
+  pcre2_version: '10.42'
+
+  bzip2_version: '1.0.8'
+
+  xz_version: '5.4.4'
+
+  brotli_version: '1.1.0'
+
+  zstd_version: '1.4.5'
+
+  libiconv_version: '1.17'
+
+  libunistring_version: '1.1'
+
+  libtasn1_version: '4.19.0'
+
+  libidn2_version: '2.3.0'
+
+  nettle_version: '3.9.1'
+
+  gnutls_version: '3.8.1'
+
+  icu4c_version: '73.2'
+
+  pixmap_version: '0.42.2'
+
+  expat_version: '2.5.0'
+
+  boost_version: '1.83.0'
+
+  libxml2_version: '2.11.5'
+
+  nghttp2_version: '1.55.1'
+
+  libffi_version: '3.4.4'
+
+  libpsl_version: '0.21.2'
+
+  orc_version: '0.4.34'
+
+  sqlite3_version: '3430000'
+
+  glib_version: '2.77.3'
+
+  libsoup_version: '3.4.2'
+
+  glib_networking_version: '2.76.1'
+
+  freetype_version: '2.13.2'
+
+  harfbuzz_version: '8.1.1'
+
+  libogg_version: '1.3.5'
+
+  libvorbis_version: '1.3.7'
+
+  flac_version: '1.4.3'
+
+  wavpack_version: '5.6.0'
+
+  opus_version: '1.3.1'
+
+  opusfile_version: '0.12'
+
+  speex_version: '1.2.1'
+
+  mpg123_version: '1.31.3'
+
+  lame_version: '3.100'
+
+  twolame_version: '0.4.0'
+
+  musepack_version: '475'
+
+  libopenmpt_version: '0.7.2'
+
+  libgme_version: '0.6.3'
+
+  faad2_version: '2.10.1'
+
+  faac_version: '1.30'
+
+  fdk_aac_version: '2.0.2'
+
+  taglib_version: '1.13.1'
+
+  libbs2b_version: '3.1.0'
+
+  libebur128_version: '1.2.6'
+
+  fftw_version: '3.3.10'
+
+  ffmpeg_version: '6.0'
+
+  chromaprint_version: '1.5.1'
+
+  gstreamer_version: '1.22.5'
+
+  qt_version: '6.5.2'
+
+  abseil_cpp_version: '20230802.0'
+
+  protobuf_version: '24.2'
+
+  max_releases: '6'
+
+  curl_options: '-f -O -L --connect-timeout 15 -m 30 --retry 15 --retry-delay 10 --retry-max-time 300 --retry-all-errors'
+
+  sourceforge_mirror: 'downloads.sourceforge.net'
+
+  cmake_loglevel: 'DEBUG'
+
+  make_jobs: '4'
+
+
+jobs:
+
+  build-macos-dependencies:
+    name: Build macOS Dependencies
+    runs-on: macos-11
+
+    if: (!contains(github.event.head_commit.message, 'skip ci'))
+
+    strategy:
+      matrix:
+       arch: [ x86_64 ]
+       buildtype: [ release, debug ]
+
+    steps:
+
+      - name: Set buildtype
+        shell: bash
+        run: echo "buildtype=$(echo ${{matrix.buildtype}} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Set cmake and meson buildtype
+        shell: bash
+        run: |
+          echo "cmake_buildtype=$(echo ${{env.buildtype}} | awk '{print toupper(substr($0,0,1))tolower(substr($0,2))}')" >> $GITHUB_ENV
+          echo "meson_buildtype=${{env.buildtype}}" >> $GITHUB_ENV
+
+      - name: Set prefix path
+        shell: bash
+        run: echo "prefix_path=$(pwd)/strawberry_macos_${{matrix.arch}}_${{env.buildtype}}" >> $GITHUB_ENV
+
+      - name: Set extra version variables
+        shell: bash
+        run: |
+          echo "boost_version_underscore=$(echo ${{env.boost_version}} | sed 's/\./_/g')" >> $GITHUB_ENV
+          echo "icu4c_version_underscore=$(echo ${{env.icu4c_version}} | sed 's/\./_/g')" >> $GITHUB_ENV
+          echo "icu4c_version_dash=$(echo ${{env.icu4c_version}} | sed 's/\./\-/g')" >> $GITHUB_ENV
+          echo "glib_version_short=$(echo ${{env.glib_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+          echo "glib_networking_version_short=$(echo ${{env.glib_networking_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+          echo "libsoup_version_short=$(echo ${{env.libsoup_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+          echo "qt_version_short=$(echo ${{env.qt_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+          echo "faac_version_underscore=$(echo ${{env.faac_version}} | sed 's/\./_/g')" >> $GITHUB_ENV
+          echo "gnutls_version_short=$(echo ${{env.gnutls_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+          echo "libxml2_version_short=$(echo ${{env.libxml2_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+
+      - name: pwd
+        shell: bash
+        run: pwd
+
+      - name: ls
+        shell: bash
+        run: ls -la
+
+      - name: ls /
+        shell: bash
+        run: ls -la /
+
+      - name: ls /usr
+        shell: bash
+        run: ls -la /usr
+
+      - name: ls /opt
+        shell: bash
+        run: ls -la /opt
+
+      - name: brew list
+        shell: bash
+        run: brew list
+
+      - name: Remove installed brew packages
+        shell: bash
+        run: brew uninstall $(brew list)
+
+      - name: brew update
+        shell: bash
+        run: brew update
+
+      - name: brew upgrade
+        shell: bash
+        run: brew upgrade
+
+      - name: brew list
+        shell: bash
+        run: brew list
+
+      - name: brew install
+        shell: bash
+        run: brew install autoconf automake bison flex cmake libtool gnu-tar
+
+      - name: brew list
+        shell: bash
+        run: brew list
+
+      - name: Update PATH
+        shell: bash
+        run: |
+          echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
+          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Create directories
+        shell: bash
+        run: mkdir -p ${{env.prefix_path}}/{bin,lib,include}
+
+      - name: Update PATH
+        shell: bash
+        run: echo "${{env.prefix_path}}/bin" >> $GITHUB_PATH
+
+
+      - name: Install python dependencies
+        shell: bash
+        run: pip3 install meson ninja
+
+
+      - name: Create downloads directory
+        shell: bash
+        run: mkdir downloads
+
+      - name: Create build directory
+        shell: bash
+        run: mkdir build
+
+
+      - name: Download pkgconf
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/pkgconf/pkgconf/archive/refs/tags/pkgconf-${{env.pkgconf_version}}.tar.gz
+
+      - name: Extract pkgconf
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/pkgconf-${{env.pkgconf_version}}.tar.gz
+
+      - name: Configure pkgconf
+        shell: bash
+        working-directory: build/pkgconf-pkgconf-${{env.pkgconf_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --wrap-mode=nodownload -Dtests=disabled build
+
+      - name: Build pkgconf
+        shell: bash
+        working-directory: build/pkgconf-pkgconf-${{env.pkgconf_version}}/build
+        run: ninja
+
+      - name: Install pkgconf
+        shell: bash
+        working-directory: build/pkgconf-pkgconf-${{env.pkgconf_version}}/build
+        run: ninja install
+
+      - name: Link pkgconf
+        shell: bash
+        run: ln -s ${{env.prefix_path}}/bin/pkgconf ${{env.prefix_path}}/bin/pkg-config
+
+      - name: which pkg-config
+        shell: bash
+        run: which pkg-config
+
+
+      - name: Download gmp
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://gmplib.org/download/gmp/gmp-${{env.gmp_version}}.tar.xz
+
+      - name: Extract gmp
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/gmp-${{env.gmp_version}}.tar.xz
+
+      - name: Configure gmp
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/gmp-${{env.gmp_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared -enable-cxx --without-readline
+
+      - name: Build gmp
+        shell: bash
+        working-directory: build/gmp-${{env.gmp_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install gmp
+        shell: bash
+        working-directory: build/gmp-${{env.gmp_version}}
+        run: make install
+
+
+      - name: Download nasm
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://www.nasm.us/pub/nasm/releasebuilds/${{env.nasm_version}}/nasm-${{env.nasm_version}}.tar.xz
+
+      - name: Extract nasm
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/nasm-${{env.nasm_version}}.tar.xz
+
+      - name: Autogen nasm
+        shell: bash
+        working-directory: build/nasm-${{env.nasm_version}}
+        run: ./autogen.sh
+
+      - name: Configure nasm
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/nasm-${{env.nasm_version}}
+        run: ./configure --prefix="${{env.prefix_path}}"
+
+      - name: Build nasm
+        shell: bash
+        working-directory: build/nasm-${{env.nasm_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install nasm
+        shell: bash
+        working-directory: build/nasm-${{env.nasm_version}}
+        run: make install
+
+
+      - name: Download yasm
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} http://www.tortall.net/projects/yasm/releases/yasm-${{env.yasm_version}}.tar.gz
+
+      - name: Extract yasm
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/yasm-${{env.yasm_version}}.tar.gz
+
+      - name: Configure yasm
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/yasm-${{env.yasm_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
+
+      - name: Build yasm
+        shell: bash
+        working-directory: build/yasm-${{env.yasm_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install yasm
+        shell: bash
+        working-directory: build/yasm-${{env.yasm_version}}/build
+        run: cmake --install .
+
+
+      - name: Download zlib
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/madler/zlib/releases/download/v${{env.zlib_version}}/zlib-${{env.zlib_version}}.tar.gz
+
+      - name: Extract zlib
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/zlib-${{env.zlib_version}}.tar.gz
+
+      - name: Configure zlib
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/zlib-${{env.zlib_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
+
+      - name: Build zlib
+        shell: bash
+        working-directory: build/zlib-${{env.zlib_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install zlib
+        shell: bash
+        working-directory: build/zlib-${{env.zlib_version}}/build
+        run: cmake --install .
+
+
+      - name: Download openssl
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://www.openssl.org/source/openssl-${{env.openssl_version}}.tar.gz
+
+      - name: Extract openssl
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/openssl-${{env.openssl_version}}.tar.gz
+
+      - name: Configure openssl
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/openssl-${{env.openssl_version}}
+        run: perl Configure shared zlib no-capieng no-tests --prefix=${{env.prefix_path}} --libdir=lib --openssldir=${{env.prefix_path}}/ssl --${{env.buildtype}} --with-zlib-include=${{env.prefix_path}}/include
+
+      - name: Build openssl
+        shell: bash
+        working-directory: build/openssl-${{env.openssl_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install openssl
+        shell: bash
+        working-directory: build/openssl-${{env.openssl_version}}
+        run: make install_sw
+
+
+      - name: Download libpng
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/libpng/libpng16/${{env.libpng_version}}/libpng-${{env.libpng_version}}.tar.xz
+
+      - name: Extract libpng
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libpng-${{env.libpng_version}}.tar.xz
+
+      - name: Configure libpng
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libpng-${{env.libpng_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
+
+      - name: Build libpng
+        shell: bash
+        working-directory: build/libpng-${{env.libpng_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install libpng
+        shell: bash
+        working-directory: build/libpng-${{env.libpng_version}}/build
+        run: cmake --install .
+
+
+      - name: Download libjpeg-turbo
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/libjpeg-turbo/${{env.libjpeg_turbo_version}}/libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz
+
+      - name: Extract libjpeg-turbo
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz
+
+      - name: Configure libjpeg-turbo
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libjpeg-turbo-${{env.libjpeg_turbo_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G Ninja -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DENABLE_SHARED=ON
+
+      - name: Build libjpeg-turbo
+        shell: bash
+        working-directory: build/libjpeg-turbo-${{env.libjpeg_turbo_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install libjpeg-turbo
+        shell: bash
+        working-directory: build/libjpeg-turbo-${{env.libjpeg_turbo_version}}/build
+        run: cmake --install .
+
+
+      - name: Download pcre2
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${{env.pcre2_version}}/pcre2-${{env.pcre2_version}}.tar.bz2
+
+      - name: Extract pcre2
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/pcre2-${{env.pcre2_version}}.tar.bz2
+
+      - name: Configure pcre2
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/pcre2-${{env.pcre2_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_SUPPORT_UNICODE=ON -DPCRE2_BUILD_PCRE2_8=ON -DPCRE2_BUILD_PCRE2_16=ON -DPCRE2_BUILD_PCRE2_32=ON -DPCRE2_SUPPORT_UNICODE=ON -DPCRE2_BUILD_TESTS=OFF
+
+      - name: Build pcre2
+        shell: bash
+        working-directory: build/pcre2-${{env.pcre2_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install pcre2
+        shell: bash
+        working-directory: build/pcre2-${{env.pcre2_version}}/build
+        run: cmake --install .
+
+
+      - name: Download bzip2
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://sourceware.org/pub/bzip2/bzip2-${{env.bzip2_version}}.tar.gz
+
+      - name: Extract bzip2
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/bzip2-${{env.bzip2_version}}.tar.gz
+
+      - name: Patch bzip2
+        shell: bash
+        working-directory: build/bzip2-${{env.bzip2_version}}
+        run: patch -p1 < ../../patches/bzip2-cmake.patch
+
+      - name: Configure bzip2
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/bzip2-${{env.bzip2_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
+
+      - name: Build bzip2
+        shell: bash
+        working-directory: build/bzip2-${{env.bzip2_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install bzip2
+        shell: bash
+        working-directory: build/bzip2-${{env.bzip2_version}}/build
+        run: cmake --install .
+
+
+      - name: Download xz
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/lzmautils/xz-${{env.xz_version}}.tar.xz
+
+      - name: Extract xz
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/xz-${{env.xz_version}}.tar.xz
+
+      - name: Configure xz
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/xz-${{env.xz_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc --disable-nls --disable-silent-rules
+
+      - name: Build xz
+        shell: bash
+        working-directory: build/xz-${{env.xz_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install xz
+        shell: bash
+        working-directory: build/xz-${{env.xz_version}}
+        run: make install
+
+
+      - name: Download brotli
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/google/brotli/archive/refs/tags/v${{env.brotli_version}}.tar.gz
+
+      - name: Extract brotli
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/v${{env.brotli_version}}.tar.gz
+
+      - name: Configure brotli
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/brotli-${{env.brotli_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build_dir -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_TESTING=OFF
+
+      - name: Build brotli
+        shell: bash
+        working-directory: build/brotli-${{env.brotli_version}}/build_dir
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install brotli
+        shell: bash
+        working-directory: build/brotli-${{env.brotli_version}}/build_dir
+        run: cmake --install .
+
+
+      - name: Download zstd
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/facebook/zstd/releases/download/v${{env.zstd_version}}/zstd-${{env.zstd_version}}.tar.gz
+
+      - name: Extract zstd
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/zstd-${{env.zstd_version}}.tar.gz
+
+      - name: Configure zstd
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/zstd-${{env.zstd_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S build/cmake -B build_dir -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DZSTD_BUILD_STATIC=OFF -DZSTD_BUILD_SHARED=ON -DZSTD_BUILD_PROGRAMS=OFF
+
+      - name: Build zstd
+        shell: bash
+        working-directory: build/zstd-${{env.zstd_version}}/build_dir
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install zstd
+        shell: bash
+        working-directory: build/zstd-${{env.zstd_version}}/build_dir
+        run: cmake --install .
+
+
+      - name: Download libiconv
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libiconv/libiconv-${{env.libiconv_version}}.tar.gz
+
+      - name: Extract libiconv
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libiconv-${{env.libiconv_version}}.tar.gz
+
+      - name: Configure libiconv
+        shell: bash
+        working-directory: build/libiconv-${{env.libiconv_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-nls --disable-silent-rules
+
+      - name: Build libiconv
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libiconv-${{env.libiconv_version}}
+        run: make -j ${{env.make_jobs}}
+
+      #- name: Install libiconv
+        #shell: bash
+        #working-directory: build/libiconv-${{env.libiconv_version}}
+        #run: make install
+
+
+      - name: Download libunistring
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libunistring/libunistring-${{env.libunistring_version}}.tar.xz
+
+      - name: Extract libunistring
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libunistring-${{env.libunistring_version}}.tar.xz
+
+      - name: Configure libunistring
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libunistring-${{env.libunistring_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-relocatable
+
+      - name: Build libunistring
+        shell: bash
+        working-directory: build/libunistring-${{env.libunistring_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libunistring
+        shell: bash
+        working-directory: build/libunistring-${{env.libunistring_version}}
+        run: make install
+
+
+      - name: Download libtasn1
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libtasn1/libtasn1-${{env.libtasn1_version}}.tar.gz
+
+      - name: Extract libtasn1
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libtasn1-${{env.libtasn1_version}}.tar.gz
+
+      - name: Configure libtasn1
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libtasn1-${{env.libtasn1_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc
+
+      - name: Build libtasn1
+        shell: bash
+        working-directory: build/libtasn1-${{env.libtasn1_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libtasn1
+        shell: bash
+        working-directory: build/libtasn1-${{env.libtasn1_version}}
+        run: make install
+
+
+      - name: Download libidn2
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libidn/libidn2-${{env.libidn2_version}}.tar.gz
+
+      - name: Extract libidn2
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libidn2-${{env.libidn2_version}}.tar.gz
+
+      - name: Configure libidn2
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libidn2-${{env.libidn2_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc
+
+      - name: Build libidn2
+        shell: bash
+        working-directory: build/libidn2-${{env.libidn2_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libidn2
+        shell: bash
+        working-directory: build/libidn2-${{env.libidn2_version}}
+        run: make install
+
+
+      - name: Download nettle
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://www.lysator.liu.se/~nisse/archive/nettle-${{env.nettle_version}}.tar.gz
+
+      - name: Extract nettle
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/nettle-${{env.nettle_version}}.tar.gz
+
+      - name: Configure nettle
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/nettle-${{env.nettle_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-documentation
+
+      - name: Build nettle
+        shell: bash
+        working-directory: build/nettle-${{env.nettle_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install nettle
+        shell: bash
+        working-directory: build/nettle-${{env.nettle_version}}
+        run: make install
+
+
+      - name: Download GnuTLS
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://www.gnupg.org/ftp/gcrypt/gnutls/v${{env.gnutls_version_short}}/gnutls-${{env.gnutls_version}}.tar.xz
+
+      - name: Extract GnuTLS
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/gnutls-${{env.gnutls_version}}.tar.xz
+
+      - name: Configure GnuTLS
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/gnutls-${{env.gnutls_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-silent-rules --disable-nls --enable-rpath --disable-doc --disable-tests --without-p11-kit
+
+      - name: Build GnuTLS
+        shell: bash
+        working-directory: build/gnutls-${{env.gnutls_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install GnuTLS
+        shell: bash
+        working-directory: build/gnutls-${{env.gnutls_version}}
+        run: make install
+
+
+      - name: Download icu
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/unicode-org/icu/releases/download/release-${{env.icu4c_version_dash}}/icu4c-${{env.icu4c_version_underscore}}-src.tgz
+
+      - name: Extract icu
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/icu4c-${{env.icu4c_version_underscore}}-src.tgz
+
+      - name: Configure icu
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/icu/source
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-${{env.buildtype}} --disable-samples --disable-tests --with-library-bits=64 --enable-rpath
+
+      - name: Build icu
+        shell: bash
+        working-directory: build/icu/source
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install icu
+        shell: bash
+        working-directory: build/icu/source
+        run: make install
+
+
+      - name: Download pixman
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://www.cairographics.org/releases/pixman-${{env.pixmap_version}}.tar.gz
+
+      - name: Extract pixman
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/pixman-${{env.pixmap_version}}.tar.gz
+
+      - name: Configure pixman
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/pixman-${{env.pixmap_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dgtk=disabled -Dlibpng=enabled -Dtests=disabled build
+
+      - name: Build pixman
+        shell: bash
+        working-directory: build/pixman-${{env.pixmap_version}}/build
+        run: ninja
+
+      - name: Install pixman
+        shell: bash
+        working-directory: build/pixman-${{env.pixmap_version}}/build
+        run: ninja install
+
+
+      - name: Download expat
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/expat/expat/${{env.expat_version}}/expat-${{env.expat_version}}.tar.bz2
+
+      - name: Extract expat
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/expat-${{env.expat_version}}.tar.bz2
+
+      - name: Configure expat
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/expat-${{env.expat_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DEXPAT_SHARED_LIBS=ON -DEXPAT_BUILD_DOCS=OFF -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_FUZZERS=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_BUILD_TOOLS=OFF -DEXPAT_BUILD_PKGCONFIG=ON
+
+      - name: Build expat
+        shell: bash
+        working-directory: build/expat-${{env.expat_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install expat
+        shell: bash
+        working-directory: build/expat-${{env.expat_version}}/build
+        run: cmake --install .
+
+
+      - name: Download Boost
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://boostorg.jfrog.io/artifactory/main/release/${{env.boost_version}}/source/boost_${{env.boost_version_underscore}}.tar.bz2
+
+      - name: Extract Boost
+        shell: bash
+        working-directory: build
+        run: tar -xf  ../downloads/boost_${{env.boost_version_underscore}}.tar.bz2
+
+      - name: Configure Boost
+        shell: bash
+        working-directory: build/boost_${{env.boost_version_underscore}}
+        run: ./bootstrap.sh
+
+      - name: Build and install Boost
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/boost_${{env.boost_version_underscore}}
+        run: ./b2 -a -q -j 4 -d1 --ignore-site-config --stagedir="stage" --layout="tagged" --without-mpi --without-python --prefix="${{env.prefix_path}}" --exec-prefix="${{env.prefix_path}}/bin" --libdir="${{env.prefix_path}}/lib" --includedir="${{env.prefix_path}}/include" link=shared runtime-link=shared threading=multi variant=${{env.buildtype}} install
+
+
+      - name: Cleanup build directory
+        shell: bash
+        working-directory: build
+        run: rm -rf *
+
+
+      - name: Download libxml2
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://download.gnome.org/sources/libxml2/${{env.libxml2_version_short}}/libxml2-${{env.libxml2_version}}.tar.xz
+
+      - name: Extract libxml2
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libxml2-${{env.libxml2_version}}.tar.xz
+
+      - name: Configure libxml2
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libxml2-${{env.libxml2_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_ZLIB=ON
+
+      - name: Build libxml2
+        shell: bash
+        working-directory: build/libxml2-${{env.libxml2_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install libxml2
+        shell: bash
+        working-directory: build/libxml2-${{env.libxml2_version}}/build
+        run: cmake --install .
+
+
+      - name: Download nghttp2
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/nghttp2/nghttp2/releases/download/v${{env.nghttp2_version}}/nghttp2-${{env.nghttp2_version}}.tar.xz
+
+      - name: Extract nghttp2
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/nghttp2-${{env.nghttp2_version}}.tar.xz
+
+      - name: Configure nghttp2
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/nghttp2-${{env.nghttp2_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DENABLE_SHARED_LIB=ON
+
+      - name: Build nghttp2
+        shell: bash
+        working-directory: build/nghttp2-${{env.nghttp2_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install nghttp2
+        shell: bash
+        working-directory: build/nghttp2-${{env.nghttp2_version}}/build
+        run: cmake --install .
+
+
+      - name: Download libffi
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/libffi/libffi/releases/download/v${{env.libffi_version}}/libffi-${{env.libffi_version}}.tar.gz
+
+      - name: Extract libffi
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libffi-${{env.libffi_version}}.tar.gz
+
+      - name: Configure libffi
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libffi-${{env.libffi_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-docs
+
+      - name: Build libffi
+        shell: bash
+        working-directory: build/libffi-${{env.libffi_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libffi
+        shell: bash
+        working-directory: build/libffi-${{env.libffi_version}}
+        run: make install
+
+
+      - name: Download libpsl
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/rockdaboot/libpsl/releases/download/${{env.libpsl_version}}/libpsl-${{env.libpsl_version}}.tar.gz
+
+      - name: Extract libpsl
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libpsl-${{env.libpsl_version}}.tar.gz
+
+      - name: Patch libpsl
+        shell: bash
+        working-directory: build/libpsl-${{env.libpsl_version}}
+        run: patch -p1 < ../../patches/libpsl-time.patch
+
+      - name: Configure libpsl
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libpsl-${{env.libpsl_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload build
+
+      - name: Build libpsl
+        shell: bash
+        working-directory: build/libpsl-${{env.libpsl_version}}/build
+        run: ninja
+
+      - name: Install libpsl
+        shell: bash
+        working-directory: build/libpsl-${{env.libpsl_version}}/build
+        run: ninja install
+
+
+      - name: Download orc
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/orc/orc-${{env.orc_version}}.tar.xz
+
+      - name: Extract orc
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/orc-${{env.orc_version}}.tar.xz
+
+      - name: Configure orc
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/orc-${{env.orc_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload build
+
+      - name: Build orc
+        shell: bash
+        working-directory: build/orc-${{env.orc_version}}/build
+        run: ninja
+
+      - name: Install orc
+        shell: bash
+        working-directory: build/orc-${{env.orc_version}}/build
+        run: ninja install
+
+
+      - name: Download SQLite
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://sqlite.org/2023/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz
+
+      - name: Extract SQLite
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz
+
+      - name: Configure SQlite
+        shell: bash
+        working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
+        run: ./configure
+
+      - name: Build SQlite
+        shell: bash
+        working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install SQLite
+        shell: bash
+        working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
+        run: make install
+
+
+      - name: Download GLib
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://download.gnome.org/sources/glib/${{env.glib_version_short}}/glib-${{env.glib_version}}.tar.xz
+
+      - name: Extract GLib
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/glib-${{env.glib_version}}.tar.xz || true
+
+      - name: Configure GLib
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/glib-${{env.glib_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig -Ddtrace=false -Dtests=false build
+
+      - name: Build GLib
+        shell: bash
+        working-directory: build/glib-${{env.glib_version}}/build
+        run: ninja
+
+      - name: Install GLib
+        shell: bash
+        working-directory: build/glib-${{env.glib_version}}/build
+        run: ninja install
+
+
+      - name: Download libsoup
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://download.gnome.org/sources/libsoup/${{env.libsoup_version_short}}/libsoup-${{env.libsoup_version}}.tar.xz
+
+      - name: Extract libsoup
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libsoup-${{env.libsoup_version}}.tar.xz
+
+      - name: Configure libsoup
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libsoup-${{env.libsoup_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=false -Dvapi=disabled -Dgssapi=disabled -Dintrospection=disabled -Dsysprof=disabled -Dtls_check=false build
+
+      - name: Build libsoup
+        shell: bash
+        working-directory: build/libsoup-${{env.libsoup_version}}/build
+        run: ninja
+
+      - name: Install libsoup
+        shell: bash
+        working-directory: build/libsoup-${{env.libsoup_version}}/build
+        run: ninja install
+
+
+      - name: Download glib-networking
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://download.gnome.org/sources/glib-networking/${{env.glib_networking_version_short}}/glib-networking-${{env.glib_networking_version}}.tar.xz
+
+      - name: Extract glib-networking
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/glib-networking-${{env.glib_networking_version}}.tar.xz
+
+      - name: Patch glib-networking
+        shell: bash
+        working-directory: build/glib-networking-${{env.glib_networking_version}}
+        run: patch -p1 < ../../patches/glib-networking-tests.patch
+
+      - name: Configure glib-networking
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/glib-networking-${{env.glib_networking_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dgnutls=enabled -Dopenssl=enabled -Dgnome_proxy=disabled -Dlibproxy=disabled build
+
+      - name: Build glib-networking
+        shell: bash
+        working-directory: build/glib-networking-${{env.glib_networking_version}}/build
+        run: ninja
+
+      - name: Install glib-networking
+        shell: bash
+        working-directory: build/glib-networking-${{env.glib_networking_version}}/build
+        run: ninja install || true
+
+
+      - name: Download freetype
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/freetype/freetype2/${{env.freetype_version}}/freetype-${{env.freetype_version}}.tar.gz
+
+      - name: Extract freetype (boostrap)
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/freetype-${{env.freetype_version}}.tar.gz
+
+      - name: Configure freetype (boostrap)
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/freetype-${{env.freetype_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
+
+      - name: Build freetype (boostrap)
+        shell: bash
+        working-directory: build/freetype-${{env.freetype_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install freetype (boostrap)
+        shell: bash
+        working-directory: build/freetype-${{env.freetype_version}}/build
+        run: cmake --install .
+
+      - name: Link freetype (debug)
+        if: env.buildtype == 'debug'
+        shell: bash
+        run: ln -s ${{env.prefix_path}}/lib/libfreetyped.dylib ${{env.prefix_path}}/lib/libfreetype.dylib
+
+
+      - name: Download harfbuzz
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/harfbuzz/harfbuzz/releases/download/${{env.harfbuzz_version}}/harfbuzz-${{env.harfbuzz_version}}.tar.xz
+
+      - name: Extract harfbuzz
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/harfbuzz-${{env.harfbuzz_version}}.tar.xz
+
+      - name: Configure harfbuzz
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/harfbuzz-${{env.harfbuzz_version}}
+        run: CFLAGS="-I${{env.prefix_path}}/include" meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix="${{env.prefix_path}}" --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=disabled -Ddocs=disabled -Dfreetype=enabled -Dicu=enabled build
+
+      - name: Build harfbuzz
+        shell: bash
+        working-directory: build/harfbuzz-${{env.harfbuzz_version}}/build
+        run: ninja
+
+      - name: Install harfbuzz
+        shell: bash
+        working-directory: build/harfbuzz-${{env.harfbuzz_version}}/build
+        run: ninja install
+
+
+      - name: Delete freetype bootstrap
+        shell: bash
+        working-directory: build
+        run: rm -rf freetype-${{env.freetype_version}}
+
+      - name: Extract freetype
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/freetype-${{env.freetype_version}}.tar.gz
+
+      - name: Configure freetype
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/freetype-${{env.freetype_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
+
+      - name: Build freetype
+        shell: bash
+        working-directory: build/freetype-${{env.freetype_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install freetype
+        shell: bash
+        working-directory: build/freetype-${{env.freetype_version}}/build
+        run: cmake --install .
+
+
+      - name: Cleanup build directory
+        shell: bash
+        working-directory: build
+        run: rm -rf *
+
+
+      - name: Download libogg
+        shell: bash
+        working-directory: downloads
+        #run: curl ${{env.curl_options}} https://downloads.xiph.org/releases/ogg/libogg-${{env.libogg_version}}.tar.xz
+        run: curl ${{env.curl_options}} https://files.jkvinge.net/packages/strawberry-dependencies/libogg-${{env.libogg_version}}.tar.gz
+
+      - name: Extract libogg
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libogg-${{env.libogg_version}}.tar.gz
+
+      - name: Configure libogg
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libogg-${{env.libogg_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DINSTALL_DOCS=OFF
+
+      - name: Build libogg
+        shell: bash
+        working-directory: build/libogg-${{env.libogg_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install libogg
+        shell: bash
+        working-directory: build/libogg-${{env.libogg_version}}/build
+        run: cmake --install .
+
+
+      - name: Download libvorbis
+        shell: bash
+        working-directory: downloads
+        #run: curl ${{env.curl_options}} https://downloads.xiph.org/releases/vorbis/libvorbis-${{env.libvorbis_version}}.tar.xz
+        run: curl ${{env.curl_options}} https://files.jkvinge.net/packages/strawberry-dependencies/libvorbis-${{env.libvorbis_version}}.tar.gz
+
+      - name: Extract libvorbis
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libvorbis-${{env.libvorbis_version}}.tar.gz
+
+      - name: Configure libvorbis
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libvorbis-${{env.libvorbis_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
+
+      - name: Build libvorbis
+        shell: bash
+        working-directory: build/libvorbis-${{env.libvorbis_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install libvorbis
+        shell: bash
+        working-directory: build/libvorbis-${{env.libvorbis_version}}/build
+        run: cmake --install .
+
+
+      - name: Download flac
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/xiph/flac/releases/download/${{env.flac_version}}/flac-${{env.flac_version}}.tar.xz
+
+      - name: Extract flac
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/flac-${{env.flac_version}}.tar.xz
+
+      - name: Configure flac
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/flac-${{env.flac_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DINSTALL_MANPAGES=OFF -DBUILD_TESTING=OFF -DBUILD_PROGRAMS=OFF
+
+      - name: Build flac
+        shell: bash
+        working-directory: build/flac-${{env.flac_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install flac
+        shell: bash
+        working-directory: build/flac-${{env.flac_version}}/build
+        run: cmake --install .
+
+
+      - name: Download wavpack
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://www.wavpack.com/wavpack-${{env.wavpack_version}}.tar.bz2
+
+      - name: Extract wavpack
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/wavpack-${{env.wavpack_version}}.tar.bz2
+
+      - name: Configure wavpack
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/wavpack-${{env.wavpack_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -DWAVPACK_BUILD_DOCS=OFF -DWAVPACK_BUILD_PROGRAMS=OFF -DWAVPACK_ENABLE_ASM=OFF -DWAVPACK_ENABLE_LEGACY=OFF -DWAVPACK_BUILD_WINAMP_PLUGIN=OFF -DWAVPACK_BUILD_COOLEDIT_PLUGIN=OFF
+
+      - name: Build wavpack
+        shell: bash
+        working-directory: build/wavpack-${{env.wavpack_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install wavpack
+        shell: bash
+        working-directory: build/wavpack-${{env.wavpack_version}}/build
+        run: cmake --install .
+
+
+      - name: Download opus
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://archive.mozilla.org/pub/opus/opus-${{env.opus_version}}.tar.gz
+
+      - name: Extract opus
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/opus-${{env.opus_version}}.tar.gz
+
+      - name: Patch opus
+        shell: bash
+        working-directory: build/opus-${{env.opus_version}}
+        run: sed -i .bak '/include(opus_buildtype.cmake)/d' CMakeLists.txt
+
+      - name: Configure opus
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/opus-${{env.opus_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
+
+      - name: Build opus
+        shell: bash
+        working-directory: build/opus-${{env.opus_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install opus
+        shell: bash
+        working-directory: build/opus-${{env.opus_version}}/build
+        run: cmake --install .
+
+
+      - name: Download opusfile
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.osuosl.org/pub/xiph/releases/opus/opusfile-${{env.opusfile_version}}.tar.gz
+
+      - name: Extract opusfile
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/opusfile-${{env.opusfile_version}}.tar.gz
+
+      - name: Configure opusfile
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include -I${{env.prefix_path}}/include/opus
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/opusfile-${{env.opusfile_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc --disable-examples --disable-http || true
+
+      - name: Build opusfile
+        shell: bash
+        working-directory: build/opusfile-${{env.opusfile_version}}
+        run: make -j ${{env.make_jobs}} || true
+
+      - name: Install opusfile
+        shell: bash
+        working-directory: build/opusfile-${{env.opusfile_version}}
+        run: make install || true
+
+
+      - name: Download speex
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://gitlab.xiph.org/xiph/speex/-/archive/Speex-${{env.speex_version}}/speex-Speex-${{env.speex_version}}.tar.gz
+
+      - name: Extract speex
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/speex-Speex-${{env.speex_version}}.tar.gz
+
+      - name: Autogen speex
+        shell: bash
+        working-directory: build/speex-Speex-${{env.speex_version}}
+        run: ./autogen.sh
+
+      - name: Configure speex
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/speex-Speex-${{env.speex_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+
+      - name: Build speex
+        shell: bash
+        working-directory: build/speex-Speex-${{env.speex_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install speex
+        shell: bash
+        working-directory: build/speex-Speex-${{env.speex_version}}
+        run: make install
+
+
+      - name: Download mpg123
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://www.mpg123.de/download/mpg123-${{env.mpg123_version}}.tar.bz2
+
+      - name: Extract mpg123
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/mpg123-${{env.mpg123_version}}.tar.bz2
+
+      - name: Configure mpg123
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/mpg123-${{env.mpg123_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S ports/cmake -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_PROGRAMS=OFF -DBUILD_LIBOUT123=OFF
+
+      - name: Build mpg123
+        shell: bash
+        working-directory: build/mpg123-${{env.mpg123_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install mpg123
+        shell: bash
+        working-directory: build/mpg123-${{env.mpg123_version}}/build
+        run: cmake --install .
+
+
+      - name: Download lame
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/lame/lame/${{env.lame_version}}/lame-${{env.lame_version}}.tar.gz
+
+      - name: Extract lame
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/lame-${{env.lame_version}}.tar.gz
+
+      - name: Patch lame
+        shell: bash
+        working-directory: build/lame-${{env.lame_version}}
+        run: patch -p1 < ../../patches/lame.patch
+
+      - name: Configure lame
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/lame-${{env.lame_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-frontend --disable-gtktest
+
+      - name: Build lame
+        shell: bash
+        working-directory: build/lame-${{env.lame_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install lame
+        shell: bash
+        working-directory: build/lame-${{env.lame_version}}
+        run: make install
+
+
+      - name: Download twolame
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/twolame/twolame/${{env.twolame_version}}/twolame-${{env.twolame_version}}.tar.gz
+
+      - name: Extract twolame
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/twolame-${{env.twolame_version}}.tar.gz
+
+      - name: Patch twolame source
+        shell: bash
+        working-directory: build/twolame-${{env.twolame_version}}
+        run: patch -p1 < ../../patches/twolame.patch
+
+      - name: Configure twolame
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/twolame-${{env.twolame_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+
+      - name: Build twolame
+        shell: bash
+        working-directory: build/twolame-${{env.twolame_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install twolame
+        shell: bash
+        working-directory: build/twolame-${{env.twolame_version}}
+        run: make install
+
+
+      - name: Download musepack
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://files.musepack.net/source/musepack_src_r${{env.musepack_version}}.tar.gz
+
+      - name: Extract musepack
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/musepack_src_r${{env.musepack_version}}.tar.gz
+
+      - name: Patch musepack
+        shell: bash
+        working-directory: build/musepack_src_r${{env.musepack_version}}
+        run: patch -p1 < ../../patches/musepack-fixes.patch
+
+      - name: Configure musepack
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/musepack_src_r${{env.musepack_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DSHARED=ON
+
+      - name: Build musepack
+        shell: bash
+        working-directory: build/musepack_src_r${{env.musepack_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install musepack
+        shell: bash
+        working-directory: build/musepack_src_r${{env.musepack_version}}/build
+        run: cmake --install .
+
+      - name: Copy musepack library
+        shell: bash
+        working-directory: build/musepack_src_r${{env.musepack_version}}/build
+        run: cp libmpcdec/libmpcdec.dylib ${{env.prefix_path}}/lib/
+
+
+      - name: Download libopenmpt
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz
+
+      - name: Extract libopenmpt
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz
+
+      - name: Configure libopenmpt
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doxygen-doc --disable-doxygen-html --disable-examples --disable-tests --disable-openmpt123 --without-mpg123 --disable-dependency-tracking --disable-silent-rules
+
+      - name: Build libopenmpt
+        shell: bash
+        working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libopenmpt
+        shell: bash
+        working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
+        run: make install
+
+
+      - name: Download libgme
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://bitbucket.org/mpyne/game-music-emu/downloads/game-music-emu-${{env.libgme_version}}.tar.xz
+
+      - name: Extract libgme
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/game-music-emu-${{env.libgme_version}}.tar.xz
+
+      - name: Configure libgme
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/game-music-emu-${{env.libgme_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
+
+      - name: Build libgme
+        shell: bash
+        working-directory: build/game-music-emu-${{env.libgme_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install libgme
+        shell: bash
+        working-directory: build/game-music-emu-${{env.libgme_version}}/build
+        run: cmake --install .
+
+
+      - name: Download faad2
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/knik0/faad2/tarball/${{env.faad2_version}}/faad2-${{env.faad2_version}}.tar.gz
+
+      - name: Extract faad2
+        shell: bash
+        working-directory: build
+        run: |
+          mkdir faad2-${{env.faad2_version}}
+          tar -xvf ../downloads/faad2-${{env.faad2_version}}.tar.gz --strip-components=1 -C faad2-${{env.faad2_version}}
+
+      - name: Bootstrap faad2
+        shell: bash
+        working-directory: build/faad2-${{env.faad2_version}}
+        run: ./bootstrap
+
+      - name: Configure faad2
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/faad2-${{env.faad2_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+
+      - name: Build faad2
+        shell: bash
+        working-directory: build/faad2-${{env.faad2_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install faad2
+        shell: bash
+        working-directory: build/faad2-${{env.faad2_version}}
+        run: make install
+
+
+      - name: Download faac
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/faac/faac-src/faac-${{env.faac_version}}/faac-${{env.faac_version_underscore}}.tar.gz
+
+      - name: Extract faac
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/faac-${{env.faac_version_underscore}}.tar.gz
+
+      - name: Bootstrap faac
+        shell: bash
+        working-directory: build/faac-${{env.faac_version_underscore}}
+        run: ./bootstrap
+
+      - name: Configure faac
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/faac-${{env.faac_version_underscore}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+
+      - name: Build faac
+        shell: bash
+        working-directory: build/faac-${{env.faac_version_underscore}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install faac
+        shell: bash
+        working-directory: build/faac-${{env.faac_version_underscore}}
+        run: make install
+
+
+      - name: Download fdk-aac
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/opencore-amr/fdk-aac/fdk-aac-${{env.fdk_aac_version}}.tar.gz
+
+      - name: Extract fdk-aac
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/fdk-aac-${{env.fdk_aac_version}}.tar.gz
+
+      - name: Configure fdk-aac
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/fdk-aac-${{env.fdk_aac_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DBUILD_PROGRAMS=OFF
+
+      - name: Build fdk-aac
+        shell: bash
+        working-directory: build/fdk-aac-${{env.fdk_aac_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install fdk-aac
+        shell: bash
+        working-directory: build/fdk-aac-${{env.fdk_aac_version}}/build
+        run: cmake --install .
+
+
+      - name: Download TagLib
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://taglib.org/releases/taglib-${{env.taglib_version}}.tar.gz
+
+      - name: Extract TagLib
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/taglib-${{env.taglib_version}}.tar.gz
+
+      - name: Configure TagLib
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/taglib-${{env.taglib_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
+
+      - name: Build TagLib
+        shell: bash
+        working-directory: build/taglib-${{env.taglib_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install TagLib
+        shell: bash
+        working-directory: build/taglib-${{env.taglib_version}}/build
+        run: cmake --install .
+
+
+      - name: Download libbs2b
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/bs2b/libbs2b/${{env.libbs2b_version}}/libbs2b-${{env.libbs2b_version}}.tar.bz2
+
+      - name: Extract libbs2b
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libbs2b-${{env.libbs2b_version}}.tar.bz2
+
+      - name: Patch libbs2b
+        shell: bash
+        working-directory: build/libbs2b-${{env.libbs2b_version}}
+        run: patch -p1 < ../../patches/libbs2b-fixes.patch
+
+      - name: Autoreconf libbs2b
+        shell: bash
+        working-directory: build/libbs2b-${{env.libbs2b_version}}
+        run: autoreconf -fi
+
+      - name: Configure libbs2b
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libbs2b-${{env.libbs2b_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+
+      - name: Build libbs2b
+        shell: bash
+        working-directory: build/libbs2b-${{env.libbs2b_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libbs2b
+        shell: bash
+        working-directory: build/libbs2b-${{env.libbs2b_version}}
+        run: make install
+
+
+      - name: Download libebur128
+        shell: bash
+        working-directory: downloads
+        run: curl -o libebur128-${{env.libebur128_version}}.tar.gz ${{env.curl_options}} https://github.com/jiixyj/libebur128/archive/refs/tags/v${{env.libebur128_version}}.tar.gz
+
+      - name: Extract libebur128
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libebur128-${{env.libebur128_version}}.tar.gz
+
+      - name: Configure libebur128
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libebur128-${{env.libebur128_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON
+
+      - name: Build libebur128
+        shell: bash
+        working-directory: build/libebur128-${{env.libebur128_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install libebur128
+        shell: bash
+        working-directory: build/libebur128-${{env.libebur128_version}}/build
+        run: cmake --install .
+
+
+      - name: Download fftw
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} http://www.fftw.org/fftw-${{env.fftw_version}}.tar.gz
+
+      - name: Extract fftw
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/fftw-${{env.fftw_version}}.tar.gz
+
+      - name: Configure fftw
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/fftw-${{env.fftw_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --enable-sse2 --enable-avx --enable-avx2 --enable-avx512 --enable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
+
+      - name: Build fftw
+        shell: bash
+        working-directory: build/fftw-${{env.fftw_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install fftw
+        shell: bash
+        working-directory: build/fftw-${{env.fftw_version}}
+        run: make install
+
+
+      - name: Download ffmpeg
+        shell: bash
+        working-directory: downloads
+        #run: curl ${{env.curl_options}} https://ffmpeg.org/releases/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
+        run: curl ${{env.curl_options}} https://files.jkvinge.net/packages/strawberry-dependencies/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
+
+      - name: Extract ffmpeg
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
+
+      - name: Configure ffmpeg
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/ffmpeg-${{env.ffmpeg_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-debug --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-libcdio --enable-gpl --enable-version3 --enable-gnutls --enable-libvorbis --enable-libopus --disable-libspeex --enable-libmp3lame
+
+      - name: Build ffmpeg
+        shell: bash
+        working-directory: build/ffmpeg-${{env.ffmpeg_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install ffmpeg
+        shell: bash
+        working-directory: build/ffmpeg-${{env.ffmpeg_version}}
+        run: make install
+
+
+      - name: Download Chromaprint
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/acoustid/chromaprint/releases/download/v${{env.chromaprint_version}}/chromaprint-${{env.chromaprint_version}}.tar.gz
+
+      - name: Extract Chromaprint
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/chromaprint-${{env.chromaprint_version}}.tar.gz
+
+      - name: Configure Chromaprint
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/chromaprint-${{env.chromaprint_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DFFTW3_DIR=${{env.prefix_path}}
+
+      - name: Build Chromaprint
+        shell: bash
+        working-directory: build/chromaprint-${{env.chromaprint_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install Chromaprint
+        shell: bash
+        working-directory: build/chromaprint-${{env.chromaprint_version}}/build
+        run: cmake --install .
+
+
+      - name: Cleanup build directory
+        shell: bash
+        working-directory: build
+        run: rm -rf *
+
+
+      - name: Download GStreamer
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-${{env.gstreamer_version}}.tar.xz
+
+      - name: Extract GStreamer
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/gstreamer-${{env.gstreamer_version}}.tar.xz
+
+      - name: Configure GStreamer
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/gstreamer-${{env.gstreamer_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dexamples=disabled -Dtests=disabled -Dbenchmarks=disabled -Ddoc=disabled build
+
+      - name: Build GStreamer
+        shell: bash
+        working-directory: build/gstreamer-${{env.gstreamer_version}}/build
+        run: ninja
+
+      - name: Install GStreamer
+        shell: bash
+        working-directory: build/gstreamer-${{env.gstreamer_version}}/build
+        run: ninja install
+
+
+      - name: Download gst-plugins-base
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-${{env.gstreamer_version}}.tar.xz
+
+      - name: Extract gst-plugins-base
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/gst-plugins-base-${{env.gstreamer_version}}.tar.xz
+
+      - name: Patch gst-plugins-base
+        shell: bash
+        working-directory: build/gst-plugins-base-${{env.gstreamer_version}}
+        run: patch -p3 < ../../patches/gst-plugins-base-discoverer.patch
+
+      - name: Configure gst-plugins-base
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include -I${{env.prefix_path}}/include/opus
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/gst-plugins-base-${{env.gstreamer_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dexamples=disabled -Dtests=disabled -Dtools=enabled -Ddoc=disabled -Dorc=enabled -Dadder=enabled -Dapp=enabled -Daudioconvert=enabled -Daudiomixer=enabled -Daudiorate=enabled -Daudioresample=enabled -Daudiotestsrc=enabled -Dcompositor=disabled -Dencoding=disabled -Dgio=enabled -Dgio-typefinder=enabled -Doverlaycomposition=disabled -Dpbtypes=enabled -Dplayback=enabled -Drawparse=disabled -Dsubparse=disabled -Dtcp=enabled -Dtypefind=enabled -Dvideoconvertscale=disabled -Dvideorate=disabled -Dvideotestsrc=disabled -Dvolume=enabled -Dalsa=disabled -Dcdparanoia=disabled -Dlibvisual=disabled -Dogg=enabled -Dopus=enabled -Dpango=disabled -Dtheora=disabled -Dtremor=disabled -Dvorbis=enabled -Dx11=disabled -Dxshm=disabled -Dxvideo=disabled -Dxi=disabled -Dgl=disabled -Dgl-graphene=disabled -Dgl-jpeg=disabled -Dgl-png=disabled build
+
+      - name: Build gst-plugins-base
+        shell: bash
+        working-directory: build/gst-plugins-base-${{env.gstreamer_version}}/build
+        run: ninja
+
+      - name: Install gst-plugins-base
+        shell: bash
+        working-directory: build/gst-plugins-base-${{env.gstreamer_version}}/build
+        run: ninja install
+
+
+      - name: Download gst-plugins-good
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-${{env.gstreamer_version}}.tar.xz
+
+      - name: Extract gst-plugins-good
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/gst-plugins-good-${{env.gstreamer_version}}.tar.xz
+
+      - name: Patch gst-plugins-good
+        shell: bash
+        working-directory: build/gst-plugins-good-${{env.gstreamer_version}}
+        run: patch -p1 < ../../patches/gstsouploader.patch
+
+      - name: Configure gst-plugins-good
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/gst-plugins-good-${{env.gstreamer_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dexamples=disabled -Dtests=disabled -Ddoc=disabled -Dorc=enabled -Dalpha=disabled -Dapetag=enabled -Daudiofx=enabled -Daudioparsers=enabled -Dauparse=disabled -Dautodetect=enabled -Davi=disabled -Dcutter=disabled -Ddebugutils=disabled -Ddeinterlace=disabled -Ddtmf=disabled -Deffectv=disabled -Dequalizer=enabled -Dflv=disabled -Dflx=disabled -Dgoom=disabled -Dgoom2k1=disabled -Dicydemux=enabled -Did3demux=enabled -Dimagefreeze=disabled -Dinterleave=disabled -Disomp4=enabled -Dlaw=disabled -Dlevel=disabled -Dmatroska=disabled -Dmonoscope=disabled -Dmultifile=disabled -Dmultipart=disabled -Dreplaygain=enabled -Drtp=enabled -Drtpmanager=disabled -Drtsp=enabled -Dshapewipe=disabled -Dsmpte=disabled -Dspectrum=enabled -Dudp=enabled -Dvideobox=disabled -Dvideocrop=disabled -Dvideofilter=disabled -Dvideomixer=disabled -Dwavenc=enabled -Dwavparse=enabled -Dxingmux=enabled -Dy4m=disabled -Daalib=disabled -Dbz2=disabled -Dcairo=disabled -Ddirectsound=enabled -Ddv=disabled -Ddv1394=disabled -Dflac=enabled -Dgdk-pixbuf=disabled -Dgtk3=disabled -Djack=disabled -Djpeg=disabled -Dlame=enabled -Dlibcaca=disabled -Dmpg123=enabled -Doss=disabled -Doss4=disabled -Dosxaudio=enabled -Dosxvideo=disabled -Dpng=disabled -Dpulse=disabled -Dqt5=disabled -Dshout2=disabled -Dsoup=enabled -Dspeex=enabled -Dtaglib=enabled -Dtwolame=enabled -Dvpx=disabled -Dwaveform=enabled -Dwavpack=enabled -Dximagesrc=disabled -Dv4l2=disabled -Dv4l2-libv4l2=disabled -Dv4l2-gudev=disabled -Dhls-crypto=openssl build
+
+      - name: Build gst-plugins-good
+        shell: bash
+        working-directory: build/gst-plugins-good-${{env.gstreamer_version}}/build
+        run: ninja
+
+      - name: Install gst-plugins-good
+        shell: bash
+        working-directory: build/gst-plugins-good-${{env.gstreamer_version}}/build
+        run: ninja install
+
+
+      - name: Download gst-plugins-bad
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz
+
+      - name: Extract gst-plugins-bad
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz
+
+      - name: Configure gst-plugins-bad
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include -I${{env.prefix_path}}/include/opus
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/gst-plugins-bad-${{env.gstreamer_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dexamples=disabled -Dtests=disabled -Dexamples=disabled -Dgpl=enabled -Dorc=enabled -Daccurip=disabled -Dadpcmdec=disabled -Dadpcmenc=disabled -Daiff=enabled -Dasfmux=enabled -Daudiobuffersplit=disabled -Daudiofxbad=disabled -Daudiolatency=disabled -Daudiomixmatrix=disabled -Daudiovisualizers=disabled -Dautoconvert=disabled -Dbayer=disabled -Dcamerabin2=disabled -Dcodecalpha=disabled -Dcodectimestamper=disabled -Dcoloreffects=disabled -Ddebugutils=disabled -Ddvbsubenc=disabled -Ddvbsuboverlay=disabled -Ddvdspu=disabled -Dfaceoverlay=disabled -Dfestival=disabled -Dfieldanalysis=disabled -Dfreeverb=disabled -Dfrei0r=disabled -Dgaudieffects=disabled -Dgdp=disabled -Dgeometrictransform=disabled -Did3tag=enabled -Dinter=disabled -Dinterlace=disabled -Divfparse=disabled -Divtc=disabled -Djp2kdecimator=disabled -Djpegformat=disabled -Dlibrfb=disabled -Dmidi=disabled -Dmpegdemux=disabled -Dmpegpsmux=disabled -Dmpegtsdemux=disabled -Dmpegtsmux=disabled -Dmxf=disabled -Dnetsim=disabled -Donvif=disabled -Dpcapparse=disabled -Dpnm=disabled -Dproxy=disabled -Dqroverlay=disabled -Dqsv=disabled -Drawparse=disabled -Dremovesilence=enabled -Drist=disabled -Drtmp2=disabled -Drtp=disabled -Dsdp=disabled -Dsegmentclip=disabled -Dsiren=disabled -Dsmooth=disabled -Dspeed=disabled -Dsubenc=disabled -Dswitchbin=disabled -Dtimecode=disabled -Dvideofilters=disabled -Dvideoframe_audiolevel=disabled -Dvideoparsers=disabled -Dvideosignal=disabled -Dvmnc=disabled -Dy4m=disabled -Dopencv=disabled -Dwayland=disabled -Dx11=disabled -Daes=enabled -Daom=disabled -Davtp=disabled -Damfcodec=disabled -Dandroidmedia=disabled -Dapplemedia=disabled -Dasio=disabled -Dassrender=disabled -Dbluez=disabled -Dbs2b=enabled -Dbz2=disabled -Dchromaprint=enabled -Dclosedcaption=disabled -Dcolormanagement=disabled -Dcurl=disabled -Dcurl-ssh2=disabled -Dd3dvideosink=disabled -Dd3d11=disabled -Ddash=enabled -Ddc1394=disabled -Ddecklink=disabled -Ddirectfb=disabled -Ddirectsound=disabled -Ddirectshow=disabled -Ddtls=disabled -Ddts=disabled -Ddvb=disabled -Dfaac=enabled -Dfaad=enabled -Dfbdev=disabled -Dfdkaac=enabled -Dflite=disabled -Dfluidsynth=disabled -Dgl=disabled -Dgme=enabled -Dgs=disabled -Dgsm=disabled -Dgtk3=disabled -Dipcpipeline=disabled -Diqa=disabled -Dkate=disabled -Dkms=disabled -Dladspa=disabled -Dldac=disabled -Dlibde265=disabled -Dopenaptx=disabled -Dlv2=disabled -Dmediafoundation=disabled -Dmicrodns=disabled -Dmodplug=disabled -Dmpeg2enc=disabled -Dmplex=disabled -Dmsdk=disabled -Dmusepack=enabled -Dneon=disabled -Dnvcodec=disabled -Donnx=disabled -Dopenal=disabled -Dopenexr=disabled -Dopenh264=disabled -Dopenjpeg=disabled -Dopenmpt=enabled -Dopenni2=disabled -Dopensles=disabled -Dopus=enabled -Dresindvd=disabled -Drsvg=disabled -Drtmp=disabled -Dsbc=disabled -Dsctp=disabled -Dshm=disabled -Dsmoothstreaming=disabled -Dsndfile=disabled -Dsoundtouch=disabled -Dspandsp=disabled -Dsrt=disabled -Dsrtp=disabled -Dsvthevcenc=disabled -Dteletext=disabled -Dtinyalsa=disabled -Dtranscode=disabled -Dttml=disabled -Duvch264=disabled -Dva=disabled -Dvoaacenc=disabled -Dvoamrwbenc=disabled -Dvulkan=disabled -Dwasapi=disabled -Dwasapi2=disabled -Dwebp=disabled -Dwebrtc=disabled -Dwebrtcdsp=disabled -Dwildmidi=disabled -Dwic=disabled -Dwin32ipc=disabled -Dwinks=disabled -Dwinscreencap=disabled -Dx265=disabled -Dzbar=disabled -Dzxing=disabled -Dwpe=disabled -Dmagicleap=disabled -Dv4l2codecs=disabled -Disac=disabled -Dhls=enabled build
+
+      - name: Build gst-plugins-bad
+        shell: bash
+        working-directory: build/gst-plugins-bad-${{env.gstreamer_version}}/build
+        run: ninja
+
+      - name: Install gst-plugins-bad
+        shell: bash
+        working-directory: build/gst-plugins-bad-${{env.gstreamer_version}}/build
+        run: ninja install
+
+
+      - name: Download gst-plugins-ugly
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz
+
+      - name: Extract gst-plugins-ugly
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz
+
+      - name: Configure gst-plugins-ugly
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/gst-plugins-ugly-${{env.gstreamer_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=disabled -Ddoc=disabled -Dgpl=enabled -Dorc=enabled -Dasfdemux=enabled -Ddvdlpcmdec=disabled -Ddvdsub=disabled -Drealmedia=disabled -Da52dec=disabled -Damrnb=disabled -Damrwbdec=disabled -Dcdio=disabled -Ddvdread=disabled -Dmpeg2dec=disabled -Dsidplay=disabled -Dx264=disabled build
+
+      - name: Build gst-plugins-ugly
+        shell: bash
+        working-directory: build/gst-plugins-ugly-${{env.gstreamer_version}}/build
+        run: ninja
+
+      - name: Install gst-plugins-ugly
+        shell: bash
+        working-directory: build/gst-plugins-ugly-${{env.gstreamer_version}}/build
+        run: ninja install
+
+
+      - name: Download gst-libav
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-libav/gst-libav-${{env.gstreamer_version}}.tar.xz
+
+      - name: Extract gst-libav
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/gst-libav-${{env.gstreamer_version}}.tar.xz
+
+      - name: Configure gst-libav
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/gst-libav-${{env.gstreamer_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=disabled -Ddoc=disabled build
+
+      - name: Build gst-libav
+        shell: bash
+        working-directory: build/gst-libav-${{env.gstreamer_version}}/build
+        run: ninja
+
+      - name: Install gst-libav
+        shell: bash
+        working-directory: build/gst-libav-${{env.gstreamer_version}}/build
+        run: ninja install
+
+
+      - name: Cleanup build directory
+        shell: bash
+        working-directory: build
+        run: rm -rf *
+
+
+      - name: Delete harfbuzz.pc
+        shell: bash
+        run: rm -f "${{env.prefix_path}}/lib/pkgconfig/harfbuzz.pc"
+
+
+      - name: Download qtbase
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
+
+      - name: Extract qtbase
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
+
+      - name: Configure qtbase
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
+        run: >
+          cmake -S . -B build
+          -G Ninja
+          -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}"
+          -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
+          -DBUILD_SHARED_LIBS=ON
+          -DBUILD_STATIC_LIBS=OFF
+          -DPKG_CONFIG_EXECUTABLE="${{env.prefix_path}}/bin/pkgconf"
+          -DQT_BUILD_EXAMPLES=OFF
+          -DQT_BUILD_BENCHMARKS=OFF
+          -DQT_BUILD_TESTS=OFF
+          -DBUILD_WITH_PCH=OFF
+          -DFEATURE_rpath=OFF
+          -DFEATURE_relocatable=OFF
+          -DFEATURE_pkg_config=ON
+          -DFEATURE_accessibility=ON
+          -DFEATURE_fontconfig=OFF
+          -DFEATURE_freetype=ON
+          -DFEATURE_harfbuzz=ON
+          -DFEATURE_pcre2=ON
+          -DFEATURE_openssl=ON
+          -DFEATURE_openssl_linked=ON
+          -DFEATURE_opengl=ON
+          -DFEATURE_use_gold_linker_alias=OFF
+          -DFEATURE_glib=ON
+          -DFEATURE_icu=OFF
+          -DFEATURE_directfb=OFF
+          -DFEATURE_dbus=OFF
+          -DFEATURE_brotli=ON
+          -DFEATURE_zstd=ON
+          -DFEATURE_sql=ON
+          -DFEATURE_sql_sqlite=ON
+          -DFEATURE_sql_odbc=OFF
+          -DFEATURE_sql_mysql=OFF
+          -DFEATURE_sql_psql=OFF
+          -DFEATURE_jpeg=ON
+          -DFEATURE_png=ON
+          -DFEATURE_gif=ON
+          -DFEATURE_system_zlib=ON
+          -DFEATURE_system_png=ON
+          -DFEATURE_system_jpeg=ON
+          -DFEATURE_system_pcre2=ON
+          -DFEATURE_system_freetype=ON
+          -DFEATURE_system_harfbuzz=ON
+          -DFEATURE_system_sqlite=ON
+          -DICU_ROOT="${{env.prefix_path}}"
+
+      - name: Build qtbase
+        shell: bash
+        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install qtbase
+        shell: bash
+        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}/build
+        run: cmake --install .
+
+
+      - name: Download qttools
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz
+
+      - name: Extract qttools
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/qttools-everywhere-src-${{env.qt_version}}.tar.xz
+
+      - name: Configure qttools
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/qttools-everywhere-src-${{env.qt_version}}
+        run: >
+          cmake -S . -B build
+          -G Ninja
+          -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}"
+          -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
+          -DCMAKE_PREFIX_PATH="${{env.prefix_path}}/lib/cmake"
+          -DBUILD_SHARED_LIBS=ON
+          -DBUILD_STATIC_LIBS=OFF
+          -DFEATURE_assistant=OFF
+          -DFEATURE_designer=OFF
+          -DFEATURE_distancefieldgenerator=OFF
+          -DFEATURE_kmap2qmap=OFF
+          -DFEATURE_pixeltool=OFF
+          -DFEATURE_qdbus=OFF
+          -DFEATURE_qev=OFF
+          -DFEATURE_qtattributionsscanner=OFF
+          -DFEATURE_qtdiag=OFF
+          -DFEATURE_qtplugininfo=OFF
+          -DFEATURE_linguist=ON
+
+      - name: Build qttools
+        shell: bash
+        working-directory: build/qttools-everywhere-src-${{env.qt_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install qttools
+        shell: bash
+        working-directory: build/qttools-everywhere-src-${{env.qt_version}}/build
+        run: cmake --install .
+
+
+      - name: Cleanup build directory
+        shell: bash
+        working-directory: build
+        run: rm -rf *
+
+
+      - name: Download abseil-cpp
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/abseil/abseil-cpp/archive/refs/tags/${{env.abseil_cpp_version}}.tar.gz
+
+      - name: Extract abseil-cpp
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/${{env.abseil_cpp_version}}.tar.gz
+
+      - name: Configure abseil-cpp
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/abseil-cpp-${{env.abseil_cpp_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_CXX_STANDARD=17 -DBUILD_SHARED_LIBS=ON
+
+      - name: Build abseil-cpp
+        shell: bash
+        working-directory: build/abseil-cpp-${{env.abseil_cpp_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install abseil-cpp
+        shell: bash
+        working-directory: build/abseil-cpp-${{env.abseil_cpp_version}}/build
+        run: cmake --install .
+
+
+      - name: Download Protobuf
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/protocolbuffers/protobuf/releases/download/v${{env.protobuf_version}}/protobuf-${{env.protobuf_version}}.tar.gz
+
+      - name: Extract Protobuf
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/protobuf-${{env.protobuf_version}}.tar.gz
+
+      - name: Configure Protobuf
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/protobuf-${{env.protobuf_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_CXX_STANDARD=17 -DBUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_PROTOC_BINARIES=ON -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_ABSL_PROVIDER="package"
+
+      - name: Build Protobuf
+        shell: bash
+        working-directory: build/protobuf-${{env.protobuf_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install Protobuf
+        shell: bash
+        working-directory: build/protobuf-${{env.protobuf_version}}/build
+        run: cmake --install .
+
+
+      - name: Cleanup build directory
+        shell: bash
+        working-directory: build
+        run: rm -rf *
+
+
+      - name: Create archive
+        shell: bash
+        run: gtar -cJf strawberry-macos-${{matrix.arch}}-${{env.buildtype}}.tar.xz --transform "s,^$(echo ${{env.prefix_path}} | cut -d '/' -f 2-),strawberry_macos_${{matrix.arch}}_${{env.buildtype}}," ${{env.prefix_path}}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: releases
+          path: strawberry-macos-${{matrix.arch}}-${{env.buildtype}}.tar.xz
+
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release'
+    needs:
+      - build-macos-dependencies
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set release tag
+        run: echo "release_tag=release-$GITHUB_RUN_ID" >> $GITHUB_ENV
+
+      - name: Set have release
+        run: echo "have_release=$(git tag -l | grep ${{env.release_tag}} >/dev/null 2>&1 && echo 1 || echo 0)" >> $GITHUB_ENV
+
+      - name: Delete existing release
+        if: env.have_release == '1'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          hub release delete "${{env.release_tag}}"
+          git tag -d "${{env.release_tag}}"
+          git push --delete origin "${{env.release_tag}}"
+
+      - name: Delete old releases
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          while [ "$(git tag | wc -l)" -ge "${{env.max_releases}}" ]; do
+            oldest_tag=$(git tag | head -1)
+            hub release delete "$oldest_tag"
+            git tag -d "$oldest_tag"
+            git push --delete origin "$oldest_tag"
+          done
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: releases
+
+      - name: Set release notes file
+        run: echo "release_notes_file=release_notes.txt" >> $GITHUB_ENV
+
+      - name: Create release notes
+        run: |
+          echo "Strawberry MSVC Dependencies Release $GITHUB_RUN_ID" > "${{env.release_notes_file}}"
+          echo "" >> "${{env.release_notes_file}}"
+          echo "Libraries:" >> "${{env.release_notes_file}}"
+          echo "" >> "${{env.release_notes_file}}"
+          echo "* PkgConf ${{env.pkgconf_version}}" >> "${{env.release_notes_file}}"
+          echo "* gmp ${{env.gmp_version}}" >> "${{env.release_notes_file}}"
+          echo "* nasm ${{env.nasm_version}}" >> "${{env.release_notes_file}}"
+          echo "* yasm ${{env.yasm_version}}" >> "${{env.release_notes_file}}"
+          echo "* zlib ${{env.zlib_version}}" >> "${{env.release_notes_file}}"
+          echo "* openssl ${{env.openssl_version}}" >> "${{env.release_notes_file}}"
+          echo "* libng ${{env.libpng_version}}" >> "${{env.release_notes_file}}"
+          echo "* libjpeg-turbo ${{env.libjpeg_turbo_version}}" >> "${{env.release_notes_file}}"
+          echo "* PCRE2 ${{env.pcre2_version}}" >> "${{env.release_notes_file}}"
+          echo "* bzip2 ${{env.bzip2_version}}" >> "${{env.release_notes_file}}"
+          echo "* xz ${{env.xz_version}}" >> "${{env.release_notes_file}}"
+          echo "* Brotli ${{env.brotli_version}}" >> "${{env.release_notes_file}}"
+          echo "* zstd ${{env.zstd_version}}" >> "${{env.release_notes_file}}"
+          echo "* libiconv ${{env.libiconv_version}}" >> "${{env.release_notes_file}}"
+          echo "* libunistring ${{env.libunistring_version}}" >> "${{env.release_notes_file}}"
+          echo "* libtasn1 ${{env.libtasn1_version}}" >> "${{env.release_notes_file}}"
+          echo "* libidn2 ${{env.libidn2_version}}" >> "${{env.release_notes_file}}"
+          echo "* Nettle ${{env.nettle_version}}" >> "${{env.release_notes_file}}"
+          echo "* GnuTLS ${{env.gnutls_version}}" >> "${{env.release_notes_file}}"
+          echo "* ICU4C ${{env.icu4c_version}}" >> "${{env.release_notes_file}}"
+          echo "* Pixmap ${{env.pixmap_version}}" >> "${{env.release_notes_file}}"
+          echo "* Expat ${{env.expat_version}}" >> "${{env.release_notes_file}}"
+          echo "* Boost ${{env.boost_version}}" >> "${{env.release_notes_file}}"
+          echo "* libxml2 ${{env.libxml2_version}}" >> "${{env.release_notes_file}}"
+          echo "* nghttp2 ${{env.nghttp2_version}}" >> "${{env.release_notes_file}}"
+          echo "* libpsl ${{env.libpsl_version}}" >> "${{env.release_notes_file}}"
+          echo "* orc ${{env.orc_version}}" >> "${{env.release_notes_file}}"
+          echo "* SQLite ${{env.sqlite3_version}}" >> "${{env.release_notes_file}}"
+          echo "* GLib ${{env.glib_version}}" >> "${{env.release_notes_file}}"
+          echo "* libsoup ${{env.libsoup_version}}" >> "${{env.release_notes_file}}"
+          echo "* GLib Networking ${{env.glib_networking_version}}" >> "${{env.release_notes_file}}"
+          echo "* FreeType ${{env.freetype_version}}" >> "${{env.release_notes_file}}"
+          echo "* Harfbuzz ${{env.harfbuzz_version}}" >> "${{env.release_notes_file}}"
+          echo "* libogg ${{env.libogg_version}}" >> "${{env.release_notes_file}}"
+          echo "* libvorbis ${{env.libvorbis_version}}" >> "${{env.release_notes_file}}"
+          echo "* FLAC ${{env.flac_version}}" >> "${{env.release_notes_file}}"
+          echo "* WavPack ${{env.wavpack_version}}" >> "${{env.release_notes_file}}"
+          echo "* Opus Codec ${{env.opus_version}}" >> "${{env.release_notes_file}}"
+          echo "* opusfile ${{env.opusfile_version}}" >> "${{env.release_notes_file}}"
+          echo "* Speex ${{env.speex_version}}" >> "${{env.release_notes_file}}"
+          echo "* mpg123 ${{env.mpg123_version}}" >> "${{env.release_notes_file}}"
+          echo "* LAME ${{env.lame_version}}" >> "${{env.release_notes_file}}"
+          echo "* TwoLAME ${{env.twolame_version}}" >> "${{env.release_notes_file}}"
+          echo "* Musepack ${{env.musepack_version}}" >> "${{env.release_notes_file}}"
+          echo "* libopenmpt ${{env.libopenmpt_version}}" >> "${{env.release_notes_file}}"
+          echo "* libgme ${{env.libgme_version}}" >> "${{env.release_notes_file}}"
+          echo "* faad2 ${{env.faad2_version}}" >> "${{env.release_notes_file}}"
+          echo "* faac ${{env.faac_version}}" >> "${{env.release_notes_file}}"
+          echo "* fdk-aac ${{env.fdk_aac_version}}" >> "${{env.release_notes_file}}"
+          echo "* TagLib ${{env.taglib_version}}" >> "${{env.release_notes_file}}"
+          echo "* libbs2b ${{env.libbs2b_version}}" >> "${{env.release_notes_file}}"
+          echo "* libebur128 ${{env.libebur128_version}}" >> "${{env.release_notes_file}}"
+          echo "* FFTW ${{env.fftw_version}}" >> "${{env.release_notes_file}}"
+          echo "* ffmpeg ${{env.ffmpeg_version}}" >> "${{env.release_notes_file}}"
+          echo "* Chromaprint ${{env.chromaprint_version}}" >> "${{env.release_notes_file}}"
+          echo "* GStreamer ${{env.gstreamer_version}}" >> "${{env.release_notes_file}}"
+          echo "* Qt ${{env.qt_version}}" >> "${{env.release_notes_file}}"
+          echo "* abseil-cpp ${{env.abseil_cpp_version}}" >> "${{env.release_notes_file}}"
+          echo "* Protobuf ${{env.protobuf_version}}" >> "${{env.release_notes_file}}"
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          set -x
+          files=()
+          for file in $(find releases -type f); do
+            echo "Adding file: ${file}"
+            files+=("-a" "${file}")
+          done
+          hub release create -t "$GITHUB_SHA" "${files[@]}" -F "${{env.release_notes_file}}" "${{env.release_tag}}"
