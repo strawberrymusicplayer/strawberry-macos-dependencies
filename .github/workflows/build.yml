@@ -2,7 +2,7 @@ name: Build
 on: [push, pull_request]
 
 env:
-  pkgconf_version: '2.0.2'
+  pkgconf_version: '2.0.3'
 
   gmp_version: '6.3.0'
 
