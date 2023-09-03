@@ -32,6 +32,10 @@ env:
 
   libunistring_version: '1.1'
 
+  gettext_version: '0.22'
+
+  flex_version: '2.6.4'
+
   libtasn1_version: '4.19.0'
 
   libidn2_version: '2.3.0'
@@ -219,7 +223,7 @@ jobs:
 
       - name: brew install
         shell: bash
-        run: brew install autoconf automake bison flex cmake libtool gnu-tar
+        run: brew install autoconf automake bison cmake libtool
 
       - name: brew list
         shell: bash
@@ -227,9 +231,7 @@ jobs:
 
       - name: Update PATH
         shell: bash
-        run: |
-          echo "/usr/local/opt/flex/bin" >> $GITHUB_PATH
-          echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+        run: echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -746,6 +748,75 @@ jobs:
       - name: Install libunistring
         shell: bash
         working-directory: build/libunistring-${{env.libunistring_version}}
+        run: sudo make install
+
+
+      - name: Download gettext
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/gettext/gettext-${{env.gettext_version}}.tar.xz
+
+      - name: Extract gettext
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/gettext-${{env.gettext_version}}.tar.xz
+
+      - name: Configure gettext
+        shell: bash
+        working-directory: build/gettext-${{env.gettext_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-libxml2-prefix --disable-java
+
+      - name: Build gettext
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/gettext-${{env.gettext_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install gettext
+        shell: bash
+        working-directory: build/gettext-${{env.gettext_version}}
+        run: sudo make install
+
+
+      - name: Download flex
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/westes/flex/releases/download/v${{env.flex_version}}/flex-${{env.flex_version}}.tar.gz
+
+      - name: Extract flex
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/flex-${{env.flex_version}}.tar.gz
+
+      - name: Patch flex
+        shell: bash
+        working-directory: build/flex-${{env.flex_version}}
+        run: patch -p1 < ../../patches/flex-configure.patch
+
+      - name: Configure flex
+        shell: bash
+        working-directory: build/flex-${{env.flex_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+
+      - name: Build flex
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/flex-${{env.flex_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install flex
+        shell: bash
+        working-directory: build/flex-${{env.flex_version}}
         run: sudo make install
 
 
@@ -2588,7 +2659,7 @@ jobs:
 
       - name: Create archive
         shell: bash
-        run: gtar -cJf strawberry-macos-${{matrix.arch}}-${{env.buildtype}}.tar.xz ${{env.prefix_path}}
+        run: tar -cJf strawberry-macos-${{matrix.arch}}-${{env.buildtype}}.tar.xz ${{env.prefix_path}}
 
       - uses: actions/upload-artifact@v3
         with:
