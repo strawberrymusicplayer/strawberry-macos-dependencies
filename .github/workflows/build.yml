@@ -132,6 +132,7 @@ env:
 
   make_jobs: '4'
 
+  MACOSX_DEPLOYMENT_TARGET: '11.0'
 
 jobs:
 
