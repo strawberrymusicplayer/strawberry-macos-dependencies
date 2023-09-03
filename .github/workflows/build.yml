@@ -1184,7 +1184,7 @@ jobs:
       - name: Configure SQlite
         shell: bash
         working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
-        run: ./configure
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-fts5 --disable-readline --enable-threadsafe --disable-silent-rules
 
       - name: Build SQlite
         shell: bash
