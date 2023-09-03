@@ -2587,7 +2587,7 @@ jobs:
 
       - name: Create archive
         shell: bash
-        run: gtar -cJf strawberry-macos-${{matrix.arch}}-${{env.buildtype}}.tar.xz --transform "s,^$(echo ${{env.prefix_path}} | cut -d '/' -f 2-),strawberry_macos_${{matrix.arch}}_${{env.buildtype}}," ${{env.prefix_path}}
+        run: gtar -cJf strawberry-macos-${{matrix.arch}}-${{env.buildtype}}.tar.xz ${{env.prefix_path}}
 
       - uses: actions/upload-artifact@v3
         with:
