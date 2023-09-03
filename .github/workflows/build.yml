@@ -2643,7 +2643,7 @@ jobs:
 
       - name: Create release notes
         run: |
-          echo "Strawberry MSVC Dependencies Release $GITHUB_RUN_ID" > "${{env.release_notes_file}}"
+          echo "Strawberry macOS Dependencies Release $GITHUB_RUN_ID" > "${{env.release_notes_file}}"
           echo "" >> "${{env.release_notes_file}}"
           echo "Libraries:" >> "${{env.release_notes_file}}"
           echo "" >> "${{env.release_notes_file}}"
