@@ -50,7 +50,7 @@ env:
 
   libxml2_version: '2.11.5'
 
-  nghttp2_version: '1.55.1'
+  nghttp2_version: '1.56.0'
 
   libffi_version: '3.4.4'
 
