@@ -234,7 +234,7 @@ jobs:
         run: echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Create directories
         shell: bash
@@ -2675,7 +2675,7 @@ jobs:
       - build-macos-dependencies
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
