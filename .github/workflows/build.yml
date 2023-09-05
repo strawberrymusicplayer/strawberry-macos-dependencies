@@ -4,6 +4,8 @@ on: [push, pull_request]
 env:
   pkgconf_version: '2.0.3'
 
+  cmake_version: '3.27.4'
+
   gmp_version: '6.3.0'
 
   nasm_version: '2.16.01'
@@ -66,6 +68,8 @@ env:
 
   glib_version: '2.77.3'
 
+  gdk_pixbuf_version: '2.42.10'
+
   libsoup_version: '3.4.2'
 
   glib_networking_version: '2.76.1'
@@ -73,6 +77,8 @@ env:
   freetype_version: '2.13.2'
 
   harfbuzz_version: '8.1.1'
+
+  libusb_version: '1.0.26'
 
   libogg_version: '1.3.5'
 
@@ -119,6 +125,10 @@ env:
   chromaprint_version: '1.5.1'
 
   gstreamer_version: '1.22.5'
+
+  libplist_version: '2.3.0'
+
+  libmtp_version: '1.1.21'
 
   qt_version: '6.5.2'
 
@@ -180,6 +190,7 @@ jobs:
           echo "faac_version_underscore=$(echo ${{env.faac_version}} | sed 's/\./_/g')" >> $GITHUB_ENV
           echo "gnutls_version_short=$(echo ${{env.gnutls_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           echo "libxml2_version_short=$(echo ${{env.libxml2_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+          echo "gdk_pixbuf_version_short=$(echo ${{env.gdk_pixbuf_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
 
       - name: pwd
         shell: bash
@@ -223,7 +234,7 @@ jobs:
 
       - name: brew install
         shell: bash
-        run: brew install autoconf automake bison cmake libtool
+        run: brew install autoconf automake bison libtool
 
       - name: brew list
         shell: bash
@@ -291,6 +302,38 @@ jobs:
       - name: which pkg-config
         shell: bash
         run: which pkg-config
+
+
+      - name: Download cmake
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/Kitware/CMake/releases/download/v${{env.cmake_version}}/cmake-${{env.cmake_version}}.tar.gz
+
+      - name: Extract cmake
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/cmake-${{env.cmake_version}}.tar.gz
+
+      - name: Configure cmake
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/cmake-${{env.cmake_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --parallel=${{env.make_jobs}}
+
+      - name: Build cmake
+        shell: bash
+        working-directory: build/cmake-${{env.cmake_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install cmake
+        shell: bash
+        working-directory: build/cmake-${{env.cmake_version}}
+        run: sudo make install
 
 
       - name: Download gmp
@@ -488,6 +531,13 @@ jobs:
         shell: bash
         working-directory: build/libpng-${{env.libpng_version}}/build
         run: sudo cmake --install .
+
+      - name: Link libpng library (Debug)
+        if: env.buildtype == 'debug'
+        shell: bash
+        run: |
+          sudo ln -s ${{env.prefix_path}}/lib/libpng16d.a ${{env.prefix_path}}/lib/libpng16.a
+          sudo ln -s ${{env.prefix_path}}/lib/libpng16d.dylib ${{env.prefix_path}}/lib/libpng16.dylib
 
 
       - name: Download libjpeg-turbo
@@ -1300,6 +1350,38 @@ jobs:
         run: sudo ninja install
 
 
+      - name: Download gdk-pixbuf
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://download.gnome.org/sources/gdk-pixbuf/${{env.gdk_pixbuf_version_short}}/gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz
+
+      - name: Extract gdk-pixbuf
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz
+
+      - name: Configure gdk-pixbuf
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/gdk-pixbuf-${{env.gdk_pixbuf_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=false -Dinstalled_tests=false -Dgtk_doc=false -Ddocs=false -Dman=false -Dintrospection=disabled -Drelocatable=true -Dpng=enabled -Djpeg=enabled -Dtiff=disabled build
+
+      - name: Build gdk-pixbuf
+        shell: bash
+        working-directory: build/gdk-pixbuf-${{env.gdk_pixbuf_version}}/build
+        run: ninja
+
+      - name: Install gdk-pixbuf
+        shell: bash
+        working-directory: build/gdk-pixbuf-${{env.gdk_pixbuf_version}}/build
+        run: sudo ninja install
+
+
       - name: Download libsoup
         shell: bash
         working-directory: downloads
@@ -1474,6 +1556,38 @@ jobs:
         shell: bash
         working-directory: build
         run: sudo rm -rf *
+
+
+      - name: Download libusb
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/libusb/libusb/releases/download/v${{env.libusb_version}}/libusb-${{env.libusb_version}}.tar.bz2
+
+      - name: Extract libusb
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libusb-${{env.libusb_version}}.tar.bz2
+
+      - name: Configure libusb
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libusb-${{env.libusb_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
+
+      - name: Build libusb
+        shell: bash
+        working-directory: build/libusb-${{env.libusb_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libusb
+        shell: bash
+        working-directory: build/libusb-${{env.libusb_version}}
+        run: sudo make install
 
 
       - name: Download libogg
@@ -2441,6 +2555,97 @@ jobs:
         shell: bash
         working-directory: build/gst-libav-${{env.gstreamer_version}}/build
         run: sudo ninja install
+
+
+      - name: Download libplist
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/libimobiledevice/libplist/releases/download/${{env.libplist_version}}/libplist-${{env.libplist_version}}.tar.bz2
+
+      - name: Extract libplist
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libplist-${{env.libplist_version}}.tar.bz2
+
+      - name: Configure libplist
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libplist-${{env.libplist_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
+
+      - name: Build libplist
+        shell: bash
+        working-directory: build/libplist-${{env.libplist_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libplist
+        shell: bash
+        working-directory: build/libplist-${{env.libplist_version}}
+        run: sudo make install
+
+
+      - name: Download libmtp
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/libmtp/libmtp/releases/download/v${{env.libmtp_version}}/libmtp-${{env.libmtp_version}}.tar.gz
+
+      - name: Extract libmtp
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libmtp-${{env.libmtp_version}}.tar.gz
+
+      - name: Configure libmtp
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libmtp-${{env.libmtp_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-rpath --disable-silent-rules
+
+      - name: Build libmtp
+        shell: bash
+        working-directory: build/libmtp-${{env.libmtp_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libmtp
+        shell: bash
+        working-directory: build/libmtp-${{env.libmtp_version}}
+        run: sudo make install
+
+
+      - name: Clone libgpod
+        shell: bash
+        working-directory: build
+        run: git clone https://github.com/strawberrymusicplayer/strawberry-libgpod
+
+      - name: Configure libgpod
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/strawberry-libgpod
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DENABLE_GDKPIXBUF=ON
+
+      - name: Build libgpod
+        shell: bash
+        working-directory: build/strawberry-libgpod/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install libgpod
+        shell: bash
+        working-directory: build/strawberry-libgpod/build
+        run: sudo cmake --install .
 
 
       - name: Cleanup build directory

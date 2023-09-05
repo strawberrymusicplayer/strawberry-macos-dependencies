@@ -133,6 +133,9 @@ function update_package() {
     "pkgconf")
       package_version_latest=$(curl ${curl_options} 'https://github.com/pkgconf/pkgconf/tags' | sed -n 's#.*releases/tag/\([^"]*\).*#\1#p' | sed 's/^pkgconf\-//g' | sort -V | tail -1)
       ;;
+    "cmake")
+      package_version_latest=$(curl ${curl_options} 'https://github.com/Kitware/CMake/releases' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | sed 's/^v//g' | sort -V | tail -1)
+      ;;
     "gmp")
       package_version_latest=$(curl ${curl_options} 'https://gmplib.org/' | sed -n 's,.*gmp-\([0-9][^>]*\)\.tar.*,\1,p' | sort -V | tail -1)
       ;;
@@ -223,6 +226,9 @@ function update_package() {
     "glib")
       package_version_latest=$(curl ${curl_options} 'https://gitlab.gnome.org/GNOME/glib/tags' | sed -n "s,.*<a [^>]\+>v\?\([0-9]\+\.[0-9.]\+\)<.*,\1,p" | sort -V | tail -1)
       ;;
+    "gdk_pixbuf")
+      package_version_latest=$(curl ${curl_options} 'https://gitlab.gnome.org/GNOME/gdk-pixbuf/tags' | sed -n "s,.*<a [^>]\+>v\?\([0-9]\+\.[0-9.]\+\)<.*,\1,p" | sort -V | tail -1)
+      ;;
     "libsoup")
       package_version_latest=$(curl ${curl_options} 'https://gitlab.gnome.org/GNOME/libsoup/tags' | sed -n "s,.*<a [^>]\+>v\?\([0-9]\+\.[02468]\.[0-9]\+\)<.*,\1,p" | sort -V | tail -1)
       ;;
@@ -234,6 +240,9 @@ function update_package() {
       ;;
     "harfbuzz")
       package_version_latest=$(curl ${curl_options} 'https://github.com/harfbuzz/harfbuzz/releases' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | sed 's/^v//g' | sort -V | tail -1)
+      ;;
+    "libusb")
+      package_version_latest=$(curl ${curl_options} 'https://github.com/libusb/libusb/releases' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | grep -v 'rc' | sed 's/^v//g' | sort -V | tail -1)
       ;;
     "libogg")
       package_version_latest=$(curl ${curl_options} 'https://www.xiph.org/downloads/' | sed -n 's,.*libogg-\([0-9][^>]*\)\.tar.*,\1,p' | sort -V | tail -1)
@@ -300,6 +309,12 @@ function update_package() {
       ;;
     "gstreamer")
       package_version_latest=$(curl ${curl_options} 'https://cgit.freedesktop.org/gstreamer/gstreamer/refs/tags' | sed -n "s,.*<a href='[^']*/tag/?h=[^0-9]*\\([0-9]\..[02468]\.[0-9][^']*\\)'.*,\\1,p" | sort -V | tail -1)
+      ;;
+    "libplist")
+      package_version_latest=$(curl ${curl_options} 'https://github.com/libimobiledevice/libplist/releases/latest' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | grep -v '^\*name$' | sed 's/^v//g' | head -1)
+      ;;
+    "libmtp")
+      package_version_latest=$(curl ${curl_options} 'https://github.com/libmtp/libmtp/releases/latest' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | grep -v '^\*name$' | sed 's/^v//g' | head -1)
       ;;
     "qt")
       qt_major_version=$(curl ${curl_options} "https://download.qt.io/official_releases/qt/" | sed -n 's,.*<a href=\"\([0-9]*\.[0-9]*\).*,\1,p' | sort -V | tail -1)
