@@ -130,6 +130,8 @@ env:
 
   libmtp_version: '1.1.21'
 
+  libcdio_version: '2.1.0'
+
   qt_version: '6.5.2'
 
   abseil_cpp_version: '20230802.0'
@@ -2586,6 +2588,38 @@ jobs:
       - name: Install libplist
         shell: bash
         working-directory: build/libplist-${{env.libplist_version}}
+        run: sudo make install
+
+
+      - name: Download libcdio
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libcdio/libcdio-${{env.libcdio_version}}.tar.bz2
+
+      - name: Extract libcdio
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libcdio-${{env.libcdio_version}}.tar.bz2
+
+      - name: Configure libcdio
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libcdio-${{env.libcdio_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-rpath --disable-silent-rules --without-cd-drive --without-cd-info --without-cd-read --without-cdda-player --without-iso-info --without-iso-read --enable-rock
+
+      - name: Build libcdio
+        shell: bash
+        working-directory: build/libcdio-${{env.libcdio_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libcdio
+        shell: bash
+        working-directory: build/libcdio-${{env.libcdio_version}}
         run: sudo make install
 
 
