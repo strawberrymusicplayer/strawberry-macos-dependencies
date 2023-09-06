@@ -2890,6 +2890,22 @@ jobs:
         run: sudo cmake --install .
 
 
+      - name: Clone create-dmg
+        shell: bash
+        working-directory: build
+        run: git clone https://github.com/create-dmg/create-dmg.git
+
+      - name: Change create-dmg prefix
+        shell: bash
+        working-directory: build/create-dmg
+        run: sed -i .bak "s,^prefix = .*,prefix = ${{env.prefix_path}},g" Makefile
+
+      - name: Install create-dmg
+        shell: bash
+        working-directory: build/create-dmg
+        run: sudo make install
+
+
       - name: Cleanup build directory
         shell: bash
         working-directory: build
