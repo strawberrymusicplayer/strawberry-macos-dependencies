@@ -1645,17 +1645,17 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib
         working-directory: build/libvorbis-${{env.libvorbis_version}}
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-silent-rules --disable-oggtest --disable-docs --disable-examples
 
       - name: Build libvorbis
         shell: bash
-        working-directory: build/libvorbis-${{env.libvorbis_version}}/build
-        run: cmake --build . --parallel ${{env.make_jobs}}
+        working-directory: build/libvorbis-${{env.libvorbis_version}}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libvorbis
         shell: bash
-        working-directory: build/libvorbis-${{env.libvorbis_version}}/build
-        run: sudo cmake --install .
+        working-directory: build/libvorbis-${{env.libvorbis_version}}
+        run: sudo make install
 
 
       - name: Download flac
