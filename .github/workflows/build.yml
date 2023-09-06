@@ -1975,6 +1975,11 @@ jobs:
         working-directory: build/musepack_src_r${{env.musepack_version}}/build
         run: sudo cp libmpcdec/libmpcdec.dylib ${{env.prefix_path}}/lib/
 
+      - name: Change musepack library id
+        shell: bash
+        working-directory: build/musepack_src_r${{env.musepack_version}}/build
+        run: sudo install_name_tool -id ${{env.prefix_path}}/lib/libmpcdec.dylib ${{env.prefix_path}}/lib/libmpcdec.dylib
+
 
       - name: Download libopenmpt
         shell: bash
