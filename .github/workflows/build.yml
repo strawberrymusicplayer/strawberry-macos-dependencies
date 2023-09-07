@@ -2258,6 +2258,9 @@ jobs:
         working-directory: build/libebur128-${{env.libebur128_version}}/build
         run: sudo cmake --install .
 
+      - name: Change id for libebur128
+        run: sudo install_name_tool -id ${{env.prefix_path}}/lib/libebur128.1.2.6.dylib ${{env.prefix_path}}/lib/libebur128.1.2.6.dylib
+
 
       - name: Download fftw
         shell: bash
