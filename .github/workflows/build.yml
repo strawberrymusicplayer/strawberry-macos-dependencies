@@ -132,7 +132,7 @@ env:
 
   libcdio_version: '2.1.0'
 
-  qt_version: '6.5.0'
+  qt_version: '6.5.2'
 
   abseil_cpp_version: '20230802.1'
 
@@ -2711,6 +2711,11 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
 
+      - name: Patch qtbase
+        shell: bash
+        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
+        run: patch -p1 < ../../patches/qtbase-qcocoawindow.patch
+
       - name: Configure qtbase
         shell: bash
         env:
@@ -2732,7 +2737,7 @@ jobs:
           -DQT_BUILD_BENCHMARKS=OFF
           -DQT_BUILD_TESTS=OFF
           -DBUILD_WITH_PCH=OFF
-          -DFEATURE_rpath=OFF
+          -DFEATURE_rpath=ON
           -DFEATURE_relocatable=OFF
           -DFEATURE_pkg_config=ON
           -DFEATURE_accessibility=ON
