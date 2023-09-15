@@ -132,7 +132,7 @@ env:
 
   libcdio_version: '2.1.0'
 
-  qt_version: '6.5.2'
+  qt_version: '6.5.0'
 
   abseil_cpp_version: '20230802.0'
 
