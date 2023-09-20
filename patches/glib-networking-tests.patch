@@ -1,9 +1,9 @@
 diff --git a/proxy/meson.build b/proxy/meson.build
-index c638452..e989a2a 100644
+index 5bdaf7d..516969a 100644
 --- a/proxy/meson.build
 +++ b/proxy/meson.build
-@@ -11,5 +11,3 @@ endif
- if not ['windows'].contains(host_system)
+@@ -9,5 +9,3 @@ endif
+ if get_option('environment_proxy').enabled()
    subdir('environment')
  endif
 -

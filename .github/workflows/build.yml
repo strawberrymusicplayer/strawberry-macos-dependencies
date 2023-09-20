@@ -1,5 +1,5 @@
 name: Build
-on: [push, pull_request]
+on: push
 
 env:
   pkgconf_version: '2.0.3'
@@ -48,7 +48,7 @@ env:
 
   icu4c_version: '73.2'
 
-  pixmap_version: '0.42.2'
+  pixman_version: '0.42.2'
 
   expat_version: '2.5.0'
 
@@ -154,16 +154,27 @@ jobs:
 
   build-macos-dependencies:
     name: Build macOS Dependencies
-    runs-on: macos-11
 
     if: (!contains(github.event.head_commit.message, 'skip ci'))
 
     strategy:
       matrix:
-       arch: [ x86_64 ]
+       runner: [ macos-11, macos-arm64 ]
        buildtype: [ release, debug ]
 
+    runs-on: ${{ matrix.runner }}
+
     steps:
+
+      - name: Show workspace path
+        shell: bash
+        run: |
+          path="${GITHUB_WORKSPACE}"
+          echo "GITHUB_WORKSPACE: ${path}"
+
+      - name: Set arch
+        shell: bash
+        run: echo "arch=$(uname -m)" >> $GITHUB_ENV
 
       - name: Set buildtype
         shell: bash
@@ -176,8 +187,14 @@ jobs:
           echo "meson_buildtype=${{env.buildtype}}" >> $GITHUB_ENV
 
       - name: Set prefix path
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release'
         shell: bash
-        run: echo "prefix_path=/opt/strawberry_macos_${{matrix.arch}}_${{env.buildtype}}" >> $GITHUB_ENV
+        run: echo "prefix_path=/opt/strawberry_macos_${{env.arch}}_${{env.buildtype}}" >> $GITHUB_ENV
+
+      - name: Set prefix path
+        if: github.ref != 'refs/heads/master' && github.ref != 'refs/heads/release'
+        shell: bash
+        run: echo "prefix_path=${GITHUB_WORKSPACE}/strawberry_macos_${{env.arch}}_${{env.buildtype}}" >> $GITHUB_ENV
 
       - name: Set extra version variables
         shell: bash
@@ -214,11 +231,17 @@ jobs:
         shell: bash
         run: ls -la /opt
 
+      - name: Update PATH
+        if: matrix.runner == 'macos-arm64'
+        shell: bash
+        run: echo "/opt/homebrew/bin" >> $GITHUB_PATH
+
       - name: brew list
         shell: bash
         run: brew list
 
       - name: Remove installed brew packages
+        if: matrix.runner == 'macos-11'
         shell: bash
         run: brew uninstall $(brew list)
 
@@ -243,15 +266,25 @@ jobs:
         run: brew list
 
       - name: Update PATH
+        if: env.arch == 'x86_64'
         shell: bash
         run: echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
+
+      - name: Update PATH
+        if: env.arch == 'arm64'
+        shell: bash
+        run: echo "/opt/homebrew/opt/bison/bin" >> $GITHUB_PATH
+
+      - name: Delete old prefix path
+        shell: bash
+        run: rm -rf "${{env.prefix_path}}"
 
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Create directories
         shell: bash
-        run: sudo mkdir -p ${{env.prefix_path}}/{bin,lib,include}
+        run: mkdir -p ${{env.prefix_path}}/{bin,lib,include}
 
       - name: Update PATH
         shell: bash
@@ -262,6 +295,10 @@ jobs:
         shell: bash
         run: pip3 install meson ninja
 
+      - name: Add python to PATH
+        if: matrix.runner == 'macos-arm64'
+        shell: bash
+        run: echo "/Users/jonas/Library/Python/3.9/bin" >> $GITHUB_PATH
 
       - name: Create downloads directory
         shell: bash
@@ -270,6 +307,10 @@ jobs:
       - name: Create build directory
         shell: bash
         run: mkdir build
+
+      - name: List directory contents
+        shell: bash
+        run: ls -la downloads build
 
 
       - name: Download pkgconf
@@ -295,11 +336,11 @@ jobs:
       - name: Install pkgconf
         shell: bash
         working-directory: build/pkgconf-pkgconf-${{env.pkgconf_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
       - name: Link pkgconf
         shell: bash
-        run: sudo ln -s ${{env.prefix_path}}/bin/pkgconf ${{env.prefix_path}}/bin/pkg-config
+        run: ln -s ${{env.prefix_path}}/bin/pkgconf ${{env.prefix_path}}/bin/pkg-config
 
       - name: which pkg-config
         shell: bash
@@ -335,7 +376,7 @@ jobs:
       - name: Install cmake
         shell: bash
         working-directory: build/cmake-${{env.cmake_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download gmp
@@ -367,7 +408,7 @@ jobs:
       - name: Install gmp
         shell: bash
         working-directory: build/gmp-${{env.gmp_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download nasm
@@ -404,7 +445,7 @@ jobs:
       - name: Install nasm
         shell: bash
         working-directory: build/nasm-${{env.nasm_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download yasm
@@ -436,7 +477,7 @@ jobs:
       - name: Install yasm
         shell: bash
         working-directory: build/yasm-${{env.yasm_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download zlib
@@ -468,7 +509,7 @@ jobs:
       - name: Install zlib
         shell: bash
         working-directory: build/zlib-${{env.zlib_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download openssl
@@ -500,7 +541,7 @@ jobs:
       - name: Install openssl
         shell: bash
         working-directory: build/openssl-${{env.openssl_version}}
-        run: sudo make install_sw
+        run: make install_sw
 
 
       - name: Download libpng
@@ -532,14 +573,14 @@ jobs:
       - name: Install libpng
         shell: bash
         working-directory: build/libpng-${{env.libpng_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
       - name: Link libpng library (Debug)
         if: env.buildtype == 'debug'
         shell: bash
         run: |
-          sudo ln -s ${{env.prefix_path}}/lib/libpng16d.a ${{env.prefix_path}}/lib/libpng16.a
-          sudo ln -s ${{env.prefix_path}}/lib/libpng16d.dylib ${{env.prefix_path}}/lib/libpng16.dylib
+          ln -s ${{env.prefix_path}}/lib/libpng16d.a ${{env.prefix_path}}/lib/libpng16.a
+          ln -s ${{env.prefix_path}}/lib/libpng16d.dylib ${{env.prefix_path}}/lib/libpng16.dylib
 
 
       - name: Download libjpeg-turbo
@@ -571,7 +612,7 @@ jobs:
       - name: Install libjpeg-turbo
         shell: bash
         working-directory: build/libjpeg-turbo-${{env.libjpeg_turbo_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download pcre2
@@ -603,7 +644,7 @@ jobs:
       - name: Install pcre2
         shell: bash
         working-directory: build/pcre2-${{env.pcre2_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download bzip2
@@ -640,7 +681,7 @@ jobs:
       - name: Install bzip2
         shell: bash
         working-directory: build/bzip2-${{env.bzip2_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download xz
@@ -672,7 +713,7 @@ jobs:
       - name: Install xz
         shell: bash
         working-directory: build/xz-${{env.xz_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download brotli
@@ -704,7 +745,7 @@ jobs:
       - name: Install brotli
         shell: bash
         working-directory: build/brotli-${{env.brotli_version}}/build_dir
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download zstd
@@ -736,7 +777,7 @@ jobs:
       - name: Install zstd
         shell: bash
         working-directory: build/zstd-${{env.zstd_version}}/build_dir
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download libiconv
@@ -768,7 +809,7 @@ jobs:
       #- name: Install libiconv
         #shell: bash
         #working-directory: build/libiconv-${{env.libiconv_version}}
-        #run: sudo make install
+        #run: make install
 
 
       - name: Download libunistring
@@ -800,7 +841,7 @@ jobs:
       - name: Install libunistring
         shell: bash
         working-directory: build/libunistring-${{env.libunistring_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download gettext
@@ -832,7 +873,7 @@ jobs:
       - name: Install gettext
         shell: bash
         working-directory: build/gettext-${{env.gettext_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download flex
@@ -869,7 +910,7 @@ jobs:
       - name: Install flex
         shell: bash
         working-directory: build/flex-${{env.flex_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download libtasn1
@@ -901,7 +942,7 @@ jobs:
       - name: Install libtasn1
         shell: bash
         working-directory: build/libtasn1-${{env.libtasn1_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download libidn2
@@ -933,13 +974,14 @@ jobs:
       - name: Install libidn2
         shell: bash
         working-directory: build/libidn2-${{env.libidn2_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download nettle
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://www.lysator.liu.se/~nisse/archive/nettle-${{env.nettle_version}}.tar.gz
+        #run: curl ${{env.curl_options}} https://www.lysator.liu.se/~nisse/archive/nettle-${{env.nettle_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://files.jkvinge.net/packages/strawberry-dependencies/nettle-${{env.nettle_version}}.tar.gz
 
       - name: Extract nettle
         shell: bash
@@ -965,7 +1007,7 @@ jobs:
       - name: Install nettle
         shell: bash
         working-directory: build/nettle-${{env.nettle_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download GnuTLS
@@ -997,7 +1039,7 @@ jobs:
       - name: Install GnuTLS
         shell: bash
         working-directory: build/gnutls-${{env.gnutls_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download icu
@@ -1029,18 +1071,23 @@ jobs:
       - name: Install icu
         shell: bash
         working-directory: build/icu/source
-        run: sudo make install
+        run: make install
 
 
       - name: Download pixman
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://www.cairographics.org/releases/pixman-${{env.pixmap_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://www.cairographics.org/releases/pixman-${{env.pixman_version}}.tar.gz
 
       - name: Extract pixman
         shell: bash
         working-directory: build
-        run: tar -xf ../downloads/pixman-${{env.pixmap_version}}.tar.gz
+        run: tar -xf ../downloads/pixman-${{env.pixman_version}}.tar.gz
+
+      - name: Patch pixman
+        shell: bash
+        working-directory: build/pixman-${{env.pixman_version}}
+        run: patch -p1 < ../../patches/pixman.patch
 
       - name: Configure pixman
         shell: bash
@@ -1050,18 +1097,18 @@ jobs:
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib
-        working-directory: build/pixman-${{env.pixmap_version}}
+        working-directory: build/pixman-${{env.pixman_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dgtk=disabled -Dlibpng=enabled -Dtests=disabled build
 
       - name: Build pixman
         shell: bash
-        working-directory: build/pixman-${{env.pixmap_version}}/build
+        working-directory: build/pixman-${{env.pixman_version}}/build
         run: ninja
 
       - name: Install pixman
         shell: bash
-        working-directory: build/pixman-${{env.pixmap_version}}/build
-        run: sudo ninja install
+        working-directory: build/pixman-${{env.pixman_version}}/build
+        run: ninja install
 
 
       - name: Download expat
@@ -1093,7 +1140,7 @@ jobs:
       - name: Install expat
         shell: bash
         working-directory: build/expat-${{env.expat_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download Boost
@@ -1120,13 +1167,14 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib
         working-directory: build/boost_${{env.boost_version_underscore}}
-        run: sudo ./b2 -a -q -j 4 -d1 --ignore-site-config --stagedir="stage" --layout="tagged" --without-mpi --without-python --prefix="${{env.prefix_path}}" --exec-prefix="${{env.prefix_path}}/bin" --libdir="${{env.prefix_path}}/lib" --includedir="${{env.prefix_path}}/include" link=shared runtime-link=shared threading=multi variant=${{env.buildtype}} install
+        run: ./b2 -a -q -j 4 -d1 --ignore-site-config --stagedir="stage" --layout="tagged" --without-mpi --without-python --prefix="${{env.prefix_path}}" --exec-prefix="${{env.prefix_path}}/bin" --libdir="${{env.prefix_path}}/lib" --includedir="${{env.prefix_path}}/include" link=shared runtime-link=shared threading=multi variant=${{env.buildtype}} install
 
 
       - name: Cleanup build directory
+        if: matrix.runner == 'macos-11'
         shell: bash
         working-directory: build
-        run: sudo rm -rf *
+        run: rm -rf *
 
 
       - name: Download libxml2
@@ -1158,7 +1206,7 @@ jobs:
       - name: Install libxml2
         shell: bash
         working-directory: build/libxml2-${{env.libxml2_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download nghttp2
@@ -1190,7 +1238,7 @@ jobs:
       - name: Install nghttp2
         shell: bash
         working-directory: build/nghttp2-${{env.nghttp2_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download libffi
@@ -1222,7 +1270,7 @@ jobs:
       - name: Install libffi
         shell: bash
         working-directory: build/libffi-${{env.libffi_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download libpsl
@@ -1259,7 +1307,7 @@ jobs:
       - name: Install libpsl
         shell: bash
         working-directory: build/libpsl-${{env.libpsl_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Download orc
@@ -1291,7 +1339,7 @@ jobs:
       - name: Install orc
         shell: bash
         working-directory: build/orc-${{env.orc_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Download SQLite
@@ -1317,7 +1365,7 @@ jobs:
       - name: Install SQLite
         shell: bash
         working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download GLib
@@ -1349,7 +1397,7 @@ jobs:
       - name: Install GLib
         shell: bash
         working-directory: build/glib-${{env.glib_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Download gdk-pixbuf
@@ -1381,7 +1429,7 @@ jobs:
       - name: Install gdk-pixbuf
         shell: bash
         working-directory: build/gdk-pixbuf-${{env.gdk_pixbuf_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Download libsoup
@@ -1413,7 +1461,7 @@ jobs:
       - name: Install libsoup
         shell: bash
         working-directory: build/libsoup-${{env.libsoup_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Download glib-networking
@@ -1450,7 +1498,7 @@ jobs:
       - name: Install glib-networking
         shell: bash
         working-directory: build/glib-networking-${{env.glib_networking_version}}/build
-        run: sudo ninja install || true
+        run: ninja install || true
 
 
       - name: Download freetype
@@ -1482,12 +1530,12 @@ jobs:
       - name: Install freetype (boostrap)
         shell: bash
         working-directory: build/freetype-${{env.freetype_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
       - name: Link freetype (debug)
         if: env.buildtype == 'debug'
         shell: bash
-        run: sudo ln -s ${{env.prefix_path}}/lib/libfreetyped.dylib ${{env.prefix_path}}/lib/libfreetype.dylib
+        run: ln -s ${{env.prefix_path}}/lib/libfreetyped.dylib ${{env.prefix_path}}/lib/libfreetype.dylib
 
 
       - name: Download harfbuzz
@@ -1519,13 +1567,13 @@ jobs:
       - name: Install harfbuzz
         shell: bash
         working-directory: build/harfbuzz-${{env.harfbuzz_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Delete freetype bootstrap
         shell: bash
         working-directory: build
-        run: sudo rm -rf freetype-${{env.freetype_version}}
+        run: rm -rf freetype-${{env.freetype_version}}
 
       - name: Extract freetype
         shell: bash
@@ -1551,13 +1599,14 @@ jobs:
       - name: Install freetype
         shell: bash
         working-directory: build/freetype-${{env.freetype_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Cleanup build directory
+        if: matrix.runner == 'macos-11'
         shell: bash
         working-directory: build
-        run: sudo rm -rf *
+        run: rm -rf *
 
 
       - name: Download libusb
@@ -1589,7 +1638,7 @@ jobs:
       - name: Install libusb
         shell: bash
         working-directory: build/libusb-${{env.libusb_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download libogg
@@ -1622,7 +1671,7 @@ jobs:
       - name: Install libogg
         shell: bash
         working-directory: build/libogg-${{env.libogg_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download libvorbis
@@ -1655,7 +1704,7 @@ jobs:
       - name: Install libvorbis
         shell: bash
         working-directory: build/libvorbis-${{env.libvorbis_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download flac
@@ -1687,7 +1736,7 @@ jobs:
       - name: Install flac
         shell: bash
         working-directory: build/flac-${{env.flac_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download wavpack
@@ -1719,7 +1768,7 @@ jobs:
       - name: Install wavpack
         shell: bash
         working-directory: build/wavpack-${{env.wavpack_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download opus
@@ -1756,7 +1805,7 @@ jobs:
       - name: Install opus
         shell: bash
         working-directory: build/opus-${{env.opus_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download opusfile
@@ -1788,7 +1837,7 @@ jobs:
       - name: Install opusfile
         shell: bash
         working-directory: build/opusfile-${{env.opusfile_version}}
-        run: sudo make install || true
+        run: make install || true
 
 
       - name: Download speex
@@ -1825,7 +1874,7 @@ jobs:
       - name: Install speex
         shell: bash
         working-directory: build/speex-Speex-${{env.speex_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download mpg123
@@ -1838,6 +1887,11 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/mpg123-${{env.mpg123_version}}.tar.bz2
 
+      - name: Patch mpg123
+        shell: bash
+        working-directory: build/mpg123-${{env.mpg123_version}}
+        run: patch -p1 < ../../patches/mpg123-arm.patch
+
       - name: Configure mpg123
         shell: bash
         env:
@@ -1848,6 +1902,7 @@ jobs:
           LDFLAGS: -L${{env.prefix_path}}/lib
         working-directory: build/mpg123-${{env.mpg123_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S ports/cmake -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_PROGRAMS=OFF -DBUILD_LIBOUT123=OFF
+        #run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking
 
       - name: Build mpg123
         shell: bash
@@ -1857,7 +1912,7 @@ jobs:
       - name: Install mpg123
         shell: bash
         working-directory: build/mpg123-${{env.mpg123_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download lame
@@ -1894,7 +1949,7 @@ jobs:
       - name: Install lame
         shell: bash
         working-directory: build/lame-${{env.lame_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download twolame
@@ -1931,7 +1986,7 @@ jobs:
       - name: Install twolame
         shell: bash
         working-directory: build/twolame-${{env.twolame_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download musepack
@@ -1968,17 +2023,17 @@ jobs:
       - name: Install musepack
         shell: bash
         working-directory: build/musepack_src_r${{env.musepack_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
       - name: Copy musepack library
         shell: bash
         working-directory: build/musepack_src_r${{env.musepack_version}}/build
-        run: sudo cp libmpcdec/libmpcdec.dylib ${{env.prefix_path}}/lib/
+        run: cp libmpcdec/libmpcdec.dylib ${{env.prefix_path}}/lib/
 
       - name: Change musepack library id
         shell: bash
         working-directory: build/musepack_src_r${{env.musepack_version}}/build
-        run: sudo install_name_tool -id ${{env.prefix_path}}/lib/libmpcdec.dylib ${{env.prefix_path}}/lib/libmpcdec.dylib
+        run: install_name_tool -id ${{env.prefix_path}}/lib/libmpcdec.dylib ${{env.prefix_path}}/lib/libmpcdec.dylib
 
 
       - name: Download libopenmpt
@@ -2010,7 +2065,7 @@ jobs:
       - name: Install libopenmpt
         shell: bash
         working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
-        run: sudo make install
+        run: make install
 
 
       - name: Download libgme
@@ -2042,7 +2097,7 @@ jobs:
       - name: Install libgme
         shell: bash
         working-directory: build/game-music-emu-${{env.libgme_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download faad2
@@ -2081,7 +2136,7 @@ jobs:
       - name: Install faad2
         shell: bash
         working-directory: build/faad2-${{env.faad2_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download faac
@@ -2118,7 +2173,7 @@ jobs:
       - name: Install faac
         shell: bash
         working-directory: build/faac-${{env.faac_version_underscore}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download fdk-aac
@@ -2150,7 +2205,7 @@ jobs:
       - name: Install fdk-aac
         shell: bash
         working-directory: build/fdk-aac-${{env.fdk_aac_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download TagLib
@@ -2182,7 +2237,7 @@ jobs:
       - name: Install TagLib
         shell: bash
         working-directory: build/taglib-${{env.taglib_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download libbs2b
@@ -2224,7 +2279,7 @@ jobs:
       - name: Install libbs2b
         shell: bash
         working-directory: build/libbs2b-${{env.libbs2b_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download libebur128
@@ -2256,10 +2311,10 @@ jobs:
       - name: Install libebur128
         shell: bash
         working-directory: build/libebur128-${{env.libebur128_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
       - name: Change id for libebur128
-        run: sudo install_name_tool -id ${{env.prefix_path}}/lib/libebur128.1.2.6.dylib ${{env.prefix_path}}/lib/libebur128.1.2.6.dylib
+        run: install_name_tool -id ${{env.prefix_path}}/lib/libebur128.1.2.6.dylib ${{env.prefix_path}}/lib/libebur128.1.2.6.dylib
 
 
       - name: Download fftw
@@ -2273,6 +2328,7 @@ jobs:
         run: tar -xf ../downloads/fftw-${{env.fftw_version}}.tar.gz
 
       - name: Configure fftw
+        if: env.arch == 'x86_64'
         shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
@@ -2283,6 +2339,18 @@ jobs:
         working-directory: build/fftw-${{env.fftw_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --enable-sse2 --enable-avx --enable-avx2 --enable-avx512 --enable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
 
+      - name: Configure fftw
+        if: env.arch != 'x86_64'
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/fftw-${{env.fftw_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --disable-sse2 --disable-avx --disable-avx2 --disable-avx512 --disable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
+
       - name: Build fftw
         shell: bash
         working-directory: build/fftw-${{env.fftw_version}}
@@ -2291,7 +2359,7 @@ jobs:
       - name: Install fftw
         shell: bash
         working-directory: build/fftw-${{env.fftw_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download ffmpeg
@@ -2324,7 +2392,7 @@ jobs:
       - name: Install ffmpeg
         shell: bash
         working-directory: build/ffmpeg-${{env.ffmpeg_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download Chromaprint
@@ -2356,13 +2424,14 @@ jobs:
       - name: Install Chromaprint
         shell: bash
         working-directory: build/chromaprint-${{env.chromaprint_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Cleanup build directory
+        if: matrix.runner == 'macos-11'
         shell: bash
         working-directory: build
-        run: sudo rm -rf *
+        run: rm -rf *
 
 
       - name: Download GStreamer
@@ -2394,7 +2463,7 @@ jobs:
       - name: Install GStreamer
         shell: bash
         working-directory: build/gstreamer-${{env.gstreamer_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Download gst-plugins-base
@@ -2431,7 +2500,7 @@ jobs:
       - name: Install gst-plugins-base
         shell: bash
         working-directory: build/gst-plugins-base-${{env.gstreamer_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Download gst-plugins-good
@@ -2468,7 +2537,7 @@ jobs:
       - name: Install gst-plugins-good
         shell: bash
         working-directory: build/gst-plugins-good-${{env.gstreamer_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Download gst-plugins-bad
@@ -2500,7 +2569,7 @@ jobs:
       - name: Install gst-plugins-bad
         shell: bash
         working-directory: build/gst-plugins-bad-${{env.gstreamer_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Download gst-plugins-ugly
@@ -2532,7 +2601,7 @@ jobs:
       - name: Install gst-plugins-ugly
         shell: bash
         working-directory: build/gst-plugins-ugly-${{env.gstreamer_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Download gst-libav
@@ -2564,7 +2633,7 @@ jobs:
       - name: Install gst-libav
         shell: bash
         working-directory: build/gst-libav-${{env.gstreamer_version}}/build
-        run: sudo ninja install
+        run: ninja install
 
 
       - name: Download libplist
@@ -2596,7 +2665,7 @@ jobs:
       - name: Install libplist
         shell: bash
         working-directory: build/libplist-${{env.libplist_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download libcdio
@@ -2628,7 +2697,7 @@ jobs:
       - name: Install libcdio
         shell: bash
         working-directory: build/libcdio-${{env.libcdio_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Download libmtp
@@ -2660,7 +2729,7 @@ jobs:
       - name: Install libmtp
         shell: bash
         working-directory: build/libmtp-${{env.libmtp_version}}
-        run: sudo make install
+        run: make install
 
 
       - name: Clone libgpod
@@ -2687,18 +2756,19 @@ jobs:
       - name: Install libgpod
         shell: bash
         working-directory: build/strawberry-libgpod/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Cleanup build directory
+        if: matrix.runner == 'macos-11'
         shell: bash
         working-directory: build
-        run: sudo rm -rf *
+        run: rm -rf *
 
 
       - name: Delete harfbuzz.pc
         shell: bash
-        run: sudo rm -f "${{env.prefix_path}}/lib/pkgconfig/harfbuzz.pc"
+        run: rm -f "${{env.prefix_path}}/lib/pkgconfig/harfbuzz.pc"
 
 
       - name: Download qtbase
@@ -2780,7 +2850,7 @@ jobs:
       - name: Install qtbase
         shell: bash
         working-directory: build/qtbase-everywhere-src-${{env.qt_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download qttools
@@ -2830,13 +2900,14 @@ jobs:
       - name: Install qttools
         shell: bash
         working-directory: build/qttools-everywhere-src-${{env.qt_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Cleanup build directory
+        if: matrix.runner == 'macos-11'
         shell: bash
         working-directory: build
-        run: sudo rm -rf *
+        run: rm -rf *
 
 
       - name: Download abseil-cpp
@@ -2868,7 +2939,7 @@ jobs:
       - name: Install abseil-cpp
         shell: bash
         working-directory: build/abseil-cpp-${{env.abseil_cpp_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Download Protobuf
@@ -2900,7 +2971,7 @@ jobs:
       - name: Install Protobuf
         shell: bash
         working-directory: build/protobuf-${{env.protobuf_version}}/build
-        run: sudo cmake --install .
+        run: cmake --install .
 
 
       - name: Clone create-dmg
@@ -2916,23 +2987,24 @@ jobs:
       - name: Install create-dmg
         shell: bash
         working-directory: build/create-dmg
-        run: sudo make install
+        run: make install
 
 
       - name: Cleanup build directory
+        if: matrix.runner == 'macos-11'
         shell: bash
         working-directory: build
-        run: sudo rm -rf *
+        run: rm -rf *
 
 
       - name: Create archive
         shell: bash
-        run: tar -cJf strawberry-macos-${{matrix.arch}}-${{env.buildtype}}.tar.xz ${{env.prefix_path}}
+        run: tar -cJf strawberry-macos-${{env.arch}}-${{env.buildtype}}.tar.xz ${{env.prefix_path}}
 
       - uses: actions/upload-artifact@v3
         with:
           name: releases
-          path: strawberry-macos-${{matrix.arch}}-${{env.buildtype}}.tar.xz
+          path: strawberry-macos-${{env.arch}}-${{env.buildtype}}.tar.xz
 
 
   create-release:
@@ -3007,7 +3079,7 @@ jobs:
           echo "* Nettle ${{env.nettle_version}}" >> "${{env.release_notes_file}}"
           echo "* GnuTLS ${{env.gnutls_version}}" >> "${{env.release_notes_file}}"
           echo "* ICU4C ${{env.icu4c_version}}" >> "${{env.release_notes_file}}"
-          echo "* Pixmap ${{env.pixmap_version}}" >> "${{env.release_notes_file}}"
+          echo "* Pixmap ${{env.pixman_version}}" >> "${{env.release_notes_file}}"
           echo "* Expat ${{env.expat_version}}" >> "${{env.release_notes_file}}"
           echo "* Boost ${{env.boost_version}}" >> "${{env.release_notes_file}}"
           echo "* libxml2 ${{env.libxml2_version}}" >> "${{env.release_notes_file}}"
