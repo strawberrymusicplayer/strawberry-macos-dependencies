@@ -166,12 +166,6 @@ jobs:
 
     steps:
 
-      - name: Show workspace path
-        shell: bash
-        run: |
-          path="${GITHUB_WORKSPACE}"
-          echo "GITHUB_WORKSPACE: ${path}"
-
       - name: Set arch
         shell: bash
         run: echo "arch=$(uname -m)" >> $GITHUB_ENV
@@ -210,26 +204,6 @@ jobs:
           echo "gnutls_version_short=$(echo ${{env.gnutls_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           echo "libxml2_version_short=$(echo ${{env.libxml2_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           echo "gdk_pixbuf_version_short=$(echo ${{env.gdk_pixbuf_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
-
-      - name: pwd
-        shell: bash
-        run: pwd
-
-      - name: ls
-        shell: bash
-        run: ls -la
-
-      - name: ls /
-        shell: bash
-        run: ls -la /
-
-      - name: ls /usr
-        shell: bash
-        run: ls -la /usr
-
-      - name: ls /opt
-        shell: bash
-        run: ls -la /opt
 
       - name: Update PATH
         if: matrix.runner == 'macos-arm64'
@@ -277,10 +251,18 @@ jobs:
 
       - name: Delete old prefix path
         shell: bash
-        run: rm -rf "${{env.prefix_path}}"
+        run: sudo rm -rf "${{env.prefix_path}}"
 
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Create prefix path
+        shell: bash
+        run: sudo mkdir -p ${{env.prefix_path}}
+
+      - name: Change prefix path owner
+        shell: bash
+        run: sudo chown ${USER}:staff ${{env.prefix_path}}
 
       - name: Create directories
         shell: bash
