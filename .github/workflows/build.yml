@@ -962,8 +962,7 @@ jobs:
       - name: Download nettle
         shell: bash
         working-directory: downloads
-        #run: curl ${{env.curl_options}} https://www.lysator.liu.se/~nisse/archive/nettle-${{env.nettle_version}}.tar.gz
-        run: curl ${{env.curl_options}} https://files.jkvinge.net/packages/strawberry-dependencies/nettle-${{env.nettle_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://www.lysator.liu.se/~nisse/archive/nettle-${{env.nettle_version}}.tar.gz
 
       - name: Extract nettle
         shell: bash
@@ -2347,8 +2346,7 @@ jobs:
       - name: Download ffmpeg
         shell: bash
         working-directory: downloads
-        #run: curl ${{env.curl_options}} https://ffmpeg.org/releases/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
-        run: curl ${{env.curl_options}} https://files.jkvinge.net/packages/strawberry-dependencies/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
+        run: curl ${{env.curl_options}} https://ffmpeg.org/releases/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
 
       - name: Extract ffmpeg
         shell: bash
