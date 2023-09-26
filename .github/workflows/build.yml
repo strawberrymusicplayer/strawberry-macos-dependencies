@@ -2763,10 +2763,15 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
 
-      - name: Patch qtbase
+      - name: Patch qtbase qcocoawindow
         shell: bash
         working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
         run: patch -p1 < ../../patches/qtbase-qcocoawindow.patch
+
+      - name: Patch qtbase macdeployqt
+        shell: bash
+        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
+        run: patch -p1 < ../../patches/qtbase-macdeployqt.patch
 
       - name: Configure qtbase
         shell: bash
