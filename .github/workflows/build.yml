@@ -132,7 +132,7 @@ env:
 
   libcdio_version: '2.1.0'
 
-  qt_version: '6.5.2'
+  qt_version: '6.5.3'
 
   abseil_cpp_version: '20230802.1'
 
@@ -2760,11 +2760,6 @@ jobs:
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
-
-      - name: Patch qtbase qcocoawindow
-        shell: bash
-        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
-        run: patch -p1 < ../../patches/qtbase-qcocoawindow.patch
 
       - name: Patch qtbase macdeployqt
         shell: bash
