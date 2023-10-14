@@ -2407,6 +2407,38 @@ jobs:
         run: cmake --install .
 
 
+      - name: Download libcdio
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libcdio/libcdio-${{env.libcdio_version}}.tar.bz2
+
+      - name: Extract libcdio
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libcdio-${{env.libcdio_version}}.tar.bz2
+
+      - name: Configure libcdio
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib
+        working-directory: build/libcdio-${{env.libcdio_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-rpath --disable-silent-rules --without-cd-drive --without-cd-info --without-cd-read --without-cdda-player --without-iso-info --without-iso-read --enable-rock
+
+      - name: Build libcdio
+        shell: bash
+        working-directory: build/libcdio-${{env.libcdio_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libcdio
+        shell: bash
+        working-directory: build/libcdio-${{env.libcdio_version}}
+        run: make install
+
+
       - name: Cleanup build directory
         if: matrix.runner == 'macos-11'
         shell: bash
@@ -2571,7 +2603,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib
         working-directory: build/gst-plugins-ugly-${{env.gstreamer_version}}
-        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=disabled -Ddoc=disabled -Dgpl=enabled -Dorc=enabled -Dasfdemux=enabled -Ddvdlpcmdec=disabled -Ddvdsub=disabled -Drealmedia=disabled -Da52dec=disabled -Damrnb=disabled -Damrwbdec=disabled -Dcdio=disabled -Ddvdread=disabled -Dmpeg2dec=disabled -Dsidplay=disabled -Dx264=disabled build
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=disabled -Ddoc=disabled -Dgpl=enabled -Dorc=enabled -Dasfdemux=enabled -Ddvdlpcmdec=disabled -Ddvdsub=disabled -Drealmedia=disabled -Da52dec=disabled -Damrnb=disabled -Damrwbdec=disabled -Dcdio=enabled -Ddvdread=disabled -Dmpeg2dec=disabled -Dsidplay=disabled -Dx264=disabled build
 
       - name: Build gst-plugins-ugly
         shell: bash
@@ -2645,38 +2677,6 @@ jobs:
       - name: Install libplist
         shell: bash
         working-directory: build/libplist-${{env.libplist_version}}
-        run: make install
-
-
-      - name: Download libcdio
-        shell: bash
-        working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libcdio/libcdio-${{env.libcdio_version}}.tar.bz2
-
-      - name: Extract libcdio
-        shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libcdio-${{env.libcdio_version}}.tar.bz2
-
-      - name: Configure libcdio
-        shell: bash
-        env:
-          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
-          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
-          CFLAGS: -I${{env.prefix_path}}/include
-          CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
-        working-directory: build/libcdio-${{env.libcdio_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-rpath --disable-silent-rules --without-cd-drive --without-cd-info --without-cd-read --without-cdda-player --without-iso-info --without-iso-read --enable-rock
-
-      - name: Build libcdio
-        shell: bash
-        working-directory: build/libcdio-${{env.libcdio_version}}
-        run: make -j ${{env.make_jobs}}
-
-      - name: Install libcdio
-        shell: bash
-        working-directory: build/libcdio-${{env.libcdio_version}}
         run: make install
 
 
