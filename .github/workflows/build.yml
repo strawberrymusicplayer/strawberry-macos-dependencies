@@ -1336,6 +1336,8 @@ jobs:
 
       - name: Configure SQlite
         shell: bash
+        env:
+          CFLAGS: -DSQLITE_ENABLE_COLUMN_METADATA
         working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-fts5 --disable-readline --enable-threadsafe --disable-silent-rules
 
@@ -2828,6 +2830,10 @@ jobs:
           -DFEATURE_system_harfbuzz=ON
           -DFEATURE_system_sqlite=ON
           -DICU_ROOT="${{env.prefix_path}}"
+          -DSQLite3_INCLUDE_DIR="${{env.prefix_path}}/include"
+          -DSQLite3_INCLUDE_DIRS="${{env.prefix_path}}/include"
+          -DSQLite3_LIBRARY="${{env.prefix_path}}/lib/libsqlite3.dylib"
+          -DSQLite3_LIBRARIES="${{env.prefix_path}}/lib/libsqlite3.dylib"
 
       - name: Build qtbase
         shell: bash
