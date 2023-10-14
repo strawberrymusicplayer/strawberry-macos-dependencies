@@ -2788,7 +2788,6 @@ jobs:
           -G Ninja
           -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}"
           -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
-          -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib"
           -DBUILD_SHARED_LIBS=ON
           -DBUILD_STATIC_LIBS=OFF
           -DPKG_CONFIG_EXECUTABLE="${{env.prefix_path}}/bin/pkgconf"
