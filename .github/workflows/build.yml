@@ -2870,7 +2870,6 @@ jobs:
           -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}"
           -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
           -DCMAKE_PREFIX_PATH="${{env.prefix_path}}/lib/cmake"
-          -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib"
           -DBUILD_SHARED_LIBS=ON
           -DBUILD_STATIC_LIBS=OFF
           -DFEATURE_assistant=OFF
