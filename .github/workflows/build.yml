@@ -346,7 +346,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/cmake-${{env.cmake_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --parallel=${{env.make_jobs}}
 
@@ -379,7 +379,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/gmp-${{env.gmp_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared -enable-cxx --without-readline
 
@@ -416,7 +416,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/nasm-${{env.nasm_version}}
         run: ./configure --prefix="${{env.prefix_path}}"
 
@@ -448,7 +448,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/yasm-${{env.yasm_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
 
@@ -480,7 +480,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/zlib-${{env.zlib_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib"
 
@@ -512,7 +512,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/openssl-${{env.openssl_version}}
         run: perl Configure shared zlib no-capieng no-tests --prefix=${{env.prefix_path}} --libdir=lib --openssldir=${{env.prefix_path}}/ssl --${{env.buildtype}} --with-zlib-include=${{env.prefix_path}}/include
 
@@ -544,7 +544,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libpng-${{env.libpng_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib"
 
@@ -583,7 +583,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libjpeg-turbo-${{env.libjpeg_turbo_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G Ninja -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_SHARED_LIBS=ON -DENABLE_SHARED=ON
 
@@ -615,7 +615,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/pcre2-${{env.pcre2_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_SUPPORT_UNICODE=ON -DPCRE2_BUILD_PCRE2_8=ON -DPCRE2_BUILD_PCRE2_16=ON -DPCRE2_BUILD_PCRE2_32=ON -DPCRE2_SUPPORT_UNICODE=ON -DPCRE2_BUILD_TESTS=OFF
 
@@ -652,7 +652,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/bzip2-${{env.bzip2_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib"
 
@@ -684,7 +684,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/xz-${{env.xz_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc --disable-nls --disable-silent-rules
 
@@ -716,7 +716,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/brotli-${{env.brotli_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build_dir -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_TESTING=OFF
 
@@ -748,7 +748,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/zstd-${{env.zstd_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S build/cmake -B build_dir -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DZSTD_BUILD_STATIC=OFF -DZSTD_BUILD_SHARED=ON -DZSTD_BUILD_PROGRAMS=OFF
 
@@ -785,7 +785,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libiconv-${{env.libiconv_version}}
         run: make -j ${{env.make_jobs}}
 
@@ -812,7 +812,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libunistring-${{env.libunistring_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-relocatable
 
@@ -849,7 +849,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/gettext-${{env.gettext_version}}
         run: make -j ${{env.make_jobs}}
 
@@ -886,7 +886,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/flex-${{env.flex_version}}
         run: make -j ${{env.make_jobs}}
 
@@ -913,7 +913,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libtasn1-${{env.libtasn1_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc
 
@@ -945,7 +945,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libidn2-${{env.libidn2_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc
 
@@ -977,7 +977,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/nettle-${{env.nettle_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-documentation
 
@@ -1009,7 +1009,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/gnutls-${{env.gnutls_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-silent-rules --disable-nls --enable-rpath --disable-doc --disable-tests --without-p11-kit
 
@@ -1041,7 +1041,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/icu/source
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-${{env.buildtype}} --disable-samples --disable-tests --with-library-bits=64 --enable-rpath
 
@@ -1078,7 +1078,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/pixman-${{env.pixman_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dgtk=disabled -Dlibpng=enabled -Dtests=disabled build
 
@@ -1110,7 +1110,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/expat-${{env.expat_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DEXPAT_SHARED_LIBS=ON -DEXPAT_BUILD_DOCS=OFF -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_FUZZERS=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_BUILD_TOOLS=OFF -DEXPAT_BUILD_PKGCONFIG=ON
 
@@ -1147,7 +1147,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/boost_${{env.boost_version_underscore}}
         run: ./b2 -a -q -j 4 -d1 --ignore-site-config --stagedir="stage" --layout="tagged" --without-mpi --without-python --prefix="${{env.prefix_path}}" --exec-prefix="${{env.prefix_path}}/bin" --libdir="${{env.prefix_path}}/lib" --includedir="${{env.prefix_path}}/include" link=shared runtime-link=shared threading=multi variant=${{env.buildtype}} install
 
@@ -1176,7 +1176,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libxml2-${{env.libxml2_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_SHARED_LIBS=ON -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_ZLIB=ON
 
@@ -1208,7 +1208,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/nghttp2-${{env.nghttp2_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DENABLE_SHARED_LIB=ON
 
@@ -1240,7 +1240,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libffi-${{env.libffi_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-docs
 
@@ -1277,7 +1277,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libpsl-${{env.libpsl_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload build
 
@@ -1309,7 +1309,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/orc-${{env.orc_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload build
 
@@ -1369,7 +1369,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/glib-${{env.glib_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig -Ddtrace=false -Dtests=false build
 
@@ -1401,7 +1401,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/gdk-pixbuf-${{env.gdk_pixbuf_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=false -Dinstalled_tests=false -Dgtk_doc=false -Ddocs=false -Dman=false -Dintrospection=disabled -Drelocatable=true -Dpng=enabled -Djpeg=enabled -Dtiff=disabled build
 
@@ -1433,7 +1433,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libsoup-${{env.libsoup_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=false -Dvapi=disabled -Dgssapi=disabled -Dintrospection=disabled -Dsysprof=disabled -Dtls_check=false build
 
@@ -1470,7 +1470,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/glib-networking-${{env.glib_networking_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dgnutls=enabled -Dopenssl=enabled -Dgnome_proxy=disabled -Dlibproxy=disabled build
 
@@ -1502,7 +1502,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/freetype-${{env.freetype_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_SHARED_LIBS=ON
 
@@ -1539,7 +1539,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/harfbuzz-${{env.harfbuzz_version}}
         run: CFLAGS="-I${{env.prefix_path}}/include" meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix="${{env.prefix_path}}" --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=disabled -Ddocs=disabled -Dfreetype=enabled -Dicu=enabled build
 
@@ -1571,7 +1571,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/freetype-${{env.freetype_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_SHARED_LIBS=ON
 
@@ -1610,7 +1610,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libusb-${{env.libusb_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
 
@@ -1643,7 +1643,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libogg-${{env.libogg_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-silent-rules
 
@@ -1676,7 +1676,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libvorbis-${{env.libvorbis_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-silent-rules --disable-oggtest --disable-docs --disable-examples
 
@@ -1708,7 +1708,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/flac-${{env.flac_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_SHARED_LIBS=ON -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DINSTALL_MANPAGES=OFF -DBUILD_TESTING=OFF -DBUILD_PROGRAMS=OFF
 
@@ -1740,7 +1740,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/wavpack-${{env.wavpack_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -DWAVPACK_BUILD_DOCS=OFF -DWAVPACK_BUILD_PROGRAMS=OFF -DWAVPACK_ENABLE_ASM=OFF -DWAVPACK_ENABLE_LEGACY=OFF -DWAVPACK_BUILD_WINAMP_PLUGIN=OFF -DWAVPACK_BUILD_COOLEDIT_PLUGIN=OFF
 
@@ -1777,7 +1777,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/opus-${{env.opus_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_SHARED_LIBS=ON
 
@@ -1809,7 +1809,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include -I${{env.prefix_path}}/include/opus
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/opusfile-${{env.opusfile_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc --disable-examples --disable-http || true
 
@@ -1846,7 +1846,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/speex-Speex-${{env.speex_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
@@ -1883,7 +1883,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/mpg123-${{env.mpg123_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S ports/cmake -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_SHARED_LIBS=ON -DBUILD_PROGRAMS=OFF -DBUILD_LIBOUT123=OFF
         #run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking
@@ -1921,7 +1921,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/lame-${{env.lame_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-frontend --disable-gtktest
 
@@ -1958,7 +1958,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/twolame-${{env.twolame_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
@@ -1995,7 +1995,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/musepack_src_r${{env.musepack_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DSHARED=ON
 
@@ -2037,7 +2037,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doxygen-doc --disable-doxygen-html --disable-examples --disable-tests --disable-openmpt123 --without-mpg123 --disable-dependency-tracking --disable-silent-rules
 
@@ -2069,7 +2069,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/game-music-emu-${{env.libgme_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib"
 
@@ -2108,7 +2108,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/faad2-${{env.faad2_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
@@ -2145,7 +2145,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/faac-${{env.faac_version_underscore}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
@@ -2177,7 +2177,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/fdk-aac-${{env.fdk_aac_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DBUILD_PROGRAMS=OFF
 
@@ -2209,7 +2209,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/taglib-${{env.taglib_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_SHARED_LIBS=ON
 
@@ -2251,7 +2251,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libbs2b-${{env.libbs2b_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
@@ -2283,7 +2283,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libebur128-${{env.libebur128_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON
 
@@ -2319,7 +2319,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/fftw-${{env.fftw_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --enable-sse2 --enable-avx --enable-avx2 --enable-avx512 --enable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
 
@@ -2331,7 +2331,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/fftw-${{env.fftw_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --disable-sse2 --disable-avx --disable-avx2 --disable-avx512 --disable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
 
@@ -2363,7 +2363,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/ffmpeg-${{env.ffmpeg_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-debug --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-libcdio --enable-gpl --enable-version3 --enable-gnutls --enable-libvorbis --enable-libopus --disable-libspeex --enable-libmp3lame
 
@@ -2395,7 +2395,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/chromaprint-${{env.chromaprint_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DFFTW3_DIR=${{env.prefix_path}}
 
@@ -2427,7 +2427,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libcdio-${{env.libcdio_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-rpath --disable-silent-rules --without-cd-drive --without-cd-info --without-cd-read --without-cdda-player --without-iso-info --without-iso-read --enable-rock
 
@@ -2466,7 +2466,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/gstreamer-${{env.gstreamer_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dexamples=disabled -Dtests=disabled -Dbenchmarks=disabled -Ddoc=disabled build
 
@@ -2503,7 +2503,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include -I${{env.prefix_path}}/include/opus
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/gst-plugins-base-${{env.gstreamer_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dexamples=disabled -Dtests=disabled -Dtools=enabled -Ddoc=disabled -Dorc=enabled -Dadder=enabled -Dapp=enabled -Daudioconvert=enabled -Daudiomixer=enabled -Daudiorate=enabled -Daudioresample=enabled -Daudiotestsrc=enabled -Dcompositor=disabled -Dencoding=disabled -Dgio=enabled -Dgio-typefinder=enabled -Doverlaycomposition=disabled -Dpbtypes=enabled -Dplayback=enabled -Drawparse=disabled -Dsubparse=disabled -Dtcp=enabled -Dtypefind=enabled -Dvideoconvertscale=disabled -Dvideorate=disabled -Dvideotestsrc=disabled -Dvolume=enabled -Dalsa=disabled -Dcdparanoia=disabled -Dlibvisual=disabled -Dogg=enabled -Dopus=enabled -Dpango=disabled -Dtheora=disabled -Dtremor=disabled -Dvorbis=enabled -Dx11=disabled -Dxshm=disabled -Dxvideo=disabled -Dxi=disabled -Dgl=disabled -Dgl-graphene=disabled -Dgl-jpeg=disabled -Dgl-png=disabled build
 
@@ -2540,7 +2540,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/gst-plugins-good-${{env.gstreamer_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dexamples=disabled -Dtests=disabled -Ddoc=disabled -Dorc=enabled -Dalpha=disabled -Dapetag=enabled -Daudiofx=enabled -Daudioparsers=enabled -Dauparse=disabled -Dautodetect=enabled -Davi=disabled -Dcutter=disabled -Ddebugutils=disabled -Ddeinterlace=disabled -Ddtmf=disabled -Deffectv=disabled -Dequalizer=enabled -Dflv=disabled -Dflx=disabled -Dgoom=disabled -Dgoom2k1=disabled -Dicydemux=enabled -Did3demux=enabled -Dimagefreeze=disabled -Dinterleave=disabled -Disomp4=enabled -Dlaw=disabled -Dlevel=disabled -Dmatroska=disabled -Dmonoscope=disabled -Dmultifile=disabled -Dmultipart=disabled -Dreplaygain=enabled -Drtp=enabled -Drtpmanager=disabled -Drtsp=enabled -Dshapewipe=disabled -Dsmpte=disabled -Dspectrum=enabled -Dudp=enabled -Dvideobox=disabled -Dvideocrop=disabled -Dvideofilter=disabled -Dvideomixer=disabled -Dwavenc=enabled -Dwavparse=enabled -Dxingmux=enabled -Dy4m=disabled -Daalib=disabled -Dbz2=disabled -Dcairo=disabled -Ddirectsound=enabled -Ddv=disabled -Ddv1394=disabled -Dflac=enabled -Dgdk-pixbuf=disabled -Dgtk3=disabled -Djack=disabled -Djpeg=disabled -Dlame=enabled -Dlibcaca=disabled -Dmpg123=enabled -Doss=disabled -Doss4=disabled -Dosxaudio=enabled -Dosxvideo=disabled -Dpng=disabled -Dpulse=disabled -Dqt5=disabled -Dshout2=disabled -Dsoup=enabled -Dspeex=enabled -Dtaglib=enabled -Dtwolame=enabled -Dvpx=disabled -Dwaveform=enabled -Dwavpack=enabled -Dximagesrc=disabled -Dv4l2=disabled -Dv4l2-libv4l2=disabled -Dv4l2-gudev=disabled -Dhls-crypto=openssl build
 
@@ -2572,7 +2572,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include -I${{env.prefix_path}}/include/opus
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/gst-plugins-bad-${{env.gstreamer_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dexamples=disabled -Dtests=disabled -Dexamples=disabled -Dgpl=enabled -Dorc=enabled -Daccurip=disabled -Dadpcmdec=disabled -Dadpcmenc=disabled -Daiff=enabled -Dasfmux=enabled -Daudiobuffersplit=disabled -Daudiofxbad=disabled -Daudiolatency=disabled -Daudiomixmatrix=disabled -Daudiovisualizers=disabled -Dautoconvert=disabled -Dbayer=disabled -Dcamerabin2=disabled -Dcodecalpha=disabled -Dcodectimestamper=disabled -Dcoloreffects=disabled -Ddebugutils=disabled -Ddvbsubenc=disabled -Ddvbsuboverlay=disabled -Ddvdspu=disabled -Dfaceoverlay=disabled -Dfestival=disabled -Dfieldanalysis=disabled -Dfreeverb=disabled -Dfrei0r=disabled -Dgaudieffects=disabled -Dgdp=disabled -Dgeometrictransform=disabled -Did3tag=enabled -Dinter=disabled -Dinterlace=disabled -Divfparse=disabled -Divtc=disabled -Djp2kdecimator=disabled -Djpegformat=disabled -Dlibrfb=disabled -Dmidi=disabled -Dmpegdemux=disabled -Dmpegpsmux=disabled -Dmpegtsdemux=disabled -Dmpegtsmux=disabled -Dmxf=disabled -Dnetsim=disabled -Donvif=disabled -Dpcapparse=disabled -Dpnm=disabled -Dproxy=disabled -Dqroverlay=disabled -Dqsv=disabled -Drawparse=disabled -Dremovesilence=enabled -Drist=disabled -Drtmp2=disabled -Drtp=disabled -Dsdp=disabled -Dsegmentclip=disabled -Dsiren=disabled -Dsmooth=disabled -Dspeed=disabled -Dsubenc=disabled -Dswitchbin=disabled -Dtimecode=disabled -Dvideofilters=disabled -Dvideoframe_audiolevel=disabled -Dvideoparsers=disabled -Dvideosignal=disabled -Dvmnc=disabled -Dy4m=disabled -Dopencv=disabled -Dwayland=disabled -Dx11=disabled -Daes=enabled -Daom=disabled -Davtp=disabled -Damfcodec=disabled -Dandroidmedia=disabled -Dapplemedia=disabled -Dasio=disabled -Dassrender=disabled -Dbluez=disabled -Dbs2b=enabled -Dbz2=disabled -Dchromaprint=enabled -Dclosedcaption=disabled -Dcolormanagement=disabled -Dcurl=disabled -Dcurl-ssh2=disabled -Dd3dvideosink=disabled -Dd3d11=disabled -Ddash=enabled -Ddc1394=disabled -Ddecklink=disabled -Ddirectfb=disabled -Ddirectsound=disabled -Ddirectshow=disabled -Ddtls=disabled -Ddts=disabled -Ddvb=disabled -Dfaac=enabled -Dfaad=enabled -Dfbdev=disabled -Dfdkaac=enabled -Dflite=disabled -Dfluidsynth=disabled -Dgl=disabled -Dgme=enabled -Dgs=disabled -Dgsm=disabled -Dgtk3=disabled -Dipcpipeline=disabled -Diqa=disabled -Dkate=disabled -Dkms=disabled -Dladspa=disabled -Dldac=disabled -Dlibde265=disabled -Dopenaptx=disabled -Dlv2=disabled -Dmediafoundation=disabled -Dmicrodns=disabled -Dmodplug=disabled -Dmpeg2enc=disabled -Dmplex=disabled -Dmsdk=disabled -Dmusepack=enabled -Dneon=disabled -Dnvcodec=disabled -Donnx=disabled -Dopenal=disabled -Dopenexr=disabled -Dopenh264=disabled -Dopenjpeg=disabled -Dopenmpt=enabled -Dopenni2=disabled -Dopensles=disabled -Dopus=enabled -Dresindvd=disabled -Drsvg=disabled -Drtmp=disabled -Dsbc=disabled -Dsctp=disabled -Dshm=disabled -Dsmoothstreaming=disabled -Dsndfile=disabled -Dsoundtouch=disabled -Dspandsp=disabled -Dsrt=disabled -Dsrtp=disabled -Dsvthevcenc=disabled -Dteletext=disabled -Dtinyalsa=disabled -Dtranscode=disabled -Dttml=disabled -Duvch264=disabled -Dva=disabled -Dvoaacenc=disabled -Dvoamrwbenc=disabled -Dvulkan=disabled -Dwasapi=disabled -Dwasapi2=disabled -Dwebp=disabled -Dwebrtc=disabled -Dwebrtcdsp=disabled -Dwildmidi=disabled -Dwic=disabled -Dwin32ipc=disabled -Dwinks=disabled -Dwinscreencap=disabled -Dx265=disabled -Dzbar=disabled -Dzxing=disabled -Dwpe=disabled -Dmagicleap=disabled -Dv4l2codecs=disabled -Disac=disabled -Dhls=enabled build
 
@@ -2604,7 +2604,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/gst-plugins-ugly-${{env.gstreamer_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=disabled -Ddoc=disabled -Dgpl=enabled -Dorc=enabled -Dasfdemux=enabled -Ddvdlpcmdec=disabled -Ddvdsub=disabled -Drealmedia=disabled -Da52dec=disabled -Damrnb=disabled -Damrwbdec=disabled -Dcdio=enabled -Ddvdread=disabled -Dmpeg2dec=disabled -Dsidplay=disabled -Dx264=disabled build
 
@@ -2636,7 +2636,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/gst-libav-${{env.gstreamer_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=disabled -Ddoc=disabled build
 
@@ -2668,7 +2668,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libplist-${{env.libplist_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
 
@@ -2700,7 +2700,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libmtp-${{env.libmtp_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-rpath --disable-silent-rules
 
@@ -2727,7 +2727,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/strawberry-libgpod
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DBUILD_SHARED_LIBS=ON -DENABLE_GDKPIXBUF=ON
 
@@ -2862,7 +2862,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/qttools-everywhere-src-${{env.qt_version}}
         run: >
           cmake -S . -B build
@@ -2919,7 +2919,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/abseil-cpp-${{env.abseil_cpp_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DCMAKE_CXX_STANDARD=17 -DBUILD_SHARED_LIBS=ON
 
@@ -2951,7 +2951,7 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
-          LDFLAGS: -L${{env.prefix_path}}/lib
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/protobuf-${{env.protobuf_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_INSTALL_NAME_DIR="${{env.prefix_path}}/lib" -DCMAKE_CXX_STANDARD=17 -DBUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_SHARED_LIBS=ON -Dprotobuf_BUILD_TESTS=OFF -Dprotobuf_BUILD_EXAMPLES=OFF -Dprotobuf_BUILD_PROTOC_BINARIES=ON -Dprotobuf_WITH_ZLIB=ON -Dprotobuf_ABSL_PROVIDER="package"
 
