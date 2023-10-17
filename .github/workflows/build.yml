@@ -686,7 +686,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/xz-${{env.xz_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc --disable-nls --disable-silent-rules
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-doc --disable-nls --disable-silent-rules
 
       - name: Build xz
         shell: bash
@@ -776,7 +776,7 @@ jobs:
       - name: Configure libiconv
         shell: bash
         working-directory: build/libiconv-${{env.libiconv_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-nls --disable-silent-rules
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-nls --disable-silent-rules
 
       - name: Build libiconv
         shell: bash
@@ -840,7 +840,7 @@ jobs:
       - name: Configure gettext
         shell: bash
         working-directory: build/gettext-${{env.gettext_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-libxml2-prefix --disable-java
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --without-libxml2-prefix --disable-java
 
       - name: Build gettext
         shell: bash
@@ -947,7 +947,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libidn2-${{env.libidn2_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-doc
 
       - name: Build libidn2
         shell: bash
@@ -1923,7 +1923,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/lame-${{env.lame_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-frontend --disable-gtktest
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-dependency-tracking --disable-frontend --disable-gtktest
 
       - name: Build lame
         shell: bash
@@ -2365,7 +2365,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/ffmpeg-${{env.ffmpeg_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-debug --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-libcdio --enable-gpl --enable-version3 --enable-gnutls --enable-libvorbis --enable-libopus --disable-libspeex --enable-libmp3lame
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-debug --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-libcdio --enable-gpl --enable-version3 --enable-gnutls --enable-libvorbis --enable-libopus --disable-libspeex --enable-libmp3lame
 
       - name: Build ffmpeg
         shell: bash
@@ -2429,7 +2429,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libcdio-${{env.libcdio_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-rpath --disable-silent-rules --without-cd-drive --without-cd-info --without-cd-read --without-cdda-player --without-iso-info --without-iso-read --enable-rock
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-silent-rules --without-cd-drive --without-cd-info --without-cd-read --without-cdda-player --without-iso-info --without-iso-read --enable-rock
 
       - name: Build libcdio
         shell: bash
@@ -2702,7 +2702,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libmtp-${{env.libmtp_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-rpath --disable-silent-rules
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-silent-rules
 
       - name: Build libmtp
         shell: bash
