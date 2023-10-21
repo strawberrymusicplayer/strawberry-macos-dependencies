@@ -134,6 +134,8 @@ env:
 
   qt_version: '6.6.0'
 
+  kdsingleapplication_version: '1.0.0'
+
   abseil_cpp_version: '20230802.1'
 
   protobuf_version: '24.4'
@@ -2892,6 +2894,43 @@ jobs:
       - name: Install qttools
         shell: bash
         working-directory: build/qttools-everywhere-src-${{env.qt_version}}/build
+        run: cmake --install .
+
+
+      - name: Download KDSingleApplication
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/KDAB/KDSingleApplication/releases/download/v${{env.kdsingleapplication_version}}/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz
+
+      - name: Extract KDSingleApplication
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz
+
+      - name: Patch KDSingleApplication
+        shell: bash
+        working-directory: build/kdsingleapplication-${{env.kdsingleapplication_version}}
+        run: patch -p1 < ../../patches/kdsingleapplication.patch
+
+      - name: Configure KDSingleApplication
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/kdsingleapplication-${{env.kdsingleapplication_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DKDSingleApplication_QT6=ON
+
+      - name: Build KDSingleApplication
+        shell: bash
+        working-directory: build/kdsingleapplication-${{env.kdsingleapplication_version}}/build
+        run: cmake --build .
+
+      - name: Install KDSingleApplication
+        shell: bash
+        working-directory: build/kdsingleapplication-${{env.kdsingleapplication_version}}/build
         run: cmake --install .
 
 
