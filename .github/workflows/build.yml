@@ -161,7 +161,7 @@ jobs:
 
     strategy:
       matrix:
-       runner: [ macos-11 ]
+       runner: [ macos-13 ]
        buildtype: [ release, debug ]
 
     runs-on: ${{ matrix.runner }}
@@ -217,7 +217,7 @@ jobs:
         run: brew list
 
       - name: Remove installed brew packages
-        if: matrix.runner == 'macos-11'
+        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
         shell: bash
         run: brew uninstall $(brew list)
 
@@ -1155,7 +1155,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11'
+        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -1589,7 +1589,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11'
+        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2445,7 +2445,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11'
+        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2745,7 +2745,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11'
+        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2935,7 +2935,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11'
+        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -3022,7 +3022,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11'
+        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
