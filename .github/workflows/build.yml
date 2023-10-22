@@ -161,7 +161,7 @@ jobs:
 
     strategy:
       matrix:
-       runner: [ macos-11, macos-arm64 ]
+       runner: [ macos-11 ]
        buildtype: [ release, debug ]
 
     runs-on: ${{ matrix.runner }}
