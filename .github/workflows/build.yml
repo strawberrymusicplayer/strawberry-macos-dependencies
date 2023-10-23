@@ -164,7 +164,7 @@ jobs:
       - name: Set runner
         id: set_runner
         shell: bash
-        run: echo "runner=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-private" && echo "macos-arm64" || echo "macos-11")" >> $GITHUB_OUTPUT
+        run: echo "runner=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "macos-arm64" || echo "macos-11")" >> $GITHUB_OUTPUT
 
   build:
     name: Build
