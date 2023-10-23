@@ -154,17 +154,30 @@ env:
 
 jobs:
 
-  build-macos-dependencies:
-    name: Build macOS Dependencies
+  set-runner:
+    name: Set runner
+    if: (!contains(github.event.head_commit.message, 'skip ci'))
+    runs-on: ubuntu-latest
+    outputs:
+      runner: ${{steps.set_runner.outputs.runner}}
+    steps:
+      - name: Set runner
+        id: set_runner
+        shell: bash
+        run: echo "runner=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-private" && echo "macos-arm64" || echo "macos-11")" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build
+    needs:
+      - set-runner
 
     if: (!contains(github.event.head_commit.message, 'skip ci'))
 
     strategy:
       matrix:
-       runner: [ macos-11 ]
        buildtype: [ release, debug ]
 
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{needs.set-runner.outputs.runner}}
 
     steps:
 
@@ -3043,7 +3056,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release'
     needs:
-      - build-macos-dependencies
+      - build
     steps:
 
       - name: Install packages
