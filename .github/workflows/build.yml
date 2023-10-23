@@ -2547,11 +2547,6 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/gst-plugins-good-${{env.gstreamer_version}}.tar.xz
 
-      - name: Patch gst-plugins-good
-        shell: bash
-        working-directory: build/gst-plugins-good-${{env.gstreamer_version}}
-        run: patch -p1 < ../../patches/gstsouploader.patch
-
       - name: Configure gst-plugins-good
         shell: bash
         env:
