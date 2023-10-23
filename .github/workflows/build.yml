@@ -181,6 +181,10 @@ jobs:
 
     steps:
 
+      - name: Set runner
+        shell: bash
+        run: echo "runner=${{needs.set-runner.outputs.runner}}" >> $GITHUB_ENV
+
       - name: Set arch
         shell: bash
         run: echo "arch=$(uname -m)" >> $GITHUB_ENV
@@ -221,7 +225,7 @@ jobs:
           echo "gdk_pixbuf_version_short=$(echo ${{env.gdk_pixbuf_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
 
       - name: Update PATH
-        if: matrix.runner == 'macos-arm64'
+        if: env.runner == 'macos-arm64'
         shell: bash
         run: echo "/opt/homebrew/bin" >> $GITHUB_PATH
 
@@ -230,7 +234,7 @@ jobs:
         run: brew list
 
       - name: Remove installed brew packages
-        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
         shell: bash
         run: brew uninstall $(brew list)
 
@@ -293,7 +297,7 @@ jobs:
         run: pip3 install meson ninja
 
       - name: Add python to PATH
-        if: matrix.runner == 'macos-arm64'
+        if: env.runner == 'macos-arm64'
         shell: bash
         run: echo "/Users/jonas/Library/Python/3.9/bin" >> $GITHUB_PATH
 
@@ -1168,7 +1172,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -1602,7 +1606,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2458,7 +2462,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2758,7 +2762,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2948,7 +2952,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -3035,7 +3039,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: matrix.runner == 'macos-11' || matrix.runner == 'macos-12' || matrix.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
         shell: bash
         working-directory: build
         run: rm -rf *
