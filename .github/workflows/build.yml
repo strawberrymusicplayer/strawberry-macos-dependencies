@@ -627,6 +627,11 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/pcre2-${{env.pcre2_version}}.tar.bz2
 
+      - name: Patch pcre2
+        shell: bash
+        working-directory: build/pcre2-${{env.pcre2_version}}
+        run: patch -p1 < ../../patches/pcre2-cmake.patch
+
       - name: Configure pcre2
         shell: bash
         env:
