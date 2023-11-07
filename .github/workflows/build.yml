@@ -106,7 +106,7 @@ env:
 
   libgme_version: '0.6.3'
 
-  faad2_version: '2.10.1'
+  faad2_version: '2.11.0'
 
   faac_version: '1.30'
 
@@ -2120,11 +2120,6 @@ jobs:
           mkdir faad2-${{env.faad2_version}}
           tar -xvf ../downloads/faad2-${{env.faad2_version}}.tar.gz --strip-components=1 -C faad2-${{env.faad2_version}}
 
-      - name: Bootstrap faad2
-        shell: bash
-        working-directory: build/faad2-${{env.faad2_version}}
-        run: ./bootstrap
-
       - name: Configure faad2
         shell: bash
         env:
@@ -2134,17 +2129,17 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/faad2-${{env.faad2_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
 
       - name: Build faad2
         shell: bash
-        working-directory: build/faad2-${{env.faad2_version}}
-        run: make -j ${{env.make_jobs}}
+        working-directory: build/faad2-${{env.faad2_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install faad2
         shell: bash
-        working-directory: build/faad2-${{env.faad2_version}}
-        run: make install
+        working-directory: build/faad2-${{env.faad2_version}}/build
+        run: cmake --install .
 
 
       - name: Download faac
