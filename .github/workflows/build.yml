@@ -294,7 +294,7 @@ jobs:
 
       - name: Install python dependencies
         shell: bash
-        run: pip3 install meson ninja
+        run: pip3 install meson ninja setuptools
 
       - name: Add python to PATH
         if: env.runner == 'macos-arm64'
