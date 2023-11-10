@@ -134,7 +134,7 @@ function update_package() {
       package_version_latest=$(curl ${curl_options} 'https://github.com/pkgconf/pkgconf/tags' | sed -n 's#.*releases/tag/\([^"]*\).*#\1#p' | sed 's/^pkgconf\-//g' | sort -V | tail -1)
       ;;
     "cmake")
-      package_version_latest=$(curl ${curl_options} 'https://github.com/Kitware/CMake/releases' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | sed 's/^v//g' | sort -V | tail -1)
+      package_version_latest=$(curl ${curl_options} 'https://github.com/Kitware/CMake/releases' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | grep -v 'rc' | sed 's/^v//g' | sort -V | tail -1)
       ;;
     "gmp")
       package_version_latest=$(curl ${curl_options} 'https://gmplib.org/' | sed -n 's,.*gmp-\([0-9][^>]*\)\.tar.*,\1,p' | sort -V | tail -1)
