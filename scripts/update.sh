@@ -324,7 +324,7 @@ function update_package() {
       package_version_latest=$(curl ${curl_options} "https://download.qt.io/official_releases/qt/${qt_major_version}/" | sed -n 's,.*href="\([0-9]*\.[0-9]*\.[^/]*\)/".*,\1,p' | sort -V | tail -1)
       ;;
     "kdsingleapplication")
-      package_version_latest=$(wget -q -O- 'https://github.com/KDAB/KDSingleApplication/releases/latest' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | grep -v '^\*name$' | sed 's/^v//g' | head -1)
+      package_version_latest=$(curl ${curl_options} 'https://github.com/KDAB/KDSingleApplication/releases/latest' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | grep -v '^\*name$' | sed 's/^v//g' | head -1)
       ;;
     "abseil_cpp")
       package_version_latest=$(curl ${curl_options} 'https://github.com/abseil/abseil-cpp/releases/latest' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | grep -v '^\*name$' | head -1)
@@ -373,7 +373,7 @@ function update_package() {
 
 }
 
-cmds="dirname cat head tail cut sort tr grep sed wget curl jq git gh"
+cmds="dirname cat head tail cut sort tr grep sed curl jq git gh"
 cmds_missing=
 for cmd in ${cmds}; do
   which "${cmd}" >/dev/null 2>&1
