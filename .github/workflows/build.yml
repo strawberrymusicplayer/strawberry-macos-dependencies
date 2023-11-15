@@ -44,7 +44,7 @@ env:
 
   nettle_version: '3.9.1'
 
-  gnutls_version: '3.8.1'
+  gnutls_version: '3.8.2'
 
   icu4c_version: '74.1'
 
