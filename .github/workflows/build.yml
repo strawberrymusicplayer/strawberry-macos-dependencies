@@ -260,7 +260,7 @@ jobs:
 
       - name: brew install
         shell: bash
-        run: brew install autoconf automake bison libtool git gh
+        run: brew install autoconf automake bison libtool gh
 
       - name: brew list
         shell: bash
