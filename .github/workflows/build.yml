@@ -132,7 +132,7 @@ env:
 
   libcdio_version: '2.1.0'
 
-  qt_version: '6.6.0'
+  qt_version: '6.6.1'
 
   kdsingleapplication_version: '1.0.0'
 
@@ -2785,16 +2785,6 @@ jobs:
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
-
-      - name: Patch qtbase macdeployqt extra so
-        shell: bash
-        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
-        run: patch -p1 < ../../patches/qtbase-macdeployqt-extra-so.patch
-
-      - name: Patch qtbase macdeployqt codesign
-        shell: bash
-        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
-        run: patch -p1 < ../../patches/qtbase-macdeployqt-codesign.patch
 
       - name: Configure qtbase
         shell: bash
