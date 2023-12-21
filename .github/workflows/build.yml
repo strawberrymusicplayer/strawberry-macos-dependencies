@@ -110,7 +110,7 @@ env:
 
   faac_version: '1.30'
 
-  fdk_aac_version: '2.0.2'
+  fdk_aac_version: '2.0.3'
 
   taglib_version: '1.13.1'
 
