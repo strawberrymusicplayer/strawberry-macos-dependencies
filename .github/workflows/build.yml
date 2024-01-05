@@ -1098,11 +1098,6 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/pixman-${{env.pixman_version}}.tar.gz
 
-      - name: Patch pixman
-        shell: bash
-        working-directory: build/pixman-${{env.pixman_version}}
-        run: patch -p1 < ../../patches/pixman.patch
-
       - name: Configure pixman
         shell: bash
         env:
