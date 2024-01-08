@@ -2786,6 +2786,16 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
 
+      - name: Patch qtbase qcocoaaccessibilityelement 1
+        shell: bash
+        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
+        run: patch -p1 < ../../patches/qtbase-qcocoaaccessibilityelement-1.patch
+
+      - name: Patch qtbase qcocoaaccessibilityelement 2
+        shell: bash
+        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
+        run: patch -p1 < ../../patches/qtbase-qcocoaaccessibilityelement-2.patch
+
       - name: Configure qtbase
         shell: bash
         env:
