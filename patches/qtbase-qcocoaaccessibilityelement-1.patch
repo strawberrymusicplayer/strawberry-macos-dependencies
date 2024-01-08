@@ -1,0 +1,79 @@
+From 7e28513c2815da4312a90f88fce5c31e67799a11 Mon Sep 17 00:00:00 2001
+From: Volker Hilsheimer <volker.hilsheimer@qt.io>
+Date: Fri, 8 Dec 2023 16:53:51 +0100
+Subject: QComboBox: inform accessibility about model change before selecting
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+QComboBox implicitly selects the first item that gets inserted into the
+model. This happens in response to the model's rowInserted signal, at
+which point the item view might not have handled the rowInserted signal
+yet. Because of that, the view couldn't update the accessibility bridge,
+so informing accessibility about a row being selected that doens't exist
+in the bridge's representation of the table yet will result in data
+being out of sync, and depending on the bridge implementation trigger
+asserts.
+
+Fix this by explicitly updating the accessibility bridge before
+implicitly selecting the first row.
+
+Fixes: QTBUG-119526
+Fixes: QTBUG-118585
+Pick-to: 6.5
+Change-Id: I2830c00751b3f18feb5d9252b23823c80229fed1
+Reviewed-by: Tor Arne Vestbø <tor.arne.vestbo@qt.io>
+Reviewed-by: Jan Arve Sæther <jan-arve.saether@qt.io>
+(cherry picked from commit ecef7046245f3adee9366d3543e4ed2a09f65735)
+Reviewed-by: Volker Hilsheimer <volker.hilsheimer@qt.io>
+---
+ src/plugins/platforms/cocoa/qcocoaaccessibilityelement.mm | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+(limited to 'src/plugins/platforms/cocoa/qcocoaaccessibilityelement.mm')
+
+diff --git a/src/plugins/platforms/cocoa/qcocoaaccessibilityelement.mm b/src/plugins/platforms/cocoa/qcocoaaccessibilityelement.mm
+index f67a66a2d3..8472506d23 100644
+--- a/src/plugins/platforms/cocoa/qcocoaaccessibilityelement.mm
++++ b/src/plugins/platforms/cocoa/qcocoaaccessibilityelement.mm
+@@ -9,12 +9,15 @@
+ #include "qcocoawindow.h"
+ #include "qcocoascreen.h"
+ 
++#include <QtCore/qlogging.h>
+ #include <QtGui/private/qaccessiblecache_p.h>
+ #include <QtGui/private/qaccessiblebridgeutils_p.h>
+ #include <QtGui/qaccessible.h>
+ 
+ QT_USE_NAMESPACE
+ 
++Q_LOGGING_CATEGORY(lcAccessibilityTable, "qt.accessibility.table")
++
+ #if QT_CONFIG(accessibility)
+ 
+ /**
+@@ -131,6 +134,12 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
+                         auto *tableElement = [QMacAccessibilityElement elementWithInterface:table];
+                         Q_ASSERT(tableElement);
+                         Q_ASSERT(tableElement->rows);
++
++                        qCDebug(lcAccessibilityTable) << "Creating cell representation for"
++                                                      << m_rowIndex << m_columnIndex
++                                                      << "in table with"
++                                                      << tableElement->rows.count << "rows";
++
+                         Q_ASSERT(int(tableElement->rows.count) > m_rowIndex);
+                         auto *rowElement = tableElement->rows[m_rowIndex];
+                         if (!rowElement->columns) {
+@@ -273,6 +282,8 @@ static void convertLineOffset(QAccessibleTextInterface *text, int *line, int *of
+     if (QAccessibleInterface *iface = self.qtInterface) {
+         if (QAccessibleTableInterface *table = iface->tableInterface()) {
+             Q_ASSERT(!self.isManagedByParent);
++            qCDebug(lcAccessibilityTable) << "Updating table representation with"
++                                          << table->rowCount() << table->columnCount();
+             rows = [self populateTableArray:rows role:NSAccessibilityRowRole count:table->rowCount()];
+             columns = [self populateTableArray:columns role:NSAccessibilityColumnRole count:table->columnCount()];
+         }
+-- 
+cgit v1.2.3
+
