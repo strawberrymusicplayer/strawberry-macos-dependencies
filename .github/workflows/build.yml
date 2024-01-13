@@ -60,7 +60,7 @@ env:
 
   libffi_version: '3.4.4'
 
-  libpsl_version: '0.21.2'
+  libpsl_version: '0.21.5'
 
   orc_version: '0.4.34'
 
@@ -1291,11 +1291,6 @@ jobs:
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/libpsl-${{env.libpsl_version}}.tar.gz
-
-      - name: Patch libpsl
-        shell: bash
-        working-directory: build/libpsl-${{env.libpsl_version}}
-        run: patch -p1 < ../../patches/libpsl-time.patch
 
       - name: Configure libpsl
         shell: bash
