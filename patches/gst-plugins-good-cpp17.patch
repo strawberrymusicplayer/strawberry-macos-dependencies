@@ -1,0 +1,16 @@
+diff --git a/meson.build b/meson.build
+index 6419fde..e1e84f9 100644
+--- a/meson.build
++++ b/meson.build
+@@ -1,8 +1,9 @@
+-project('gst-plugins-good', 'c',
++project('gst-plugins-good', 'c', 'cpp',
+   version : '1.22.8',
+   meson_version : '>= 0.62',
+   default_options : [ 'warning_level=1',
+-                      'buildtype=debugoptimized' ])
++                      'buildtype=debugoptimized',
++                      'cpp_std=c++17' ])
+ 
+ gst_version = meson.project_version()
+ version_arr = gst_version.split('.')
