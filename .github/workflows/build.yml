@@ -112,6 +112,8 @@ env:
 
   fdk_aac_version: '2.0.3'
 
+  utfcpp_version: '4.0.5'
+
   taglib_version: '2.0'
 
   libbs2b_version: '3.1.0'
@@ -2206,6 +2208,38 @@ jobs:
       - name: Install fdk-aac
         shell: bash
         working-directory: build/fdk-aac-${{env.fdk_aac_version}}/build
+        run: cmake --install .
+
+
+      - name: Download utfcpp
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/nemtrif/utfcpp/archive/refs/tags/v${{env.utfcpp_version}}.tar.gz
+
+      - name: Extract utfcpp
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/v${{env.utfcpp_version}}.tar.gz
+
+      - name: Configure utfcpp
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/utfcpp-${{env.utfcpp_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
+
+      - name: Build utfcpp
+        shell: bash
+        working-directory: build/utfcpp-${{env.utfcpp_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install utfcpp
+        shell: bash
+        working-directory: build/utfcpp-${{env.utfcpp_version}}/build
         run: cmake --install .
 
 
