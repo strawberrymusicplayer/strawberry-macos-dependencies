@@ -1,16 +1,25 @@
-diff --git a/meson.build b/meson.build
-index 116f8ba..7415083 100644
---- a/meson.build
-+++ b/meson.build
-@@ -1,8 +1,9 @@
--project('gst-plugins-good', 'c',
-+project('gst-plugins-good', 'c', 'cpp',
-   version : '1.22.9',
-   meson_version : '>= 0.62',
-   default_options : [ 'warning_level=1',
--                      'buildtype=debugoptimized' ])
-+                      'buildtype=debugoptimized',
-+                      'cpp_std=c++17' ])
- 
- gst_version = meson.project_version()
- version_arr = gst_version.split('.')
+From ce72ae017800dcbd83c9d76498c5de278c1be1eb Mon Sep 17 00:00:00 2001
+From: Jonas Kvinge <jonas@jkvinge.net>
+Date: Thu, 25 Jan 2024 20:13:51 +0100
+Subject: [PATCH] meson: Set cpp_std to c++17 for TagLib
+
+TagLib uses C++17 as of version 2.0.
+---
+ subprojects/gst-plugins-good/ext/taglib/meson.build | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/subprojects/gst-plugins-good/ext/taglib/meson.build b/subprojects/gst-plugins-good/ext/taglib/meson.build
+index 7226aa3cf86..cbfcb379923 100644
+--- a/subprojects/gst-plugins-good/ext/taglib/meson.build
++++ b/subprojects/gst-plugins-good/ext/taglib/meson.build
+@@ -25,6 +25,7 @@ if taglib_dep.found() and add_languages('cpp', native: false, required: get_opti
+     dependencies : [gsttag_dep, taglib_dep],
+     install : true,
+     install_dir : plugins_install_dir,
++    override_options : ['cpp_std=c++17'],
+   )
+   plugins += [gsttaglib]
+ endif
+-- 
+GitLab
+
