@@ -2587,7 +2587,7 @@ jobs:
       - name: Patch gst-plugins-good
         shell: bash
         working-directory: build/gst-plugins-good-${{env.gstreamer_version}}
-        run: patch -p1 < ../../patches/gst-plugins-good-cpp17.patch
+        run: patch -p3 < ../../patches/gst-plugins-good-cpp17.patch
 
       - name: Configure gst-plugins-good
         shell: bash
@@ -2620,11 +2620,6 @@ jobs:
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz
-
-      - name: Patch gst-plugins-bad
-        shell: bash
-        working-directory: build/gst-plugins-bad-${{env.gstreamer_version}}
-        run: patch -p1 < ../../patches/gst-plugins-bad-cpp17.patch
 
       - name: Configure gst-plugins-bad
         shell: bash
