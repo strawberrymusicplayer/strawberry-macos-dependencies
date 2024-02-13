@@ -126,7 +126,7 @@ env:
 
   chromaprint_version: '1.5.1'
 
-  gstreamer_version: '1.22.9'
+  gstreamer_version: '1.22.10'
 
   libplist_version: '2.3.0'
 
@@ -2583,11 +2583,6 @@ jobs:
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/gst-plugins-good-${{env.gstreamer_version}}.tar.xz
-
-      - name: Patch gst-plugins-good
-        shell: bash
-        working-directory: build/gst-plugins-good-${{env.gstreamer_version}}
-        run: patch -p3 < ../../patches/gst-plugins-good-cpp17.patch
 
       - name: Configure gst-plugins-good
         shell: bash
