@@ -134,7 +134,7 @@ env:
 
   libcdio_version: '2.1.0'
 
-  qt_version: '6.6.1'
+  qt_version: '6.6.2'
 
   kdsingleapplication_version: '1.1.0'
 
@@ -2808,22 +2808,12 @@ jobs:
       - name: Download qtbase
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/qt/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
+        run: curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
 
       - name: Extract qtbase
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
-
-      - name: Patch qtbase qcocoaaccessibilityelement 1
-        shell: bash
-        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
-        run: patch -p1 < ../../patches/qtbase-qcocoaaccessibilityelement-1.patch
-
-      - name: Patch qtbase qcocoaaccessibilityelement 2
-        shell: bash
-        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
-        run: patch -p1 < ../../patches/qtbase-qcocoaaccessibilityelement-2.patch
 
       - name: Configure qtbase
         shell: bash
@@ -2899,7 +2889,7 @@ jobs:
       - name: Download qttools
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/qt/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz
+        run: curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz
 
       - name: Extract qttools
         shell: bash
