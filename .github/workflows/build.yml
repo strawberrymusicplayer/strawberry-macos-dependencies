@@ -2805,11 +2805,6 @@ jobs:
         run: rm -rf *
 
 
-      - name: Delete harfbuzz.pc
-        shell: bash
-        run: rm -f "${{env.prefix_path}}/lib/pkgconfig/harfbuzz.pc"
-
-
       - name: Download qtbase
         shell: bash
         working-directory: downloads
