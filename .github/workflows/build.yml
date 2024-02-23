@@ -3141,7 +3141,7 @@ jobs:
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release') && env.have_release != '1'
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: gh release create -d -F "${{env.release_notes_file}}" "${{needs.setup.outputs.release_tag}}" "strawberry-macos-${{env.arch}}-${{env.buildtype}}.tar.xz"
+        run: gh release create -d -F "${{env.release_notes_file}}" -t "Strawberry macOS Dependencies Release $GITHUB_RUN_ID" "${{needs.setup.outputs.release_tag}}" "strawberry-macos-${{env.arch}}-${{env.buildtype}}.tar.xz"
 
       - name: Update existing release
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release') && env.have_release == '1'
@@ -3169,14 +3169,13 @@ jobs:
         run: gh release edit --draft=false --latest "${{needs.setup.outputs.release_tag}}"
 
       - name: Delete old releases
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release'
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
           while [ "$(git tag | wc -l)" -ge "${{env.max_releases}}" ]; do
             oldest_tag=$(git tag | head -1)
-            gh release delete "$oldest_tag"
-            git tag -d "$oldest_tag"
-            git push --delete origin "$oldest_tag"
+            gh release delete "${oldest_tag}"
+            git tag -d "${oldest_tag}"
+            git push --delete origin "${oldest_tag}"
           done
 
