@@ -235,6 +235,7 @@ jobs:
           echo "gnutls_version_short=$(echo ${{env.gnutls_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           echo "libxml2_version_short=$(echo ${{env.libxml2_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           echo "gdk_pixbuf_version_short=$(echo ${{env.gdk_pixbuf_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
+          echo "expat_version_underscore=$(echo ${{env.expat_version}} | sed 's/\./_/g')" >> $GITHUB_ENV
 
       - name: Update PATH
         if: env.runner == 'macos-arm64'
@@ -1122,12 +1123,12 @@ jobs:
       - name: Download expat
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/expat/expat/${{env.expat_version}}/expat-${{env.expat_version}}.tar.bz2
+        run: https://github.com/libexpat/libexpat/releases/download/R_${{env.expat_version_underscore}}/expat-${{env.expat_version}}.tar.xz
 
       - name: Extract expat
         shell: bash
         working-directory: build
-        run: tar -xf ../downloads/expat-${{env.expat_version}}.tar.bz2
+        run: tar -xf ../downloads/expat-${{env.expat_version}}.tar.xz
 
       - name: Configure expat
         shell: bash
