@@ -1123,7 +1123,7 @@ jobs:
       - name: Download expat
         shell: bash
         working-directory: downloads
-        run: https://github.com/libexpat/libexpat/releases/download/R_${{env.expat_version_underscore}}/expat-${{env.expat_version}}.tar.xz
+        run: curl ${{env.curl_options}} https://github.com/libexpat/libexpat/releases/download/R_${{env.expat_version_underscore}}/expat-${{env.expat_version}}.tar.xz
 
       - name: Extract expat
         shell: bash
