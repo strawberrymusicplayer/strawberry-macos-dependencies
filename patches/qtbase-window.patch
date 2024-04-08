@@ -1,0 +1,150 @@
+From 5af35957ff65ef47993ee4cbfb7eeb5d1405a6c9 Mon Sep 17 00:00:00 2001
+From: =?utf8?q?Tor=20Arne=20Vestb=C3=B8?= <tor.arne.vestbo@qt.io>
+Date: Mon, 8 Apr 2024 17:19:10 +0200
+Subject: [PATCH] QWindow: Persist foreign winId to support destroy/create
+ cycles
+
+We used to set a private _q_foreignWinId property on QWindow when
+creating foreign windows, and this was the mechanism which we then
+passed the foreign winId to the platform plugin.
+
+With c585802e946d97e7d177ea334a162dc7bc286b84 this was removed,
+since we now were passing the winId through via explicit QPA
+APIs, and since 0c6911e5cde24c45d6f2c08b6e71064bdd1eccfa removed
+the ability to explicitly destroy() a foreign window.
+
+But when closing a QWindow, we destroy both the window itself,
+and all its children, including foreign windows. In this case
+we still want to support recreating the foreign window, for
+example when the parent window is shown again. To enable this
+we restore the _q_foreignWinId private property, but keep
+the limitation of not being able to explicitly destroy a
+foreign window.
+
+Pick-to: 6.7 6.5
+Fixes: QTBUG-124160
+Change-Id: Ia885ba9f043e64fb21eedd2b4c344679726f1b5c
+---
+ src/gui/kernel/qwindow.cpp                         | 12 +++++-
+ src/gui/kernel/qwindow_p.h                         |  2 +-
+ .../auto/gui/kernel/qwindow/tst_foreignwindow.cpp  | 48 ++++++++++++++++++++++
+ 3 files changed, 59 insertions(+), 3 deletions(-)
+
+diff --git a/src/gui/kernel/qwindow.cpp b/src/gui/kernel/qwindow.cpp
+index 46a787e7064f..9ce2766cccf8 100644
+--- a/src/gui/kernel/qwindow.cpp
++++ b/src/gui/kernel/qwindow.cpp
+@@ -521,7 +521,9 @@ void QWindowPrivate::setTopLevelScreen(QScreen *newScreen, bool recreate)
+     }
+ }
+ 
+-void QWindowPrivate::create(bool recursive, WId nativeHandle)
++static constexpr auto kForeignWindowId = "_q_foreignWinId";
++
++void QWindowPrivate::create(bool recursive)
+ {
+     Q_Q(QWindow);
+     if (platformWindow)
+@@ -549,6 +551,8 @@ void QWindowPrivate::create(bool recursive, WId nativeHandle)
+             setTopLevelScreen(screen, false);
+     }
+ 
++    const WId nativeHandle = q->property(kForeignWindowId).value<WId>();
++
+     QPlatformIntegration *platformIntegration = QGuiApplicationPrivate::platformIntegration();
+     platformWindow = nativeHandle ? platformIntegration->createForeignWindow(q, nativeHandle)
+         : platformIntegration->createPlatformWindow(q);
+@@ -2986,7 +2990,11 @@ QWindow *QWindow::fromWinId(WId id)
+     }
+ 
+     QWindow *window = new QWindow;
+-    qt_window_private(window)->create(false, id);
++
++    // Persist the winId in a private property so that we
++    // can recreate the window after being destroyed.
++    window->setProperty(kForeignWindowId, id);
++    window->create();
+ 
+     if (!window->handle()) {
+         delete window;
+diff --git a/src/gui/kernel/qwindow_p.h b/src/gui/kernel/qwindow_p.h
+index 1bcbda6b8fd6..a9716847a1e4 100644
+--- a/src/gui/kernel/qwindow_p.h
++++ b/src/gui/kernel/qwindow_p.h
+@@ -66,7 +66,7 @@ public:
+     void updateSiblingPosition(SiblingPosition);
+ 
+     bool windowRecreationRequired(QScreen *newScreen) const;
+-    void create(bool recursive, WId nativeHandle = 0);
++    void create(bool recursive);
+     void destroy();
+     void setTopLevelScreen(QScreen *newScreen, bool recreate);
+     void connectToScreen(QScreen *topLevelScreen);
+diff --git a/tests/auto/gui/kernel/qwindow/tst_foreignwindow.cpp b/tests/auto/gui/kernel/qwindow/tst_foreignwindow.cpp
+index e7b05e70374d..ef7f0bde4717 100644
+--- a/tests/auto/gui/kernel/qwindow/tst_foreignwindow.cpp
++++ b/tests/auto/gui/kernel/qwindow/tst_foreignwindow.cpp
+@@ -26,6 +26,8 @@ private slots:
+ 
+     void embedForeignWindow();
+     void embedInForeignWindow();
++
++    void destroy();
+ };
+ 
+ void tst_ForeignWindow::fromWinId()
+@@ -138,5 +140,51 @@ void tst_ForeignWindow::embedInForeignWindow()
+     }
+ }
+ 
++void tst_ForeignWindow::destroy()
++{
++    {
++        NativeWindow nativeWindow;
++        QVERIFY(nativeWindow);
++
++        std::unique_ptr<QWindow> foreignWindow(QWindow::fromWinId(nativeWindow));
++        QVERIFY(foreignWindow->handle());
++
++        // Explicitly destroying a foreign window is a no-op, as
++        // the documentation claims that it "releases the native
++        // platform resources associated with this window.", which
++        // is not technically true for foreign windows.
++        auto *windowHandleBeforeDestroy = foreignWindow->handle();
++        foreignWindow->destroy();
++        QCOMPARE(foreignWindow->handle(), windowHandleBeforeDestroy);
++    }
++
++    {
++        QWindow parentWindow;
++
++        NativeWindow nativeWindow;
++        QVERIFY(nativeWindow);
++
++        std::unique_ptr<QWindow> foreignWindow(QWindow::fromWinId(nativeWindow));
++        foreignWindow->setParent(&parentWindow);
++        QTRY_COMPARE(nativeWindow.parentWinId(), parentWindow.winId());
++
++        // Reparenting into a window will result in creating it
++        QVERIFY(parentWindow.handle());
++
++        // Destroying the parent window of the foreign window results
++        // in destroying the foreign window as well, as the foreign
++        // window no longer has a parent it can be embedded in.
++        QVERIFY(foreignWindow->handle());
++        parentWindow.destroy();
++        QVERIFY(!foreignWindow->handle());
++
++        // But the foreign window can be recreated again, and will
++        // continue to be a native child of the parent window.
++        foreignWindow->create();
++        QVERIFY(foreignWindow->handle());
++        QTRY_COMPARE(nativeWindow.parentWinId(), parentWindow.winId());
++    }
++}
++
+ #include <tst_foreignwindow.moc>
+ QTEST_MAIN(tst_ForeignWindow)
+-- 
+2.16.3
+
