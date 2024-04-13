@@ -2838,6 +2838,11 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/gst-libav-${{env.gstreamer_version}}.tar.xz
 
+      - name: Patch gst-libav
+        shell: bash
+        working-directory: build/gst-libav-${{env.gstreamer_version}}
+        run: patch -p1 < ../../patches/gst-libav-ffmpeg.patch
+
       - name: Configure gst-libav
         shell: bash
         env:
