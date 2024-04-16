@@ -46,7 +46,7 @@ env:
 
   gnutls_version: '3.8.5'
 
-  icu4c_version: '74.2'
+  icu4c_version: '75.1'
 
   pixman_version: '0.43.4'
 
