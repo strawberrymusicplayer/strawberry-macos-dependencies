@@ -126,7 +126,7 @@ env:
 
   chromaprint_version: '1.5.1'
 
-  gstreamer_version: '1.24.2'
+  gstreamer_version: '1.24.3'
 
   libplist_version: '2.4.0'
 
