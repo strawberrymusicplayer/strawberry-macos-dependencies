@@ -128,7 +128,7 @@ env:
 
   gstreamer_version: '1.24.3'
 
-  libplist_version: '2.5.0'
+  libplist_version: '2.6.0'
 
   libmtp_version: '1.1.21'
 
