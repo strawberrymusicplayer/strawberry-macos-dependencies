@@ -154,7 +154,7 @@ env:
 
   make_jobs: '4'
 
-  MACOSX_DEPLOYMENT_TARGET: '11.0'
+  MACOSX_DEPLOYMENT_TARGET: '12.0'
 
 jobs:
 
@@ -170,7 +170,7 @@ jobs:
       - name: Set runner
         id: set_runner
         shell: bash
-        run: echo "runner=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "macos-arm64" || echo "macos-11")" >> $GITHUB_OUTPUT
+        run: echo "runner=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "macos-arm64" || echo "macos-12")" >> $GITHUB_OUTPUT
 
       - name: Set release tag
         id: set_release_tag
