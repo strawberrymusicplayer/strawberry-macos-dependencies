@@ -279,7 +279,9 @@ jobs:
       - name: Update PATH
         if: env.arch == 'arm64'
         shell: bash
-        run: echo "/opt/homebrew/opt/bison/bin" >> $GITHUB_PATH
+        run: |
+          echo "/opt/homebrew/opt/bison/bin" >> $GITHUB_PATH
+          echo "/opt/homebrew/opt/m4/bin" >> $GITHUB_PATH
 
       - name: Delete old prefix path
         shell: bash
