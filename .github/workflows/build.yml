@@ -1693,6 +1693,16 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/libvorbis-${{env.libvorbis_version}}.tar.gz
 
+      - name: Patch libvorbis
+        shell: bash
+        working-directory: build/libvorbis-${{env.libvorbis_version}}
+        run: patch -p1 < ../../patches/libvorbis-fixes.patch
+
+      - name: libvorbis autogen
+        shell: bash
+        working-directory: build/libvorbis-${{env.libvorbis_version}}
+        run: ./autogen.sh
+
       - name: Configure libvorbis
         shell: bash
         env:
