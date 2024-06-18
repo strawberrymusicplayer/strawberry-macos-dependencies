@@ -134,7 +134,7 @@ env:
 
   libcdio_version: '2.1.0'
 
-  qt_version: '6.7.1'
+  qt_version: '6.7.2'
 
   kdsingleapplication_version: '1.1.0'
 
@@ -2979,11 +2979,6 @@ jobs:
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
-
-      - name: Patch qtbase
-        shell: bash
-        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
-        run: patch -p1 < ../../patches/qtbase-window.patch
 
       - name: Configure qtbase
         shell: bash
