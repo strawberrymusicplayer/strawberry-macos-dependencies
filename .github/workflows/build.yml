@@ -128,6 +128,8 @@ env:
 
   gstreamer_version: '1.24.5'
 
+  gstreamer_plugins_rs_version: '0.12.6'
+
   libplist_version: '2.6.0'
 
   libmtp_version: '1.1.21'
@@ -264,8 +266,9 @@ jobs:
         run: brew list
 
       - name: brew install
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
         shell: bash
-        run: brew install autoconf automake bison libtool gh
+        run: brew install autoconf automake bison libtool gh rustup-init
 
       - name: brew list
         shell: bash
@@ -2869,6 +2872,58 @@ jobs:
       - name: Install gst-libav
         shell: bash
         working-directory: build/gst-libav-${{env.gstreamer_version}}/build
+        run: ninja install
+
+
+      - name: Install cargo-c
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+          LIBRARY_PATH: ${{env.prefix_path}}/lib
+          LD_LIBRARY_PATH: ${{env.prefix_path}}/lib
+        run: cargo install cargo-c
+
+      - name: Download gst-plugins-rs
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        shell: bash
+        working-directory: build
+        run: git clone -b "${{env.gstreamer_plugins_rs_version}}" "https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git"
+
+      - name: Configure gst-plugins-rs
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/gst-plugins-rs
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload --auto-features=disabled -Dspotify=enabled build
+
+      - name: Copy dependencies
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        shell: bash
+        working-directory: build/gst-plugins-rs/build
+        run: |
+          mkdir -p target/${{env.arch}}-apple-darwin/${{env.buildtype}}/deps/
+          cp -v ${{env.prefix_path}}/lib/{libglib*.dylib,libgobject*.dylib,libgio*.dylib,libintl*.dylib,libgstreamer*.dylib,libgstbase*.dylib} target/${{env.arch}}-apple-darwin/${{env.buildtype}}/deps/
+
+      - name: Build gst-plugins-rs
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        shell: bash
+        working-directory: build/gst-plugins-rs/build
+        run: ninja
+
+      - name: Install gst-plugins-rs
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        shell: bash
+        working-directory: build/gst-plugins-rs/build
         run: ninja install
 
 
