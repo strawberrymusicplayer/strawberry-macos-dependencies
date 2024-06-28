@@ -66,7 +66,7 @@ env:
 
   sqlite3_version: '3460000'
 
-  glib_version: '2.80.3'
+  glib_version: '2.81.0'
 
   gdk_pixbuf_version: '2.42.12'
 
