@@ -2903,16 +2903,16 @@ jobs:
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
           LIBRARY_PATH: ${{env.prefix_path}}/lib
           LD_LIBRARY_PATH: ${{env.prefix_path}}/lib
-        run: cargo install cargo-c
+        run: |
+          cargo install cargo-c
+          install_name_tool -change "@rpath/libz.1.dylib" "${{env.prefix_path}}/lib/libz.1.dylib" "/Users/runner/.cargo/bin/cargo-cbuild"
 
       - name: Download gst-plugins-rs
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         working-directory: build
         run: git clone -b "${{env.gstreamer_plugins_rs_version}}" "https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git"
 
       - name: Configure gst-plugins-rs
-        if: false
         shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
@@ -2924,7 +2924,6 @@ jobs:
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload --auto-features=disabled -Dspotify=enabled build
 
       - name: Copy dependencies
-        if: false
         shell: bash
         working-directory: build/gst-plugins-rs/build
         run: |
@@ -2932,13 +2931,11 @@ jobs:
           cp -v ${{env.prefix_path}}/lib/{libglib*.dylib,libgobject*.dylib,libgio*.dylib,libintl*.dylib,libgstreamer*.dylib,libgstbase*.dylib} target/${{env.arch2}}-apple-darwin/${{env.buildtype}}/deps/
 
       - name: Build gst-plugins-rs
-        if: false
         shell: bash
         working-directory: build/gst-plugins-rs/build
         run: ninja
 
       - name: Install gst-plugins-rs
-        if: false
         shell: bash
         working-directory: build/gst-plugins-rs/build
         run: ninja install
