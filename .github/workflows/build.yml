@@ -156,8 +156,6 @@ env:
 
   make_jobs: '4'
 
-  MACOSX_DEPLOYMENT_TARGET: '12.0'
-
 jobs:
 
   setup:
@@ -165,14 +163,14 @@ jobs:
     if: (!contains(github.event.head_commit.message, 'skip ci'))
     runs-on: ubuntu-latest
     outputs:
-      runner: ${{steps.set_runner.outputs.runner}}
+      runners: ${{steps.set_runner.outputs.runners}}
       release_tag: ${{steps.set_release_tag.outputs.release_tag}}
     steps:
 
-      - name: Set runner
+      - name: Set runners
         id: set_runner
         shell: bash
-        run: echo "runner=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "macos-arm64" || echo "macos-12")" >> $GITHUB_OUTPUT
+        run: echo "runners=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "[\"macos-arm64\"]" || echo "[ \"macos-13\", \"macos-14\" ]")" >> $GITHUB_OUTPUT
 
       - name: Set release tag
         id: set_release_tag
@@ -189,19 +187,38 @@ jobs:
 
     strategy:
       matrix:
+       runner: ${{ fromJson(needs.setup.outputs.runners) }}
        buildtype: [ release, debug ]
 
-    runs-on: ${{needs.setup.outputs.runner}}
+    runs-on: ${{matrix.runner}}
 
     steps:
 
+      - name: Set MACOSX_DEPLOYMENT_TARGET
+        run: |
+          for i in 12 13 14 15; do
+            if [ -d "/Library/Developer/CommandLineTools/SDKs/MacOSX${i}.sdk" ]; then
+              echo "Using macOS SDK ${i}"
+              echo "MACOSX_DEPLOYMENT_TARGET=${i}.0" >> $GITHUB_ENV
+              break
+            fi
+          done
+
+      - name: Verify MACOSX_DEPLOYMENT_TARGET
+        run: |
+          test "${MACOSX_DEPLOYMENT_TARGET}" = "" && false || echo "MACOSX_DEPLOYMENT_TARGET: ${MACOSX_DEPLOYMENT_TARGET}"
+
       - name: Set runner
         shell: bash
-        run: echo "runner=${{needs.setup.outputs.runner}}" >> $GITHUB_ENV
+        run: echo "runner=${{matrix.runner}}" >> $GITHUB_ENV
 
       - name: Set arch
         shell: bash
         run: echo "arch=$(uname -m)" >> $GITHUB_ENV
+
+      - name: Set arch2
+        shell: bash
+        run: echo "arch2=$(test "${{env.arch}}" = "arm64" && echo "aarch64" || echo "${{env.arch}}")" >> $GITHUB_ENV
 
       - name: Set buildtype
         shell: bash
@@ -249,7 +266,7 @@ jobs:
         run: brew list
 
       - name: Remove installed brew packages
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         run: brew uninstall $(brew list)
 
@@ -266,7 +283,7 @@ jobs:
         run: brew list
 
       - name: brew install
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         run: brew install autoconf automake bison libtool gh rustup-init
 
@@ -1185,7 +1202,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -1614,7 +1631,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2512,7 +2529,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2876,7 +2893,7 @@ jobs:
 
 
       - name: Install cargo-c
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
@@ -2889,13 +2906,13 @@ jobs:
         run: cargo install cargo-c
 
       - name: Download gst-plugins-rs
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         working-directory: build
         run: git clone -b "${{env.gstreamer_plugins_rs_version}}" "https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git"
 
       - name: Configure gst-plugins-rs
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: false
         shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
@@ -2907,21 +2924,21 @@ jobs:
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload --auto-features=disabled -Dspotify=enabled build
 
       - name: Copy dependencies
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: false
         shell: bash
         working-directory: build/gst-plugins-rs/build
         run: |
-          mkdir -p target/${{env.arch}}-apple-darwin/${{env.buildtype}}/deps/
-          cp -v ${{env.prefix_path}}/lib/{libglib*.dylib,libgobject*.dylib,libgio*.dylib,libintl*.dylib,libgstreamer*.dylib,libgstbase*.dylib} target/${{env.arch}}-apple-darwin/${{env.buildtype}}/deps/
+          mkdir -p target/${{env.arch2}}-apple-darwin/${{env.buildtype}}/deps/
+          cp -v ${{env.prefix_path}}/lib/{libglib*.dylib,libgobject*.dylib,libgio*.dylib,libintl*.dylib,libgstreamer*.dylib,libgstbase*.dylib} target/${{env.arch2}}-apple-darwin/${{env.buildtype}}/deps/
 
       - name: Build gst-plugins-rs
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: false
         shell: bash
         working-directory: build/gst-plugins-rs/build
         run: ninja
 
       - name: Install gst-plugins-rs
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: false
         shell: bash
         working-directory: build/gst-plugins-rs/build
         run: ninja install
@@ -3019,7 +3036,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -3189,7 +3206,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -3281,7 +3298,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13'
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         working-directory: build
         run: rm -rf *
