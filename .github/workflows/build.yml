@@ -2,7 +2,7 @@ name: Build
 on: push
 
 env:
-  pkgconf_version: '2.2.0'
+  pkgconf_version: '2.3.0'
 
   cmake_version: '3.30.2'
 
