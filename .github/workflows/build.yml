@@ -94,7 +94,7 @@ env:
 
   speex_version: '1.2.1'
 
-  mpg123_version: '1.32.6'
+  mpg123_version: '1.32.7'
 
   lame_version: '3.100'
 
@@ -1924,11 +1924,6 @@ jobs:
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/mpg123-${{env.mpg123_version}}.tar.bz2
-
-      - name: Patch mpg123
-        shell: bash
-        working-directory: build/mpg123-${{env.mpg123_version}}
-        run: patch -p1 < ../../patches/mpg123-arm.patch
 
       - name: Configure mpg123
         shell: bash
