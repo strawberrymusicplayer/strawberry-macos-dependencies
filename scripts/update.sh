@@ -305,7 +305,7 @@ function update_package() {
       package_version_latest=$(curl ${curl_options} 'http://www.fftw.org/download.html' | sed -n 's,.*fftw-\([0-9][^>]*\)\.tar.*,\1,p' | grep -v 'alpha' | grep -v 'beta' | head -1)
       ;;
     "ffmpeg")
-      package_version_latest=$(curl ${curl_options} 'https://ffmpeg.org/releases/' | sed -n 's,.*ffmpeg-\([0-9][^>]*\)\.tar.*,\1,p' | grep -v 'alpha\|beta\|rc\|git' | sort -V | tail -1)
+      package_version_latest=$(curl ${curl_options} 'https://ffmpeg.org/releases/' | sed -n 's,.*ffmpeg-\([0-9][^>]*\)\.tar.*,\1,p' | grep -v 'alpha\|beta\|rc\|git' | grep -v '^7' | sort -V | tail -1)
       ;;
     "chromaprint")
       package_version_latest=$(curl ${curl_options} 'https://github.com/acoustid/chromaprint/releases' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | sed 's/^v//g' | grep -v 'rc' | sort -V | tail -1)
