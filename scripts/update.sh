@@ -218,7 +218,7 @@ function update_package() {
       package_version_latest=$(curl ${curl_options} 'https://github.com/rockdaboot/libpsl/releases' | sed -n 's,.*releases/tag/\([^"&;]*\)".*,\1,p' | grep -v '^\*name$' | sed 's/^v//g' | sed 's/^libpsl-//g' | sort -V | tail -1)
       ;;
     "orc")
-      package_version_latest=$(curl ${curl_options} 'https://cgit.freedesktop.org/gstreamer/orc/refs/tags' | sed -n "s,.*<a href='[^']*/tag/?h=[^0-9]*\\([0-9]*\.[0-9]*\.[0-9][^']*\\)'.*,\\1,p" | sort -V | tail -1)
+      package_version_latest=$(curl ${curl_options} 'https://gstreamer.freedesktop.org/src/orc' | sed -n "s,.*orc-\([0-9]*\.[0-9]*\.[0-9]*\)\.tar\.xz.*,\\1,p" | sort -V | tail -1)
       ;;
     "sqlite3")
       package_version_latest=$(curl ${curl_options} 'https://www.sqlite.org/download.html' | sed -n 's,.*sqlite-autoconf-\([0-9][^>]*\)\.tar.*,\1,p' | sort -V | tail -1)
