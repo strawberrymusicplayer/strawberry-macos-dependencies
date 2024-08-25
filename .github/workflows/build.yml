@@ -70,7 +70,7 @@ env:
 
   gdk_pixbuf_version: '2.42.12'
 
-  libsoup_version: '3.4.4'
+  libsoup_version: '3.6.0'
 
   glib_networking_version: '2.80.0'
 
