@@ -142,7 +142,7 @@ env:
 
   abseil_cpp_version: '20240722.0'
 
-  protobuf_version: '28.0'
+  protobuf_version: '28.1'
 
   max_releases: '6'
 
