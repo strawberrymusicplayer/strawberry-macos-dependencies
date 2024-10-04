@@ -2920,13 +2920,6 @@ jobs:
         working-directory: build/gst-plugins-rs
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload --auto-features=disabled -Dspotify=enabled build
 
-      - name: Copy dependencies
-        shell: bash
-        working-directory: build/gst-plugins-rs/build
-        run: |
-          mkdir -p target/${{env.arch2}}-apple-darwin/${{env.buildtype}}/deps/
-          cp -v ${{env.prefix_path}}/lib/{libglib*.dylib,libgobject*.dylib,libgio*.dylib,libintl*.dylib,libgstreamer*.dylib,libgstbase*.dylib} target/${{env.arch2}}-apple-darwin/${{env.buildtype}}/deps/
-
       - name: Build gst-plugins-rs
         shell: bash
         working-directory: build/gst-plugins-rs/build
