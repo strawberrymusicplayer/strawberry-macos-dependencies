@@ -1,7 +1,7 @@
-From c7903b88d7e7e4c777aa56474b30a75df7ed3154 Mon Sep 17 00:00:00 2001
+From 37f1586208384d261dc47c46c2036f89d53e1307 Mon Sep 17 00:00:00 2001
 From: Guillaume Desmottes <guillaume.desmottes@onestream.live>
 Date: Wed, 15 Dec 2021 17:15:20 +0100
-Subject: [PATCH 1/6] spotify: Use librespot dev branch.
+Subject: [PATCH 1/2] spotify: Use librespot dev branch.
 
 Co-authored-by: Nick Steel <nick@nsteel.co.uk>
 ---
@@ -123,354 +123,23 @@ index 6f429682b..8a7416980 100644
 GitLab
 
 
-From 2816376a19075ffc531e59d88bd8f16596fcbb40 Mon Sep 17 00:00:00 2001
+From a9f1550d674cd53f1b5a74d2c75a1433f7730bdf Mon Sep 17 00:00:00 2001
 From: Nick Steel <nick@nsteel.co.uk>
 Date: Wed, 18 Sep 2024 13:30:47 +0100
-Subject: [PATCH 2/6] spotify: replace username/password auth with access
+Subject: [PATCH 2/2] spotify: replace username/password auth with access
  token.
 
 ---
- audio/spotify/README.md                  |  15 ++-
- audio/spotify/src/common.rs              | 127 ++++++++++-------------
+ Cargo.lock                               | 990 ++++++++++++++++++-----
+ audio/spotify/Cargo.toml                 |   6 +-
+ audio/spotify/README.md                  |  25 +-
+ audio/spotify/src/common.rs              | 127 ++-
  audio/spotify/src/spotifyaudiosrc/imp.rs |   2 +-
- 3 files changed, 66 insertions(+), 78 deletions(-)
-
-diff --git a/audio/spotify/README.md b/audio/spotify/README.md
-index 982377470..fbf817d81 100644
---- a/audio/spotify/README.md
-+++ b/audio/spotify/README.md
-@@ -9,10 +9,15 @@ to respect their legal/licensing restrictions.
- ## Spotify Credentials
- 
- This plugin requires a [Spotify Premium](https://www.spotify.com/premium/) account.
--If your account is linked with Facebook, you'll need to setup
--a [device username and password](https://www.spotify.com/us/account/set-device-password/).
- 
--Those username and password are then set using the `username` and `password` properties.
-+Provide a Spotify access token with 'streaming' scope using the `access-token` property. Such a token can be obtained by completing
-+[Spotify's OAuth flow](https://developer.spotify.com/documentation/web-api/concepts/authorization) or using the facility on their
-+(Web SDK getting started guide](https://developer.spotify.com/documentation/web-playback-sdk/tutorials/getting-started).
-+A token can also be obtained using [librespot-oauth](https://github.com/librespot-org/librespot/blob/dev/oauth/examples/oauth.rs):
-+
-+```console
-+cargo install librespot-oauth --git https://github.com/librespot-org/librespot --example oauth && oauth
-+```
- 
- You may also want to cache credentials and downloaded files, see the `cache-` properties on the element.
- 
-@@ -21,11 +26,11 @@ You may also want to cache credentials and downloaded files, see the `cache-` pr
- The `spotifyaudiosrc` element can be used to play a song from Spotify using its [Spotify URI](https://community.spotify.com/t5/FAQs/What-s-a-Spotify-URI/ta-p/919201).
- 
- ```
--gst-launch-1.0 spotifyaudiosrc username=$USERNAME password=$PASSWORD track=spotify:track:3i3P1mGpV9eRlfKccjDjwi ! oggdemux ! vorbisdec ! audioconvert ! autoaudiosink
-+gst-launch-1.0 spotifyaudiosrc access-token=$ACCESS_TOKEN track=spotify:track:3i3P1mGpV9eRlfKccjDjwi ! oggdemux ! vorbisdec ! audioconvert ! autoaudiosink
- ```
- 
- The element also implements an URI handler which accepts credentials and cache settings as URI parameters:
- 
- ```console
--gst-launch-1.0 playbin3 uri=spotify:track:3i3P1mGpV9eRlfKccjDjwi?username=$USERNAME\&password=$PASSWORD\&cache-credentials=cache\&cache-files=cache
-+gst-launch-1.0 playbin3 uri=spotify:track:3i3P1mGpV9eRlfKccjDjwi?access-token=$ACCESS_TOKEN\&cache-credentials=cache\&cache-files=cache
- ```
-\ No newline at end of file
-diff --git a/audio/spotify/src/common.rs b/audio/spotify/src/common.rs
-index 374a6587d..a5764ef8b 100644
---- a/audio/spotify/src/common.rs
-+++ b/audio/spotify/src/common.rs
-@@ -18,8 +18,7 @@ use librespot_core::{
- 
- #[derive(Default, Debug, Clone)]
- pub struct Settings {
--    username: String,
--    password: String,
-+    access_token: String,
-     cache_credentials: String,
-     cache_files: String,
-     cache_max_size: u64,
-@@ -28,52 +27,46 @@ pub struct Settings {
- 
- impl Settings {
-     pub fn properties() -> Vec<glib::ParamSpec> {
--        vec![glib::ParamSpecString::builder("username")
--                    .nick("Username")
--                    .blurb("Spotify username, Facebook accounts need a device username from https://www.spotify.com/us/account/set-device-password/")
--                    .default_value(Some(""))
--                    .mutable_ready()
--                    .build(),
--                glib::ParamSpecString::builder("password")
--                    .nick("Password")
--                    .blurb("Spotify password, Facebook accounts need a device password from https://www.spotify.com/us/account/set-device-password/")
--                    .default_value(Some(""))
--                    .mutable_ready()
--                    .build(),
--                glib::ParamSpecString::builder("cache-credentials")
--                    .nick("Credentials cache")
--                    .blurb("Directory where to cache Spotify credentials")
--                    .default_value(Some(""))
--                    .mutable_ready()
--                    .build(),
--                glib::ParamSpecString::builder("cache-files")
--                    .nick("Files cache")
--                    .blurb("Directory where to cache downloaded files from Spotify")
--                    .default_value(Some(""))
--                    .mutable_ready()
--                    .build(),
--                glib::ParamSpecUInt64::builder("cache-max-size")
--                    .nick("Cache max size")
--                    .blurb("The max allowed size of the cache, in bytes, or 0 to disable the cache limit")
--                    .default_value(0)
--                    .mutable_ready()
--                    .build(),
--                glib::ParamSpecString::builder("track")
--                    .nick("Spotify URI")
--                    .blurb("Spotify track URI, in the form 'spotify:track:$SPOTIFY_ID'")
--                    .default_value(Some(""))
--                    .mutable_ready()
--                    .build(),
--            ]
-+        vec![
-+            glib::ParamSpecString::builder("access-token")
-+                .nick("Access token")
-+                .blurb("Spotify access token, requires 'streaming' scope")
-+                .default_value(Some(""))
-+                .mutable_ready()
-+                .build(),
-+            glib::ParamSpecString::builder("cache-credentials")
-+                .nick("Credentials cache")
-+                .blurb("Directory where to cache Spotify credentials")
-+                .default_value(Some(""))
-+                .mutable_ready()
-+                .build(),
-+            glib::ParamSpecString::builder("cache-files")
-+                .nick("Files cache")
-+                .blurb("Directory where to cache downloaded files from Spotify")
-+                .default_value(Some(""))
-+                .mutable_ready()
-+                .build(),
-+            glib::ParamSpecUInt64::builder("cache-max-size")
-+                .nick("Cache max size")
-+                .blurb(
-+                    "The max allowed size of the cache, in bytes, or 0 to disable the cache limit",
-+                )
-+                .default_value(0)
-+                .mutable_ready()
-+                .build(),
-+            glib::ParamSpecString::builder("track")
-+                .nick("Spotify URI")
-+                .blurb("Spotify track URI, in the form 'spotify:track:$SPOTIFY_ID'")
-+                .default_value(Some(""))
-+                .mutable_ready()
-+                .build(),
-+        ]
-     }
- 
-     pub fn set_property(&mut self, value: &glib::Value, pspec: &glib::ParamSpec) {
-         match pspec.name() {
--            "username" => {
--                self.username = value.get().expect("type checked upstream");
--            }
--            "password" => {
--                self.password = value.get().expect("type checked upstream");
-+            "access-token" => {
-+                self.access_token = value.get().expect("type checked upstream");
-             }
-             "cache-credentials" => {
-                 self.cache_credentials = value.get().expect("type checked upstream");
-@@ -93,8 +86,7 @@ impl Settings {
- 
-     pub fn property(&self, pspec: &glib::ParamSpec) -> glib::Value {
-         match pspec.name() {
--            "username" => self.username.to_value(),
--            "password" => self.password.to_value(),
-+            "access-token" => self.access_token.to_value(),
-             "cache-credentials" => self.cache_credentials.to_value(),
-             "cache-files" => self.cache_files.to_value(),
-             "cache-max-size" => self.cache_max_size.to_value(),
-@@ -132,26 +124,20 @@ impl Settings {
-         let cache = Cache::new(credentials_cache, None, files_cache, max_size)?;
- 
-         if let Some(cached_cred) = cache.credentials() {
--            if !self.username.is_empty() && self.username != cached_cred.username {
--                gst::debug!(
--                    cat,
--                    obj = &src,
--                    "ignore cached credentials for user {} which mismatch user {}",
--                    cached_cred.username,
--                    self.username
--                );
--            } else {
--                gst::debug!(
--                    cat,
--                    obj = &src,
--                    "reuse cached credentials for user {}",
--                    cached_cred.username
--                );
--
--                let session = Session::new(SessionConfig::default(), Some(cache));
--                session.connect(cached_cred, true).await?;
--                return Ok(session);
--            }
-+            let cached_username = cached_cred
-+                .username
-+                .as_ref()
-+                .map_or("UNKNOWN", |s| s.as_str());
-+            gst::debug!(
-+                cat,
-+                obj = &src,
-+                "reuse cached credentials for user {}",
-+                cached_username
-+            );
-+
-+            let session = Session::new(SessionConfig::default(), Some(cache));
-+            session.connect(cached_cred, true).await?;
-+            return Ok(session);
-         }
- 
-         gst::debug!(
-@@ -160,14 +146,11 @@ impl Settings {
-             "credentials not in cache or cached credentials invalid",
-         );
- 
--        if self.username.is_empty() {
--            bail!("username is not set and credentials are not in cache");
--        }
--        if self.password.is_empty() {
--            bail!("password is not set and credentials are not in cache");
-+        if self.access_token.is_empty() {
-+            bail!("access-token is not set and credentials are not in cache");
-         }
- 
--        let cred = Credentials::with_password(&self.username, &self.password);
-+        let cred = Credentials::with_access_token(&self.access_token);
- 
-         let session = Session::new(SessionConfig::default(), Some(cache));
-         session.connect(cred, true).await?;
-diff --git a/audio/spotify/src/spotifyaudiosrc/imp.rs b/audio/spotify/src/spotifyaudiosrc/imp.rs
-index 8a7416980..932f5a9fd 100644
---- a/audio/spotify/src/spotifyaudiosrc/imp.rs
-+++ b/audio/spotify/src/spotifyaudiosrc/imp.rs
-@@ -359,7 +359,7 @@ impl URIHandlerImpl for SpotifyAudioSrc {
-         // allow to configure auth and cache settings from the URI
-         for (key, value) in url.query_pairs() {
-             match key.as_ref() {
--                "username" | "password" | "cache-credentials" | "cache-files" => {
-+                "access-token" | "cache-credentials" | "cache-files" => {
-                     self.obj().set_property(&key, value.as_ref());
-                 }
-                 _ => {
--- 
-GitLab
-
-
-From 2b719dc26b3e1c6eb18c73de29f4aa56f79b242a Mon Sep 17 00:00:00 2001
-From: Nick Steel <nick@nsteel.co.uk>
-Date: Wed, 25 Sep 2024 07:44:21 +0000
-Subject: [PATCH 3/6] Apply 1 suggestion(s) to 1 file(s)
-
-Co-authored-by: Guillaume Desmottes <guillaume@desmottes.be>
----
- audio/spotify/README.md | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/audio/spotify/README.md b/audio/spotify/README.md
-index fbf817d81..30b76fdf8 100644
---- a/audio/spotify/README.md
-+++ b/audio/spotify/README.md
-@@ -12,7 +12,7 @@ This plugin requires a [Spotify Premium](https://www.spotify.com/premium/) accou
- 
- Provide a Spotify access token with 'streaming' scope using the `access-token` property. Such a token can be obtained by completing
- [Spotify's OAuth flow](https://developer.spotify.com/documentation/web-api/concepts/authorization) or using the facility on their
--(Web SDK getting started guide](https://developer.spotify.com/documentation/web-playback-sdk/tutorials/getting-started).
-+[Web SDK getting started guide](https://developer.spotify.com/documentation/web-playback-sdk/tutorials/getting-started).
- A token can also be obtained using [librespot-oauth](https://github.com/librespot-org/librespot/blob/dev/oauth/examples/oauth.rs):
- 
- ```console
--- 
-GitLab
-
-
-From b505db529c8ffbd00fc710c478b1704a757e080b Mon Sep 17 00:00:00 2001
-From: Nick Steel <nick@nsteel.co.uk>
-Date: Wed, 25 Sep 2024 14:29:08 +0100
-Subject: [PATCH 4/6] update gst_plugins_cache.json
-
----
- docs/plugins/gst_plugins_cache.json | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
-diff --git a/docs/plugins/gst_plugins_cache.json b/docs/plugins/gst_plugins_cache.json
-index 146c6d5a8..782b5fdfd 100644
---- a/docs/plugins/gst_plugins_cache.json
-+++ b/docs/plugins/gst_plugins_cache.json
-@@ -11723,6 +11723,18 @@
-                     }
-                 },
-                 "properties": {
-+                    "access-token": {
-+                        "blurb": "Spotify access token, requires 'streaming' scope",
-+                        "conditionally-available": false,
-+                        "construct": false,
-+                        "construct-only": false,
-+                        "controllable": false,
-+                        "default": "",
-+                        "mutable": "ready",
-+                        "readable": true,
-+                        "type": "gchararray",
-+                        "writable": true
-+                    },
-                     "bitrate": {
-                         "blurb": "Spotify audio bitrate in kbit/s",
-                         "conditionally-available": false,
--- 
-GitLab
-
-
-From 30f641bf89b60458dfba4255491a6b0766517f7e Mon Sep 17 00:00:00 2001
-From: Nick Steel <nick@nsteel.co.uk>
-Date: Wed, 2 Oct 2024 15:35:19 +0100
-Subject: [PATCH 5/6] spotify: advise using `cache-credentials` property and
- mention token refresh.
-
----
- audio/spotify/README.md | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/audio/spotify/README.md b/audio/spotify/README.md
-index 30b76fdf8..aa6d83aa3 100644
---- a/audio/spotify/README.md
-+++ b/audio/spotify/README.md
-@@ -19,7 +19,15 @@ A token can also be obtained using [librespot-oauth](https://github.com/librespo
- cargo install librespot-oauth --git https://github.com/librespot-org/librespot --example oauth && oauth
- ```
- 
--You may also want to cache credentials and downloaded files, see the `cache-` properties on the element.
-+Note, Spotify access tokens are only valid for 1 hour and must be [refreshed](https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens)
-+for usage beyond that.
-+
-+It is therefore advisable to also use the `cache-credentials` property. On first usage, your access token is exchanged for a reusable credentials blob and
-+stored at the location specified by this property. Once obtained, that credentials blob is used for login and any provided `access-token` is ignored.
-+Unlike Spotify access tokens, the user's credentials blob does not expire. Avoiding handling token refresh greatly simplifies plugin usage.
-+If you do not set `cache-credentials`, you must manage refreshing your Spotify access token so it's valid for login when the element starts.
-+
-+You may also want to cache downloaded files, see the `cache-files` property.
- 
- ## spotifyaudiosrc
- 
--- 
-GitLab
-
-
-From 8d0b73f601486401db0ffdffda3a275a1ab6b541 Mon Sep 17 00:00:00 2001
-From: Nick Steel <nick@nsteel.co.uk>
-Date: Wed, 2 Oct 2024 15:58:21 +0100
-Subject: [PATCH 6/6] Update cargo.lock?
-
----
- Cargo.lock | 975 ++++++++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 771 insertions(+), 204 deletions(-)
+ docs/plugins/gst_plugins_cache.json      |  12 +
+ 6 files changed, 876 insertions(+), 286 deletions(-)
 
 diff --git a/Cargo.lock b/Cargo.lock
-index d3fbe05a6..527be619b 100644
+index d3fbe05a6..1d28ba591 100644
 --- a/Cargo.lock
 +++ b/Cargo.lock
 @@ -19,45 +19,13 @@ checksum = "512761e0bb2578dd7380c6baaa0f4ce03e84f95e960231d1dec8bf4d7d6e2627"
@@ -597,7 +266,7 @@ index d3fbe05a6..527be619b 100644
 + "bitflags 2.6.0",
 + "cexpr",
 + "clang-sys",
-+ "itertools 0.11.0",
++ "itertools 0.12.1",
 + "lazy_static",
 + "lazycell",
 + "log",
@@ -1043,22 +712,30 @@ index d3fbe05a6..527be619b 100644
   "tinyvec",
  ]
  
-@@ -4306,85 +4448,116 @@ checksum = "4ec2a862134d2a7d32d7983ddcdd1c4923530833c9f2ea1a44fc5fa473989058"
+@@ -4295,7 +4437,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "4979f22fdb869068da03c9f7528f8297c6fd2606bc3a4affe42e6a823fdb8da4"
+ dependencies = [
+  "cfg-if",
+- "windows-targets 0.48.5",
++ "windows-targets 0.52.6",
+ ]
+ 
+ [[package]]
+@@ -4306,85 +4448,118 @@ checksum = "4ec2a862134d2a7d32d7983ddcdd1c4923530833c9f2ea1a44fc5fa473989058"
  
  [[package]]
  name = "librespot-audio"
 -version = "0.4.2"
--source = "registry+https://github.com/rust-lang/crates.io-index"
++version = "0.5.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
 -checksum = "c176a31355e1ea8e0b9c4ced19df4947bfe4770661c25c142b6fba2365940d9d"
-+version = "0.5.0-dev"
-+source = "git+https://github.com/librespot-org/librespot.git?rev=e02e4ae224173fe63612e7542d656b0eadabc719#e02e4ae224173fe63612e7542d656b0eadabc719"
++checksum = "5fbda070a5598b32718e497f585f46891f7113e64aff20a13c0f2ba8fe7ccad9"
  dependencies = [
 - "aes-ctr",
+- "byteorder",
 + "aes",
-  "byteorder",
   "bytes",
 + "ctr",
-+ "futures-core",
   "futures-util",
 + "http-body-util",
 + "hyper 1.4.1",
@@ -1074,10 +751,10 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "librespot-core"
 -version = "0.4.2"
--source = "registry+https://github.com/rust-lang/crates.io-index"
++version = "0.5.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
 -checksum = "046349f25888e644bf02d9c5de0164b2a493d29aa4ce18e1ad0b756da9b55d6d"
-+version = "0.5.0-dev"
-+source = "git+https://github.com/librespot-org/librespot.git?rev=e02e4ae224173fe63612e7542d656b0eadabc719#e02e4ae224173fe63612e7542d656b0eadabc719"
++checksum = "505a5ddd966231755994b60435607a1e8ae1d41c7f1169b078e0511bfb82d931"
  dependencies = [
   "aes",
 - "base64 0.13.1",
@@ -1112,6 +789,7 @@ index d3fbe05a6..527be619b 100644
   "once_cell",
 + "parking_lot",
   "pbkdf2",
++ "pin-project-lite",
   "priority-queue",
   "protobuf",
 + "quick-xml 0.36.2",
@@ -1127,7 +805,7 @@ index d3fbe05a6..527be619b 100644
 + "time",
   "tokio",
   "tokio-stream",
-+ "tokio-tungstenite 0.20.1",
++ "tokio-tungstenite 0.24.0",
   "tokio-util",
   "url",
   "uuid",
@@ -1138,13 +816,13 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "librespot-metadata"
 -version = "0.4.2"
--source = "registry+https://github.com/rust-lang/crates.io-index"
++version = "0.5.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
 -checksum = "6b80361fcbcb5092056fd47c08c34d5d51b08385d8efb6941c0d3e46d032c21c"
-+version = "0.5.0-dev"
-+source = "git+https://github.com/librespot-org/librespot.git?rev=e02e4ae224173fe63612e7542d656b0eadabc719#e02e4ae224173fe63612e7542d656b0eadabc719"
++checksum = "6a10ab5a390f65281e763cd09c617b173f0e665994eae3d242526924625fdc66"
  dependencies = [
   "async-trait",
-  "byteorder",
+- "byteorder",
 + "bytes",
   "librespot-core",
   "librespot-protocol",
@@ -1159,16 +837,12 @@ index d3fbe05a6..527be619b 100644
  [[package]]
 -name = "librespot-playback"
 -version = "0.4.2"
--source = "registry+https://github.com/rust-lang/crates.io-index"
--checksum = "5190a0b9bcc7f70ee4196a6b4a1c731d405ca130d4a6fcd4c561cfdde8b7cfb7"
 +name = "librespot-oauth"
-+version = "0.5.0-dev"
-+source = "git+https://github.com/librespot-org/librespot.git?rev=e02e4ae224173fe63612e7542d656b0eadabc719#e02e4ae224173fe63612e7542d656b0eadabc719"
- dependencies = [
-- "byteorder",
-- "futures-executor",
-- "futures-util",
-- "lewton",
++version = "0.5.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+-checksum = "5190a0b9bcc7f70ee4196a6b4a1c731d405ca130d4a6fcd4c561cfdde8b7cfb7"
++checksum = "57bda94233b358fb41c04ed15507c61136c80efe876c6e05a10ddb9a182b144e"
++dependencies = [
 + "log",
 + "oauth2",
 + "thiserror",
@@ -1177,15 +851,18 @@ index d3fbe05a6..527be619b 100644
 +
 +[[package]]
 +name = "librespot-playback"
-+version = "0.5.0-dev"
-+source = "git+https://github.com/librespot-org/librespot.git?rev=e02e4ae224173fe63612e7542d656b0eadabc719#e02e4ae224173fe63612e7542d656b0eadabc719"
-+dependencies = [
-+ "byteorder",
-+ "futures-util",
++version = "0.5.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "5b1bcfe1d72c5ac14c798c7e3e1c20e1fb6af2b9c254794545cfcb1f2a4627e2"
+ dependencies = [
+- "byteorder",
+- "futures-executor",
+  "futures-util",
+- "lewton",
   "librespot-audio",
   "librespot-core",
   "librespot-metadata",
-@@ -4394,20 +4567,19 @@ dependencies = [
+@@ -4394,20 +4569,20 @@ dependencies = [
   "rand",
   "rand_distr",
   "shell-words",
@@ -1199,10 +876,10 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "librespot-protocol"
 -version = "0.4.2"
--source = "registry+https://github.com/rust-lang/crates.io-index"
++version = "0.5.0"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
 -checksum = "5d6d3ac6196ac0ea67bbe039f56d6730a5d8b31502ef9bce0f504ed729dcb39f"
-+version = "0.5.0-dev"
-+source = "git+https://github.com/librespot-org/librespot.git?rev=e02e4ae224173fe63612e7542d656b0eadabc719#e02e4ae224173fe63612e7542d656b0eadabc719"
++checksum = "0d6f343f573e0469d3ff8a02b99bbd9789faa01e2ff167332542ac840a8b31e7"
  dependencies = [
 - "glob",
   "protobuf",
@@ -1211,7 +888,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -4541,7 +4713,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -4541,7 +4716,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "d89e7ee0cfbedfc4da3340218492196241d89eefb6dab27de5df917a6d2e78cf"
  dependencies = [
   "cfg-if",
@@ -1220,7 +897,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -4603,6 +4775,12 @@ dependencies = [
+@@ -4603,6 +4778,12 @@ dependencies = [
   "windows-sys 0.52.0",
  ]
  
@@ -1233,7 +910,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "more-asserts"
  version = "0.3.1"
-@@ -4702,6 +4880,12 @@ dependencies = [
+@@ -4702,6 +4883,12 @@ dependencies = [
   "rustfft",
  ]
  
@@ -1246,7 +923,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "nom"
  version = "7.1.3"
-@@ -4712,12 +4896,27 @@ dependencies = [
+@@ -4712,12 +4899,27 @@ dependencies = [
   "minimal-lexical",
  ]
  
@@ -1274,7 +951,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "nu-ansi-term"
  version = "0.46.0"
-@@ -4739,6 +4938,23 @@ dependencies = [
+@@ -4739,6 +4941,23 @@ dependencies = [
   "rand",
  ]
  
@@ -1298,7 +975,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "num-complex"
  version = "0.4.6"
-@@ -4774,6 +4990,17 @@ dependencies = [
+@@ -4774,6 +4993,17 @@ dependencies = [
   "num-traits",
  ]
  
@@ -1316,7 +993,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "num-rational"
  version = "0.4.2"
-@@ -4806,6 +5033,35 @@ dependencies = [
+@@ -4806,6 +5036,35 @@ dependencies = [
   "libc",
  ]
  
@@ -1352,7 +1029,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "object"
  version = "0.36.4"
-@@ -4817,9 +5073,9 @@ dependencies = [
+@@ -4817,9 +5076,9 @@ dependencies = [
  
  [[package]]
  name = "ogg"
@@ -1364,7 +1041,7 @@ index d3fbe05a6..527be619b 100644
  dependencies = [
   "byteorder",
  ]
-@@ -4833,12 +5089,6 @@ dependencies = [
+@@ -4833,12 +5092,6 @@ dependencies = [
   "portable-atomic",
  ]
  
@@ -1377,7 +1054,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "openssl"
  version = "0.10.66"
-@@ -5050,12 +5300,12 @@ dependencies = [
+@@ -5050,12 +5303,12 @@ dependencies = [
  
  [[package]]
  name = "pbkdf2"
@@ -1394,7 +1071,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -5079,6 +5329,15 @@ dependencies = [
+@@ -5079,6 +5332,15 @@ dependencies = [
   "serde",
  ]
  
@@ -1410,7 +1087,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "percent-encoding"
  version = "2.3.1"
-@@ -5127,14 +5386,35 @@ version = "0.1.0"
+@@ -5127,14 +5389,35 @@ version = "0.1.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
  
@@ -1448,7 +1125,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -5195,7 +5475,7 @@ version = "0.2.20"
+@@ -5195,7 +5478,7 @@ version = "0.2.20"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "77957b295656769bb8ad2b6a6b09d897d94f05c41b069aede1fcdaa675eaea04"
  dependencies = [
@@ -1457,7 +1134,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -5229,12 +5509,13 @@ dependencies = [
+@@ -5229,12 +5512,13 @@ dependencies = [
  
  [[package]]
  name = "priority-queue"
@@ -1474,7 +1151,16 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -5353,27 +5634,53 @@ dependencies = [
+@@ -5315,7 +5599,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "22505a5c94da8e3b7c2996394d1c933236c4d743e81a410bcca4e6989fc066a4"
+ dependencies = [
+  "bytes",
+- "heck 0.4.1",
++ "heck 0.5.0",
+  "itertools 0.12.1",
+  "log",
+  "multimap",
+@@ -5353,27 +5637,53 @@ dependencies = [
  
  [[package]]
  name = "protobuf"
@@ -1536,7 +1222,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -5422,7 +5729,7 @@ dependencies = [
+@@ -5422,7 +5732,7 @@ dependencies = [
   "pin-project-lite",
   "quinn-proto",
   "quinn-udp",
@@ -1545,7 +1231,7 @@ index d3fbe05a6..527be619b 100644
   "rustls 0.23.13",
   "socket2",
   "thiserror",
-@@ -5439,7 +5746,7 @@ dependencies = [
+@@ -5439,7 +5749,7 @@ dependencies = [
   "bytes",
   "rand",
   "ring",
@@ -1554,7 +1240,7 @@ index d3fbe05a6..527be619b 100644
   "rustls 0.23.13",
   "rustls-platform-verifier",
   "slab",
-@@ -5674,6 +5981,7 @@ dependencies = [
+@@ -5674,6 +5984,7 @@ dependencies = [
   "http 0.2.12",
   "http-body 0.4.6",
   "hyper 0.14.30",
@@ -1562,7 +1248,7 @@ index d3fbe05a6..527be619b 100644
   "hyper-tls 0.5.0",
   "ipnet",
   "js-sys",
-@@ -5683,6 +5991,7 @@ dependencies = [
+@@ -5683,6 +5994,7 @@ dependencies = [
   "once_cell",
   "percent-encoding",
   "pin-project-lite",
@@ -1570,7 +1256,7 @@ index d3fbe05a6..527be619b 100644
   "rustls-pemfile 1.0.4",
   "serde",
   "serde_json",
-@@ -5691,11 +6000,13 @@ dependencies = [
+@@ -5691,11 +6003,13 @@ dependencies = [
   "system-configuration 0.5.1",
   "tokio",
   "tokio-native-tls",
@@ -1584,7 +1270,7 @@ index d3fbe05a6..527be619b 100644
   "winreg",
  ]
  
-@@ -5753,7 +6064,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -5753,7 +6067,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "7743f17af12fa0b03b803ba12cd6a8d9483a587e89c69445e3909655c0b9fabb"
  dependencies = [
   "crypto-bigint 0.4.9",
@@ -1593,7 +1279,7 @@ index d3fbe05a6..527be619b 100644
   "zeroize",
  ]
  
-@@ -5781,6 +6092,26 @@ dependencies = [
+@@ -5781,6 +6095,26 @@ dependencies = [
   "windows-sys 0.52.0",
  ]
  
@@ -1620,7 +1306,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "rtcp-types"
  version = "0.1.0"
-@@ -5830,6 +6161,12 @@ version = "0.1.24"
+@@ -5830,6 +6164,12 @@ version = "0.1.24"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "719b953e2095829ee67db738b3bfa9fa368c94900df327b3f07fe6e794d2fe1f"
  
@@ -1633,7 +1319,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "rustc-hash"
  version = "2.0.0"
-@@ -5914,6 +6251,8 @@ version = "0.23.13"
+@@ -5914,6 +6254,8 @@ version = "0.23.13"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "f2dabaac7466917e566adb06783a81ca48944c6898a1b08b9374106dd671f4c8"
  dependencies = [
@@ -1642,7 +1328,7 @@ index d3fbe05a6..527be619b 100644
   "once_cell",
   "ring",
   "rustls-pki-types",
-@@ -5947,6 +6286,19 @@ dependencies = [
+@@ -5947,6 +6289,19 @@ dependencies = [
   "security-framework",
  ]
  
@@ -1662,7 +1348,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "rustls-pemfile"
  version = "1.0.4"
-@@ -5988,7 +6340,7 @@ dependencies = [
+@@ -5988,7 +6343,7 @@ dependencies = [
   "rustls-webpki 0.102.8",
   "security-framework",
   "security-framework-sys",
@@ -1671,7 +1357,7 @@ index d3fbe05a6..527be619b 100644
   "winapi",
  ]
  
-@@ -6014,11 +6366,18 @@ version = "0.102.8"
+@@ -6014,11 +6369,18 @@ version = "0.102.8"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "64ca1bc8749bd4cf37b5ce386cc146580777b4e8572c7b97baf22c83f444bee9"
  dependencies = [
@@ -1690,7 +1376,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "ryu"
  version = "1.0.18"
-@@ -6097,9 +6456,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -6097,9 +6459,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "3be24c1842290c45df0a7bf069e0c268a747ad05a192f2fd7dcfdbc1cba40928"
  dependencies = [
   "base16ct",
@@ -1702,7 +1388,7 @@ index d3fbe05a6..527be619b 100644
   "subtle",
   "zeroize",
  ]
-@@ -6261,19 +6620,6 @@ dependencies = [
+@@ -6261,19 +6623,6 @@ dependencies = [
   "syn 2.0.79",
  ]
  
@@ -1722,7 +1408,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "sha1"
  version = "0.10.6"
-@@ -6282,7 +6628,7 @@ checksum = "e3bf829a2d51ab4a5ddf1352d8470c140cadc8301b2ae1789db023f01cedd6ba"
+@@ -6282,7 +6631,7 @@ checksum = "e3bf829a2d51ab4a5ddf1352d8470c140cadc8301b2ae1789db023f01cedd6ba"
  dependencies = [
   "cfg-if",
   "cpufeatures",
@@ -1731,7 +1417,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -6293,7 +6639,7 @@ checksum = "793db75ad2bcafc3ffa7c68b215fee268f537982cd901d132f89c6343f3a3dc8"
+@@ -6293,7 +6642,7 @@ checksum = "793db75ad2bcafc3ffa7c68b215fee268f537982cd901d132f89c6343f3a3dc8"
  dependencies = [
   "cfg-if",
   "cpufeatures",
@@ -1740,7 +1426,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -6351,7 +6697,17 @@ version = "1.6.4"
+@@ -6351,7 +6700,17 @@ version = "1.6.4"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "74233d3b3b2f6d4b006dc19dee745e73e2a6bfb6f93607cd3b02bd5b00797d7c"
  dependencies = [
@@ -1759,7 +1445,7 @@ index d3fbe05a6..527be619b 100644
   "rand_core",
  ]
  
-@@ -6422,6 +6778,15 @@ dependencies = [
+@@ -6422,6 +6781,15 @@ dependencies = [
   "lock_api",
  ]
  
@@ -1775,7 +1461,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "spki"
  version = "0.6.0"
-@@ -6429,7 +6794,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -6429,7 +6797,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "67cf02bbac7a337dc36e4f5a693db6c21e7863f45070f7064577eb4367a3212b"
  dependencies = [
   "base64ct",
@@ -1794,7 +1480,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -6471,6 +6846,90 @@ version = "2.6.1"
+@@ -6471,6 +6849,90 @@ version = "2.6.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
  
@@ -1885,7 +1571,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "syn"
  version = "0.11.11"
-@@ -6527,6 +6986,19 @@ dependencies = [
+@@ -6527,6 +6989,19 @@ dependencies = [
   "unicode-xid",
  ]
  
@@ -1905,7 +1591,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "system-configuration"
  version = "0.5.1"
-@@ -6708,7 +7180,9 @@ checksum = "5dfd88e563464686c916c7e46e623e520ddc6d79fa6641390f2e3fa86e83e885"
+@@ -6708,7 +7183,9 @@ checksum = "5dfd88e563464686c916c7e46e623e520ddc6d79fa6641390f2e3fa86e83e885"
  dependencies = [
   "deranged",
   "itoa",
@@ -1915,27 +1601,39 @@ index d3fbe05a6..527be619b 100644
   "powerfmt",
   "serde",
   "time-core",
-@@ -6837,8 +7311,11 @@ dependencies = [
-  "futures-util",
-  "log",
-  "native-tls",
-+ "rustls 0.21.12",
-+ "rustls-native-certs 0.6.3",
-  "tokio",
-  "tokio-native-tls",
-+ "tokio-rustls 0.24.1",
-  "tungstenite 0.20.1",
+@@ -6854,6 +7331,22 @@ dependencies = [
+  "tungstenite 0.21.0",
  ]
  
-@@ -6999,6 +7476,7 @@ dependencies = [
++[[package]]
++name = "tokio-tungstenite"
++version = "0.24.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "edc5f74e248dc973e0dbb7b74c7e0d6fcc301c694ff50049504004ef4d0cdcd9"
++dependencies = [
++ "futures-util",
++ "log",
++ "rustls 0.23.13",
++ "rustls-native-certs 0.8.0",
++ "rustls-pki-types",
++ "tokio",
++ "tokio-rustls 0.26.0",
++ "tungstenite 0.24.0",
++]
++
+ [[package]]
+ name = "tokio-util"
+ version = "0.7.12"
+@@ -7038,6 +7531,8 @@ dependencies = [
   "log",
   "native-tls",
   "rand",
-+ "rustls 0.21.12",
++ "rustls 0.23.13",
++ "rustls-pki-types",
   "sha1",
   "thiserror",
   "url",
-@@ -7113,6 +7591,7 @@ dependencies = [
+@@ -7113,6 +7608,7 @@ dependencies = [
   "form_urlencoded",
   "idna 0.5.0",
   "percent-encoding",
@@ -1943,7 +1641,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -7149,6 +7628,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -7149,6 +7645,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "81dfa00651efa65069b0b6b651f4aaa31ba9e3c3ce0137aaad053604ee7e0314"
  dependencies = [
   "getrandom",
@@ -1951,7 +1649,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -7182,13 +7662,40 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
+@@ -7182,13 +7679,40 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
  
  [[package]]
  name = "vergen"
@@ -1997,7 +1695,7 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
-@@ -7348,6 +7855,22 @@ dependencies = [
+@@ -7348,6 +7872,22 @@ dependencies = [
   "wasm-bindgen",
  ]
  
@@ -2020,7 +1718,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "webpki-roots"
  version = "0.26.6"
-@@ -7363,6 +7886,18 @@ version = "0.1.8"
+@@ -7363,6 +7903,18 @@ version = "0.1.8"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "53a85b86a771b1c87058196170769dd264f66c0782acf1ae6cc51bfd64b39082"
  
@@ -2039,7 +1737,16 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "winapi"
  version = "0.3.9"
-@@ -7394,6 +7929,16 @@ version = "0.4.0"
+@@ -7385,7 +7937,7 @@ version = "0.1.9"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
+ dependencies = [
+- "windows-sys 0.48.0",
++ "windows-sys 0.59.0",
+ ]
+ 
+ [[package]]
+@@ -7394,6 +7946,16 @@ version = "0.4.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
  
@@ -2056,7 +1763,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "windows-core"
  version = "0.52.0"
-@@ -7403,17 +7948,60 @@ dependencies = [
+@@ -7403,17 +7965,60 @@ dependencies = [
   "windows-targets 0.52.6",
  ]
  
@@ -2118,7 +1825,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "windows-result"
  version = "0.2.0"
-@@ -7429,7 +8017,7 @@ version = "0.1.0"
+@@ -7429,7 +8034,7 @@ version = "0.1.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "4cd9b125c486025df0eabcb585e62173c6c9eddcec5d117d3b6e8c30e2ee4d10"
  dependencies = [
@@ -2127,7 +1834,7 @@ index d3fbe05a6..527be619b 100644
   "windows-targets 0.52.6",
  ]
  
-@@ -7647,16 +8235,6 @@ dependencies = [
+@@ -7647,16 +8252,6 @@ dependencies = [
   "time",
  ]
  
@@ -2144,7 +1851,7 @@ index d3fbe05a6..527be619b 100644
  [[package]]
  name = "zerocopy"
  version = "0.7.35"
-@@ -7664,18 +8242,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -7664,18 +8259,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "1b9b4fd18abc82b8136838da5d50bae7bdea537c574d8dc1a34ed098d6c166f0"
  dependencies = [
   "byteorder",
@@ -2164,6 +1871,279 @@ index d3fbe05a6..527be619b 100644
  ]
  
  [[package]]
+diff --git a/audio/spotify/Cargo.toml b/audio/spotify/Cargo.toml
+index b06f7613d..1c6353121 100644
+--- a/audio/spotify/Cargo.toml
++++ b/audio/spotify/Cargo.toml
+@@ -11,10 +11,8 @@ rust-version.workspace = true
+ [dependencies]
+ gst.workspace = true
+ gst-base.workspace = true
+-librespot-core = { git = "https://github.com/librespot-org/librespot.git", rev = "e02e4ae224173fe63612e7542d656b0eadabc719" }
+-librespot-playback = { git = "https://github.com/librespot-org/librespot.git", rev = "e02e4ae224173fe63612e7542d656b0eadabc719", default-features = false, features = [
+-    'passthrough-decoder',
+-] }
++librespot-core = "0.5"
++librespot-playback = { version = "0.5", features = ['passthrough-decoder'] }
+ tokio = { version = "1.0", features = ["rt-multi-thread"] }
+ futures = "0.3"
+ anyhow = "1.0"
+diff --git a/audio/spotify/README.md b/audio/spotify/README.md
+index 982377470..2e3649260 100644
+--- a/audio/spotify/README.md
++++ b/audio/spotify/README.md
+@@ -9,23 +9,36 @@ to respect their legal/licensing restrictions.
+ ## Spotify Credentials
+ 
+ This plugin requires a [Spotify Premium](https://www.spotify.com/premium/) account.
+-If your account is linked with Facebook, you'll need to setup
+-a [device username and password](https://www.spotify.com/us/account/set-device-password/).
+ 
+-Those username and password are then set using the `username` and `password` properties.
++Provide a Spotify access token with 'streaming' scope using the `access-token` property. Such a token can be obtained by completing
++[Spotify's OAuth flow](https://developer.spotify.com/documentation/web-api/concepts/authorization) or using the facility on their
++[Web SDK getting started guide](https://developer.spotify.com/documentation/web-playback-sdk/tutorials/getting-started).
++A token can also be obtained using [librespot-oauth](https://github.com/librespot-org/librespot/blob/dev/oauth/examples/oauth.rs):
+ 
+-You may also want to cache credentials and downloaded files, see the `cache-` properties on the element.
++```console
++cargo install librespot-oauth --example oauth && oauth
++```
++
++Note, Spotify access tokens are only valid for 1 hour and must be [refreshed](https://developer.spotify.com/documentation/web-api/tutorials/refreshing-tokens)
++for usage beyond that.
++
++It is therefore advisable to also use the `cache-credentials` property. On first usage, your access token is exchanged for a reusable credentials blob and
++stored at the location specified by this property. Once obtained, that credentials blob is used for login and any provided `access-token` is ignored.
++Unlike Spotify access tokens, the user's credentials blob does not expire. Avoiding handling token refresh greatly simplifies plugin usage.
++If you do not set `cache-credentials`, you must manage refreshing your Spotify access token so it's valid for login when the element starts.
++
++You may also want to cache downloaded files, see the `cache-files` property.
+ 
+ ## spotifyaudiosrc
+ 
+ The `spotifyaudiosrc` element can be used to play a song from Spotify using its [Spotify URI](https://community.spotify.com/t5/FAQs/What-s-a-Spotify-URI/ta-p/919201).
+ 
+ ```
+-gst-launch-1.0 spotifyaudiosrc username=$USERNAME password=$PASSWORD track=spotify:track:3i3P1mGpV9eRlfKccjDjwi ! oggdemux ! vorbisdec ! audioconvert ! autoaudiosink
++gst-launch-1.0 spotifyaudiosrc access-token=$ACCESS_TOKEN track=spotify:track:3i3P1mGpV9eRlfKccjDjwi ! oggdemux ! vorbisdec ! audioconvert ! autoaudiosink
+ ```
+ 
+ The element also implements an URI handler which accepts credentials and cache settings as URI parameters:
+ 
+ ```console
+-gst-launch-1.0 playbin3 uri=spotify:track:3i3P1mGpV9eRlfKccjDjwi?username=$USERNAME\&password=$PASSWORD\&cache-credentials=cache\&cache-files=cache
++gst-launch-1.0 playbin3 uri=spotify:track:3i3P1mGpV9eRlfKccjDjwi?access-token=$ACCESS_TOKEN\&cache-credentials=cache\&cache-files=cache
+ ```
+\ No newline at end of file
+diff --git a/audio/spotify/src/common.rs b/audio/spotify/src/common.rs
+index 374a6587d..a5764ef8b 100644
+--- a/audio/spotify/src/common.rs
++++ b/audio/spotify/src/common.rs
+@@ -18,8 +18,7 @@ use librespot_core::{
+ 
+ #[derive(Default, Debug, Clone)]
+ pub struct Settings {
+-    username: String,
+-    password: String,
++    access_token: String,
+     cache_credentials: String,
+     cache_files: String,
+     cache_max_size: u64,
+@@ -28,52 +27,46 @@ pub struct Settings {
+ 
+ impl Settings {
+     pub fn properties() -> Vec<glib::ParamSpec> {
+-        vec![glib::ParamSpecString::builder("username")
+-                    .nick("Username")
+-                    .blurb("Spotify username, Facebook accounts need a device username from https://www.spotify.com/us/account/set-device-password/")
+-                    .default_value(Some(""))
+-                    .mutable_ready()
+-                    .build(),
+-                glib::ParamSpecString::builder("password")
+-                    .nick("Password")
+-                    .blurb("Spotify password, Facebook accounts need a device password from https://www.spotify.com/us/account/set-device-password/")
+-                    .default_value(Some(""))
+-                    .mutable_ready()
+-                    .build(),
+-                glib::ParamSpecString::builder("cache-credentials")
+-                    .nick("Credentials cache")
+-                    .blurb("Directory where to cache Spotify credentials")
+-                    .default_value(Some(""))
+-                    .mutable_ready()
+-                    .build(),
+-                glib::ParamSpecString::builder("cache-files")
+-                    .nick("Files cache")
+-                    .blurb("Directory where to cache downloaded files from Spotify")
+-                    .default_value(Some(""))
+-                    .mutable_ready()
+-                    .build(),
+-                glib::ParamSpecUInt64::builder("cache-max-size")
+-                    .nick("Cache max size")
+-                    .blurb("The max allowed size of the cache, in bytes, or 0 to disable the cache limit")
+-                    .default_value(0)
+-                    .mutable_ready()
+-                    .build(),
+-                glib::ParamSpecString::builder("track")
+-                    .nick("Spotify URI")
+-                    .blurb("Spotify track URI, in the form 'spotify:track:$SPOTIFY_ID'")
+-                    .default_value(Some(""))
+-                    .mutable_ready()
+-                    .build(),
+-            ]
++        vec![
++            glib::ParamSpecString::builder("access-token")
++                .nick("Access token")
++                .blurb("Spotify access token, requires 'streaming' scope")
++                .default_value(Some(""))
++                .mutable_ready()
++                .build(),
++            glib::ParamSpecString::builder("cache-credentials")
++                .nick("Credentials cache")
++                .blurb("Directory where to cache Spotify credentials")
++                .default_value(Some(""))
++                .mutable_ready()
++                .build(),
++            glib::ParamSpecString::builder("cache-files")
++                .nick("Files cache")
++                .blurb("Directory where to cache downloaded files from Spotify")
++                .default_value(Some(""))
++                .mutable_ready()
++                .build(),
++            glib::ParamSpecUInt64::builder("cache-max-size")
++                .nick("Cache max size")
++                .blurb(
++                    "The max allowed size of the cache, in bytes, or 0 to disable the cache limit",
++                )
++                .default_value(0)
++                .mutable_ready()
++                .build(),
++            glib::ParamSpecString::builder("track")
++                .nick("Spotify URI")
++                .blurb("Spotify track URI, in the form 'spotify:track:$SPOTIFY_ID'")
++                .default_value(Some(""))
++                .mutable_ready()
++                .build(),
++        ]
+     }
+ 
+     pub fn set_property(&mut self, value: &glib::Value, pspec: &glib::ParamSpec) {
+         match pspec.name() {
+-            "username" => {
+-                self.username = value.get().expect("type checked upstream");
+-            }
+-            "password" => {
+-                self.password = value.get().expect("type checked upstream");
++            "access-token" => {
++                self.access_token = value.get().expect("type checked upstream");
+             }
+             "cache-credentials" => {
+                 self.cache_credentials = value.get().expect("type checked upstream");
+@@ -93,8 +86,7 @@ impl Settings {
+ 
+     pub fn property(&self, pspec: &glib::ParamSpec) -> glib::Value {
+         match pspec.name() {
+-            "username" => self.username.to_value(),
+-            "password" => self.password.to_value(),
++            "access-token" => self.access_token.to_value(),
+             "cache-credentials" => self.cache_credentials.to_value(),
+             "cache-files" => self.cache_files.to_value(),
+             "cache-max-size" => self.cache_max_size.to_value(),
+@@ -132,26 +124,20 @@ impl Settings {
+         let cache = Cache::new(credentials_cache, None, files_cache, max_size)?;
+ 
+         if let Some(cached_cred) = cache.credentials() {
+-            if !self.username.is_empty() && self.username != cached_cred.username {
+-                gst::debug!(
+-                    cat,
+-                    obj = &src,
+-                    "ignore cached credentials for user {} which mismatch user {}",
+-                    cached_cred.username,
+-                    self.username
+-                );
+-            } else {
+-                gst::debug!(
+-                    cat,
+-                    obj = &src,
+-                    "reuse cached credentials for user {}",
+-                    cached_cred.username
+-                );
+-
+-                let session = Session::new(SessionConfig::default(), Some(cache));
+-                session.connect(cached_cred, true).await?;
+-                return Ok(session);
+-            }
++            let cached_username = cached_cred
++                .username
++                .as_ref()
++                .map_or("UNKNOWN", |s| s.as_str());
++            gst::debug!(
++                cat,
++                obj = &src,
++                "reuse cached credentials for user {}",
++                cached_username
++            );
++
++            let session = Session::new(SessionConfig::default(), Some(cache));
++            session.connect(cached_cred, true).await?;
++            return Ok(session);
+         }
+ 
+         gst::debug!(
+@@ -160,14 +146,11 @@ impl Settings {
+             "credentials not in cache or cached credentials invalid",
+         );
+ 
+-        if self.username.is_empty() {
+-            bail!("username is not set and credentials are not in cache");
+-        }
+-        if self.password.is_empty() {
+-            bail!("password is not set and credentials are not in cache");
++        if self.access_token.is_empty() {
++            bail!("access-token is not set and credentials are not in cache");
+         }
+ 
+-        let cred = Credentials::with_password(&self.username, &self.password);
++        let cred = Credentials::with_access_token(&self.access_token);
+ 
+         let session = Session::new(SessionConfig::default(), Some(cache));
+         session.connect(cred, true).await?;
+diff --git a/audio/spotify/src/spotifyaudiosrc/imp.rs b/audio/spotify/src/spotifyaudiosrc/imp.rs
+index 8a7416980..932f5a9fd 100644
+--- a/audio/spotify/src/spotifyaudiosrc/imp.rs
++++ b/audio/spotify/src/spotifyaudiosrc/imp.rs
+@@ -359,7 +359,7 @@ impl URIHandlerImpl for SpotifyAudioSrc {
+         // allow to configure auth and cache settings from the URI
+         for (key, value) in url.query_pairs() {
+             match key.as_ref() {
+-                "username" | "password" | "cache-credentials" | "cache-files" => {
++                "access-token" | "cache-credentials" | "cache-files" => {
+                     self.obj().set_property(&key, value.as_ref());
+                 }
+                 _ => {
+diff --git a/docs/plugins/gst_plugins_cache.json b/docs/plugins/gst_plugins_cache.json
+index 89e64ce61..306f9926f 100644
+--- a/docs/plugins/gst_plugins_cache.json
++++ b/docs/plugins/gst_plugins_cache.json
+@@ -11770,6 +11770,18 @@
+                     }
+                 },
+                 "properties": {
++                    "access-token": {
++                        "blurb": "Spotify access token, requires 'streaming' scope",
++                        "conditionally-available": false,
++                        "construct": false,
++                        "construct-only": false,
++                        "controllable": false,
++                        "default": "",
++                        "mutable": "ready",
++                        "readable": true,
++                        "type": "gchararray",
++                        "writable": true
++                    },
+                     "bitrate": {
+                         "blurb": "Spotify audio bitrate in kbit/s",
+                         "conditionally-available": false,
 -- 
 GitLab
 
