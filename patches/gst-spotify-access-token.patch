@@ -1,145 +1,20 @@
-From 37f1586208384d261dc47c46c2036f89d53e1307 Mon Sep 17 00:00:00 2001
+From 5e1e7124b68cbec75d9601d83ef0a3376f8a7f84 Mon Sep 17 00:00:00 2001
 From: Guillaume Desmottes <guillaume.desmottes@onestream.live>
 Date: Wed, 15 Dec 2021 17:15:20 +0100
-Subject: [PATCH 1/2] spotify: Use librespot dev branch.
+Subject: [PATCH] spotify: replace username/password auth with access token.
 
-Co-authored-by: Nick Steel <nick@nsteel.co.uk>
+Part-of: <https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs/-/merge_requests/1801>
 ---
- audio/spotify/Cargo.toml                 |  8 +++++---
- audio/spotify/src/common.rs              | 22 +++++++---------------
- audio/spotify/src/spotifyaudiosrc/imp.rs | 17 ++++++++---------
- 3 files changed, 20 insertions(+), 27 deletions(-)
-
-diff --git a/audio/spotify/Cargo.toml b/audio/spotify/Cargo.toml
-index 593115bf2..b06f7613d 100644
---- a/audio/spotify/Cargo.toml
-+++ b/audio/spotify/Cargo.toml
-@@ -11,9 +11,11 @@ rust-version.workspace = true
- [dependencies]
- gst.workspace = true
- gst-base.workspace = true
--librespot-core = "0.4"
--librespot-playback = "0.4"
--tokio = { version = "1", features = ["rt-multi-thread"] }
-+librespot-core = { git = "https://github.com/librespot-org/librespot.git", rev = "e02e4ae224173fe63612e7542d656b0eadabc719" }
-+librespot-playback = { git = "https://github.com/librespot-org/librespot.git", rev = "e02e4ae224173fe63612e7542d656b0eadabc719", default-features = false, features = [
-+    'passthrough-decoder',
-+] }
-+tokio = { version = "1.0", features = ["rt-multi-thread"] }
- futures = "0.3"
- anyhow = "1.0"
- url = "2.3"
-diff --git a/audio/spotify/src/common.rs b/audio/spotify/src/common.rs
-index ed77dcc64..374a6587d 100644
---- a/audio/spotify/src/common.rs
-+++ b/audio/spotify/src/common.rs
-@@ -147,16 +147,10 @@ impl Settings {
-                     "reuse cached credentials for user {}",
-                     cached_cred.username
-                 );
--                if let Ok((session, _credentials)) = Session::connect(
--                    SessionConfig::default(),
--                    cached_cred,
--                    Some(cache.clone()),
--                    true,
--                )
--                .await
--                {
--                    return Ok(session);
--                }
-+
-+                let session = Session::new(SessionConfig::default(), Some(cache));
-+                session.connect(cached_cred, true).await?;
-+                return Ok(session);
-             }
-         }
- 
-@@ -175,8 +169,8 @@ impl Settings {
- 
-         let cred = Credentials::with_password(&self.username, &self.password);
- 
--        let (session, _credentials) =
--            Session::connect(SessionConfig::default(), cred, Some(cache), true).await?;
-+        let session = Session::new(SessionConfig::default(), Some(cache));
-+        session.connect(cred, true).await?;
- 
-         Ok(session)
-     }
-@@ -185,9 +179,7 @@ impl Settings {
-         if self.track.is_empty() {
-             bail!("track is not set");
-         }
--        let track = SpotifyId::from_uri(&self.track).map_err(|_| {
--            anyhow::anyhow!("failed to create Spotify URI from track {}", self.track)
--        })?;
-+        let track = SpotifyId::from_uri(&self.track)?;
- 
-         Ok(track)
-     }
-diff --git a/audio/spotify/src/spotifyaudiosrc/imp.rs b/audio/spotify/src/spotifyaudiosrc/imp.rs
-index 6f429682b..8a7416980 100644
---- a/audio/spotify/src/spotifyaudiosrc/imp.rs
-+++ b/audio/spotify/src/spotifyaudiosrc/imp.rs
-@@ -52,7 +52,7 @@ enum Message {
- }
- 
- struct State {
--    player: Player,
-+    player: Arc<Player>,
- 
-     /// receiver sending buffer to streaming thread
-     receiver: mpsc::Receiver<Message>,
-@@ -321,11 +321,10 @@ struct BufferSink {
- 
- impl Sink for BufferSink {
-     fn write(&mut self, packet: AudioPacket, _converter: &mut Converter) -> SinkResult<()> {
--        let oggdata = match packet {
--            AudioPacket::OggData(data) => data,
--            AudioPacket::Samples(_) => unimplemented!(),
-+        let buffer = match packet {
-+            AudioPacket::Samples(_) => unreachable!(),
-+            AudioPacket::Raw(ogg) => gst::Buffer::from_slice(ogg),
-         };
--        let buffer = gst::Buffer::from_slice(oggdata);
- 
-         // ignore if sending fails as that means the source element is being shutdown
-         let _ = self.sender.send(Message::Buffer(buffer));
-@@ -435,10 +434,10 @@ impl SpotifyAudioSrc {
-         let (sender, receiver) = mpsc::sync_channel(2);
-         let sender_clone = sender.clone();
- 
--        let (mut player, mut player_event_channel) =
--            Player::new(player_config, session, Box::new(NoOpVolume), || {
--                Box::new(BufferSink { sender })
--            });
-+        let player = Player::new(player_config, session, Box::new(NoOpVolume), || {
-+            Box::new(BufferSink { sender })
-+        });
-+        let mut player_event_channel = player.get_player_event_channel();
- 
-         player.load(track, true, 0);
- 
--- 
-GitLab
-
-
-From a9f1550d674cd53f1b5a74d2c75a1433f7730bdf Mon Sep 17 00:00:00 2001
-From: Nick Steel <nick@nsteel.co.uk>
-Date: Wed, 18 Sep 2024 13:30:47 +0100
-Subject: [PATCH 2/2] spotify: replace username/password auth with access
- token.
-
----
- Cargo.lock                               | 990 ++++++++++++++++++-----
+ Cargo.lock                               | 999 ++++++++++++++++++-----
  audio/spotify/Cargo.toml                 |   6 +-
  audio/spotify/README.md                  |  25 +-
- audio/spotify/src/common.rs              | 127 ++-
- audio/spotify/src/spotifyaudiosrc/imp.rs |   2 +-
+ audio/spotify/src/common.rs              | 141 ++--
+ audio/spotify/src/spotifyaudiosrc/imp.rs |  19 +-
  docs/plugins/gst_plugins_cache.json      |  12 +
- 6 files changed, 876 insertions(+), 286 deletions(-)
+ 6 files changed, 896 insertions(+), 306 deletions(-)
 
 diff --git a/Cargo.lock b/Cargo.lock
-index d3fbe05a6..1d28ba591 100644
+index 50d23a8390..8e90c64ded 100644
 --- a/Cargo.lock
 +++ b/Cargo.lock
 @@ -19,45 +19,13 @@ checksum = "512761e0bb2578dd7380c6baaa0f4ce03e84f95e960231d1dec8bf4d7d6e2627"
@@ -192,8 +67,8 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -70,7 +38,7 @@ dependencies = [
-  "getrandom",
+@@ -69,7 +37,7 @@ dependencies = [
+  "cfg-if",
   "once_cell",
   "version_check",
 - "zerocopy 0.7.35",
@@ -201,15 +76,15 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -367,6 +335,33 @@ dependencies = [
+@@ -365,6 +333,33 @@ dependencies = [
   "zeroize",
  ]
  
 +[[package]]
 +name = "aws-lc-rs"
-+version = "1.9.0"
++version = "1.10.0"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
-+checksum = "2f95446d919226d587817a7d21379e6eb099b97b45110a7f272a444ca5c54070"
++checksum = "cdd82dba44d209fddb11c190e0a94b78651f95299598e472215667417a03ff1d"
 +dependencies = [
 + "aws-lc-sys",
 + "mirai-annotations",
@@ -219,9 +94,9 @@ index d3fbe05a6..1d28ba591 100644
 +
 +[[package]]
 +name = "aws-lc-sys"
-+version = "0.21.2"
++version = "0.22.0"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
-+checksum = "b3ddc4a5b231dd6958b140ff3151b6412b3f4321fab354f399eec8f14b06df62"
++checksum = "df7a4168111d7eb622a31b214057b8509c0a7e1794f44c546d742330dc793972"
 +dependencies = [
 + "bindgen",
 + "cc",
@@ -234,7 +109,7 @@ index d3fbe05a6..1d28ba591 100644
 +
  [[package]]
  name = "aws-runtime"
- version = "1.2.0"
+ version = "1.4.3"
 @@ -458,7 +453,7 @@ dependencies = [
   "bytes",
   "fastrand",
@@ -253,15 +128,15 @@ index d3fbe05a6..1d28ba591 100644
   "http 0.2.12",
   "http 1.1.0",
   "once_cell",
-@@ -870,6 +865,29 @@ dependencies = [
+@@ -866,6 +861,29 @@ dependencies = [
   "serde",
  ]
  
 +[[package]]
 +name = "bindgen"
-+version = "0.69.4"
++version = "0.69.5"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
-+checksum = "a00dc851838a2120612785d195287475a3ac45514741da670b735818822129a0"
++checksum = "271383c67ccabffb7381723dea0672a673f292304fcb45c01cc648c7a8d58088"
 +dependencies = [
 + "bitflags 2.6.0",
 + "cexpr",
@@ -276,16 +151,16 @@ index d3fbe05a6..1d28ba591 100644
 + "regex",
 + "rustc-hash 1.1.0",
 + "shlex",
-+ "syn 2.0.79",
++ "syn 2.0.82",
 + "which",
 +]
 +
  [[package]]
  name = "bitflags"
  version = "1.3.2"
-@@ -888,15 +906,6 @@ version = "2.3.0"
+@@ -884,15 +902,6 @@ version = "2.5.3"
  source = "registry+https://github.com/rust-lang/crates.io-index"
- checksum = "7c12d1856e42f0d817a835fe55853957c85c8c8a470114029143d3f12671446e"
+ checksum = "b81e1519b0d82120d2fd469d5bfb2919a9361c48b02d82d04befc1cdd2002452"
  
 -[[package]]
 -name = "block-buffer"
@@ -299,7 +174,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "block-buffer"
  version = "0.10.4"
-@@ -1050,6 +1059,15 @@ version = "1.1.0"
+@@ -1046,6 +1055,15 @@ version = "1.1.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "6d43a04d8753f35258c91f8ec639f792891f748a1edbd759cf1dcea3382ad83c"
  
@@ -315,7 +190,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "cfg-expr"
  version = "0.15.8"
-@@ -1099,11 +1117,23 @@ dependencies = [
+@@ -1095,11 +1113,23 @@ dependencies = [
  
  [[package]]
  name = "cipher"
@@ -342,7 +217,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -1152,6 +1182,15 @@ version = "0.4.3"
+@@ -1148,6 +1178,15 @@ version = "0.4.3"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "4bfbf56724aa9eca8afa4fcfadeb479e722935bb2a0900c2d37e0cc477af0688"
  
@@ -358,7 +233,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "color-name"
  version = "1.1.0"
-@@ -1350,16 +1389,6 @@ dependencies = [
+@@ -1346,16 +1385,6 @@ dependencies = [
   "typenum",
  ]
  
@@ -375,7 +250,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "csound"
  version = "0.1.8"
-@@ -1384,9 +1413,9 @@ dependencies = [
+@@ -1380,9 +1409,9 @@ dependencies = [
  
  [[package]]
  name = "ctr"
@@ -387,7 +262,7 @@ index d3fbe05a6..1d28ba591 100644
  dependencies = [
   "cipher",
  ]
-@@ -1514,6 +1543,17 @@ dependencies = [
+@@ -1513,6 +1542,17 @@ dependencies = [
   "zeroize",
  ]
  
@@ -405,17 +280,17 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "deranged"
  version = "0.3.11"
-@@ -1535,27 +1575,50 @@ dependencies = [
+@@ -1534,27 +1574,50 @@ dependencies = [
  ]
  
  [[package]]
 -name = "diff"
 -version = "0.1.13"
 +name = "derive_builder"
-+version = "0.20.1"
++version = "0.20.2"
  source = "registry+https://github.com/rust-lang/crates.io-index"
 -checksum = "56254986775e3233ffa9c4d7d3faaf6d36a2c09d30b20687e9f88bc8bafc16c8"
-+checksum = "cd33f37ee6a119146a1781d3356a7c26028f83d779b2e04ecd45fdc75c76877b"
++checksum = "507dfb09ea8b7fa618fcf76e953f4f5e192547945816d5358edffe39f6f94947"
 +dependencies = [
 + "derive_builder_macro",
 +]
@@ -424,26 +299,26 @@ index d3fbe05a6..1d28ba591 100644
 -name = "digest"
 -version = "0.9.0"
 +name = "derive_builder_core"
-+version = "0.20.1"
++version = "0.20.2"
  source = "registry+https://github.com/rust-lang/crates.io-index"
 -checksum = "d3dd60d1080a57a05ab032377049e0591415d2b31afd7028356dbf3cc6dcb066"
-+checksum = "7431fa049613920234f22c47fdc33e6cf3ee83067091ea4277a3f8c4587aae38"
++checksum = "2d5bcf7b024d6835cfb3d473887cd966994907effbe9227e8c8219824d06c4e8"
  dependencies = [
 - "generic-array",
 + "darling",
 + "proc-macro2",
 + "quote 1.0.37",
-+ "syn 2.0.79",
++ "syn 2.0.82",
 +]
 +
 +[[package]]
 +name = "derive_builder_macro"
-+version = "0.20.1"
++version = "0.20.2"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
-+checksum = "4abae7035bf79b9877b779505d8cf3749285b80c43941eda66604841889451dc"
++checksum = "ab63b0e2bf4d5928aff72e83a7dace85d7bba5fe12dcc3c5a572d78caffd3f3c"
 +dependencies = [
 + "derive_builder_core",
-+ "syn 2.0.79",
++ "syn 2.0.82",
  ]
  
 +[[package]]
@@ -464,7 +339,7 @@ index d3fbe05a6..1d28ba591 100644
   "crypto-common",
   "subtle",
  ]
-@@ -1572,6 +1635,12 @@ dependencies = [
+@@ -1571,6 +1634,12 @@ dependencies = [
   "rgb",
  ]
  
@@ -475,9 +350,9 @@ index d3fbe05a6..1d28ba591 100644
 +checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 +
  [[package]]
- name = "ebur128"
- version = "0.1.9"
-@@ -1590,10 +1659,10 @@ version = "0.14.8"
+ name = "ebml-iterable"
+ version = "0.6.2"
+@@ -1618,10 +1687,10 @@ version = "0.14.8"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "413301934810f597c1d19ca71c8710e99a3f1ba28a0d2ebc01551a2daeea3c5c"
  dependencies = [
@@ -490,7 +365,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -1602,7 +1671,7 @@ version = "1.5.3"
+@@ -1630,7 +1699,7 @@ version = "1.5.3"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "91cff35c70bba8a626e3185d8cd48cc11b5437e1a5bcd15b9b5fa3c64b6dfee7"
  dependencies = [
@@ -499,7 +374,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -1619,12 +1688,12 @@ checksum = "e7bb888ab5300a19b8e5bceef25ac745ad065f3c9f7efc6de1b91958110891d3"
+@@ -1647,12 +1716,12 @@ checksum = "e7bb888ab5300a19b8e5bceef25ac745ad065f3c9f7efc6de1b91958110891d3"
  dependencies = [
   "base16ct",
   "crypto-bigint 0.4.9",
@@ -515,7 +390,7 @@ index d3fbe05a6..1d28ba591 100644
   "rand_core",
   "sec1",
   "subtle",
-@@ -1835,6 +1904,12 @@ dependencies = [
+@@ -1869,6 +1938,12 @@ dependencies = [
   "autocfg",
  ]
  
@@ -528,9 +403,9 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "fst"
  version = "0.4.7"
-@@ -1912,6 +1987,12 @@ version = "0.3.30"
+@@ -1946,6 +2021,12 @@ version = "0.3.31"
  source = "registry+https://github.com/rust-lang/crates.io-index"
- checksum = "38d84fa142264698cdce1a9f9172cf383a0c82de1bddcf3092901442c4097004"
+ checksum = "f90f7dce0722e95104fcb095585910c0977252f286e354b5e3bd38902cd99988"
  
 +[[package]]
 +name = "futures-timer"
@@ -540,20 +415,21 @@ index d3fbe05a6..1d28ba591 100644
 +
  [[package]]
  name = "futures-util"
- version = "0.3.30"
-@@ -2176,6 +2257,24 @@ dependencies = [
+ version = "0.3.31"
+@@ -2210,6 +2291,25 @@ dependencies = [
   "system-deps 7.0.3",
  ]
  
 +[[package]]
 +name = "governor"
-+version = "0.6.3"
++version = "0.6.4"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
-+checksum = "68a7f542ee6b35af73b06abc0dad1c1bae89964e4e253bc4b587b91c9637867b"
++checksum = "7a7ecdc5898f6a43e08a7e2c9e2266beb98fd4dfbf2634182540fbb715245093"
 +dependencies = [
 + "cfg-if",
-+ "futures",
++ "futures-sink",
 + "futures-timer",
++ "futures-util",
 + "no-std-compat",
 + "nonzero_ext",
 + "parking_lot",
@@ -566,7 +442,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "graphene-rs"
  version = "0.21.0"
-@@ -3756,21 +3855,20 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+@@ -3785,21 +3885,20 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
  
  [[package]]
  name = "hmac"
@@ -595,7 +471,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -3910,18 +4008,24 @@ dependencies = [
+@@ -3945,18 +4044,24 @@ dependencies = [
  ]
  
  [[package]]
@@ -611,11 +487,11 @@ index d3fbe05a6..1d28ba591 100644
 - "futures",
 - "headers 0.3.9",
 - "http 0.2.12",
-- "hyper 0.14.30",
+- "hyper 0.14.31",
 + "futures-util",
 + "headers 0.4.0",
 + "http 1.1.0",
-+ "hyper 1.4.1",
++ "hyper 1.5.0",
 + "hyper-rustls 0.26.0",
 + "hyper-util",
 + "pin-project-lite",
@@ -627,7 +503,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -3940,6 +4044,25 @@ dependencies = [
+@@ -3975,6 +4080,25 @@ dependencies = [
   "tokio-rustls 0.24.1",
  ]
  
@@ -639,7 +515,7 @@ index d3fbe05a6..1d28ba591 100644
 +dependencies = [
 + "futures-util",
 + "http 1.1.0",
-+ "hyper 1.4.1",
++ "hyper 1.5.0",
 + "hyper-util",
 + "log",
 + "rustls 0.22.4",
@@ -653,17 +529,17 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "hyper-rustls"
  version = "0.27.3"
-@@ -3950,7 +4073,9 @@ dependencies = [
+@@ -3985,7 +4109,9 @@ dependencies = [
   "http 1.1.0",
-  "hyper 1.4.1",
+  "hyper 1.5.0",
   "hyper-util",
 + "log",
-  "rustls 0.23.13",
+  "rustls 0.23.15",
 + "rustls-native-certs 0.8.0",
   "rustls-pki-types",
   "tokio",
   "tokio-rustls 0.26.0",
-@@ -4039,7 +4164,7 @@ dependencies = [
+@@ -4074,7 +4200,7 @@ dependencies = [
   "iana-time-zone-haiku",
   "js-sys",
   "wasm-bindgen",
@@ -672,7 +548,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -4129,6 +4254,15 @@ dependencies = [
+@@ -4164,6 +4290,15 @@ dependencies = [
   "serde",
  ]
  
@@ -688,7 +564,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "interpolate_name"
  version = "0.2.4"
-@@ -4259,6 +4393,15 @@ name = "lazy_static"
+@@ -4294,6 +4429,15 @@ name = "lazy_static"
  version = "1.5.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
@@ -704,7 +580,7 @@ index d3fbe05a6..1d28ba591 100644
  
  [[package]]
  name = "lewton"
-@@ -4267,7 +4410,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -4302,7 +4446,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "777b48df9aaab155475a83a7df3070395ea1ac6902f5cd062b8f2b028075c030"
  dependencies = [
   "byteorder",
@@ -712,16 +588,7 @@ index d3fbe05a6..1d28ba591 100644
   "tinyvec",
  ]
  
-@@ -4295,7 +4437,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
- checksum = "4979f22fdb869068da03c9f7528f8297c6fd2606bc3a4affe42e6a823fdb8da4"
- dependencies = [
-  "cfg-if",
-- "windows-targets 0.48.5",
-+ "windows-targets 0.52.6",
- ]
- 
- [[package]]
-@@ -4306,85 +4448,118 @@ checksum = "4ec2a862134d2a7d32d7983ddcdd1c4923530833c9f2ea1a44fc5fa473989058"
+@@ -4341,108 +4484,141 @@ checksum = "4ec2a862134d2a7d32d7983ddcdd1c4923530833c9f2ea1a44fc5fa473989058"
  
  [[package]]
  name = "librespot-audio"
@@ -738,7 +605,7 @@ index d3fbe05a6..1d28ba591 100644
 + "ctr",
   "futures-util",
 + "http-body-util",
-+ "hyper 1.4.1",
++ "hyper 1.5.0",
 + "hyper-util",
   "librespot-core",
   "log",
@@ -772,9 +639,9 @@ index d3fbe05a6..1d28ba591 100644
 + "http 1.1.0",
 + "http-body-util",
   "httparse",
-- "hyper 0.14.30",
+- "hyper 0.14.31",
 - "hyper-proxy",
-+ "hyper 1.4.1",
++ "hyper 1.5.0",
 + "hyper-proxy2",
 + "hyper-rustls 0.27.3",
 + "hyper-util",
@@ -842,7 +709,14 @@ index d3fbe05a6..1d28ba591 100644
  source = "registry+https://github.com/rust-lang/crates.io-index"
 -checksum = "5190a0b9bcc7f70ee4196a6b4a1c731d405ca130d4a6fcd4c561cfdde8b7cfb7"
 +checksum = "57bda94233b358fb41c04ed15507c61136c80efe876c6e05a10ddb9a182b144e"
-+dependencies = [
+ dependencies = [
+- "byteorder",
+- "futures-executor",
+- "futures-util",
+- "lewton",
+- "librespot-audio",
+- "librespot-core",
+- "librespot-metadata",
 + "log",
 + "oauth2",
 + "thiserror",
@@ -854,15 +728,14 @@ index d3fbe05a6..1d28ba591 100644
 +version = "0.5.0"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
 +checksum = "5b1bcfe1d72c5ac14c798c7e3e1c20e1fb6af2b9c254794545cfcb1f2a4627e2"
- dependencies = [
-- "byteorder",
-- "futures-executor",
-  "futures-util",
-- "lewton",
-  "librespot-audio",
-  "librespot-core",
-  "librespot-metadata",
-@@ -4394,20 +4569,20 @@ dependencies = [
++dependencies = [
++ "futures-util",
++ "librespot-audio",
++ "librespot-core",
++ "librespot-metadata",
+  "log",
+  "ogg",
+  "parking_lot",
   "rand",
   "rand_distr",
   "shell-words",
@@ -888,7 +761,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -4541,7 +4716,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -4576,7 +4752,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "d89e7ee0cfbedfc4da3340218492196241d89eefb6dab27de5df917a6d2e78cf"
  dependencies = [
   "cfg-if",
@@ -897,7 +770,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -4603,6 +4778,12 @@ dependencies = [
+@@ -4638,6 +4814,12 @@ dependencies = [
   "windows-sys 0.52.0",
  ]
  
@@ -910,7 +783,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "more-asserts"
  version = "0.3.1"
-@@ -4702,6 +4883,12 @@ dependencies = [
+@@ -4737,6 +4919,12 @@ dependencies = [
   "rustfft",
  ]
  
@@ -923,7 +796,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "nom"
  version = "7.1.3"
-@@ -4712,12 +4899,27 @@ dependencies = [
+@@ -4747,12 +4935,27 @@ dependencies = [
   "minimal-lexical",
  ]
  
@@ -951,7 +824,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "nu-ansi-term"
  version = "0.46.0"
-@@ -4739,6 +4941,23 @@ dependencies = [
+@@ -4774,6 +4977,23 @@ dependencies = [
   "rand",
  ]
  
@@ -975,7 +848,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "num-complex"
  version = "0.4.6"
-@@ -4774,6 +4993,17 @@ dependencies = [
+@@ -4809,6 +5029,17 @@ dependencies = [
   "num-traits",
  ]
  
@@ -993,7 +866,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "num-rational"
  version = "0.4.2"
-@@ -4806,6 +5036,35 @@ dependencies = [
+@@ -4841,6 +5072,35 @@ dependencies = [
   "libc",
  ]
  
@@ -1028,8 +901,8 @@ index d3fbe05a6..1d28ba591 100644
 +
  [[package]]
  name = "object"
- version = "0.36.4"
-@@ -4817,9 +5076,9 @@ dependencies = [
+ version = "0.36.5"
+@@ -4852,9 +5112,9 @@ dependencies = [
  
  [[package]]
  name = "ogg"
@@ -1041,9 +914,9 @@ index d3fbe05a6..1d28ba591 100644
  dependencies = [
   "byteorder",
  ]
-@@ -4833,12 +5092,6 @@ dependencies = [
-  "portable-atomic",
- ]
+@@ -4865,12 +5125,6 @@ version = "1.20.2"
+ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "1261fe7e33c73b354eab43b1273a57c8f967d0391e80353e51f764ac02cf6775"
  
 -[[package]]
 -name = "opaque-debug"
@@ -1053,8 +926,8 @@ index d3fbe05a6..1d28ba591 100644
 -
  [[package]]
  name = "openssl"
- version = "0.10.66"
-@@ -5050,12 +5303,12 @@ dependencies = [
+ version = "0.10.68"
+@@ -5082,12 +5336,12 @@ dependencies = [
  
  [[package]]
  name = "pbkdf2"
@@ -1071,7 +944,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -5079,6 +5332,15 @@ dependencies = [
+@@ -5111,6 +5365,15 @@ dependencies = [
   "serde",
  ]
  
@@ -1087,7 +960,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "percent-encoding"
  version = "2.3.1"
-@@ -5127,14 +5389,35 @@ version = "0.1.0"
+@@ -5159,14 +5422,35 @@ version = "0.1.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "8b870d8c151b6f2fb93e84a13146138f05d02ed11c7e7c54f8826aaaf7c9f184"
  
@@ -1125,7 +998,20 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -5195,7 +5478,7 @@ version = "0.2.20"
+@@ -5209,6 +5493,12 @@ dependencies = [
+  "windows-sys 0.59.0",
+ ]
+ 
++[[package]]
++name = "portable-atomic"
++version = "1.9.0"
++source = "registry+https://github.com/rust-lang/crates.io-index"
++checksum = "cc9c68a3f6da06753e9335d63e27f6b9754dd1920d941135b7ea8224f141adb2"
++
+ [[package]]
+ name = "powerfmt"
+ version = "0.2.0"
+@@ -5221,7 +5511,7 @@ version = "0.2.20"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "77957b295656769bb8ad2b6a6b09d897d94f05c41b069aede1fcdaa675eaea04"
  dependencies = [
@@ -1134,7 +1020,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -5229,12 +5512,13 @@ dependencies = [
+@@ -5255,12 +5545,13 @@ dependencies = [
  
  [[package]]
  name = "priority-queue"
@@ -1151,24 +1037,15 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -5315,7 +5599,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
- checksum = "22505a5c94da8e3b7c2996394d1c933236c4d743e81a410bcca4e6989fc066a4"
- dependencies = [
-  "bytes",
-- "heck 0.4.1",
-+ "heck 0.5.0",
-  "itertools 0.12.1",
-  "log",
-  "multimap",
-@@ -5353,27 +5637,53 @@ dependencies = [
+@@ -5377,27 +5668,53 @@ dependencies = [
  
  [[package]]
  name = "protobuf"
 -version = "2.28.0"
-+version = "3.6.0"
++version = "3.7.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
 -checksum = "106dd99e98437432fed6519dedecfade6a06a73bb7b2a1e019fdd2bee5778d94"
-+checksum = "3018844a02746180074f621e847703737d27d89d7f0721a7a4da317f88b16385"
++checksum = "a3a7c64d9bf75b1b8d981124c14c179074e8caa7dfe7b6a12e6222ddcd0c8f72"
 +dependencies = [
 + "once_cell",
 + "protobuf-support",
@@ -1178,10 +1055,10 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "protobuf-codegen"
 -version = "2.28.0"
-+version = "3.6.0"
++version = "3.7.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
 -checksum = "033460afb75cf755fcfc16dfaed20b86468082a2ea24e05ac35ab4a099a017d6"
-+checksum = "411c15a212b4de05eb8bc989fd066a74c86bd3c04e27d6e86bd7703b806d7734"
++checksum = "e26b833f144769a30e04b1db0146b2aaa53fd2fd83acf10a6b5f996606c18144"
  dependencies = [
 + "anyhow",
 + "once_cell",
@@ -1196,10 +1073,10 @@ index d3fbe05a6..1d28ba591 100644
 -name = "protobuf-codegen-pure"
 -version = "2.28.0"
 +name = "protobuf-parse"
-+version = "3.6.0"
++version = "3.7.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
 -checksum = "95a29399fc94bcd3eeaa951c715f7bea69409b2445356b00519740bcd6ddd865"
-+checksum = "06f45f16b522d92336e839b5e40680095a045e36a1e7f742ba682ddc85236772"
++checksum = "322330e133eab455718444b4e033ebfac7c6528972c784fcde28d2cc783c6257"
  dependencies = [
 + "anyhow",
 + "indexmap 2.6.0",
@@ -1214,41 +1091,41 @@ index d3fbe05a6..1d28ba591 100644
 +
 +[[package]]
 +name = "protobuf-support"
-+version = "3.6.0"
++version = "3.7.1"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
-+checksum = "faf96d872914fcda2b66d66ea3fff2be7c66865d31c7bb2790cff32c0e714880"
++checksum = "b088fd20b938a875ea00843b6faf48579462630015c3788d397ad6a786663252"
 +dependencies = [
 + "thiserror",
  ]
  
  [[package]]
-@@ -5422,7 +5732,7 @@ dependencies = [
+@@ -5446,7 +5763,7 @@ dependencies = [
   "pin-project-lite",
   "quinn-proto",
   "quinn-udp",
 - "rustc-hash",
 + "rustc-hash 2.0.0",
-  "rustls 0.23.13",
+  "rustls 0.23.15",
   "socket2",
   "thiserror",
-@@ -5439,7 +5749,7 @@ dependencies = [
+@@ -5463,7 +5780,7 @@ dependencies = [
   "bytes",
   "rand",
   "ring",
 - "rustc-hash",
 + "rustc-hash 2.0.0",
-  "rustls 0.23.13",
+  "rustls 0.23.15",
   "rustls-platform-verifier",
   "slab",
-@@ -5674,6 +5984,7 @@ dependencies = [
+@@ -5698,6 +6015,7 @@ dependencies = [
   "http 0.2.12",
   "http-body 0.4.6",
-  "hyper 0.14.30",
+  "hyper 0.14.31",
 + "hyper-rustls 0.24.2",
   "hyper-tls 0.5.0",
   "ipnet",
   "js-sys",
-@@ -5683,6 +5994,7 @@ dependencies = [
+@@ -5707,6 +6025,7 @@ dependencies = [
   "once_cell",
   "percent-encoding",
   "pin-project-lite",
@@ -1256,7 +1133,7 @@ index d3fbe05a6..1d28ba591 100644
   "rustls-pemfile 1.0.4",
   "serde",
   "serde_json",
-@@ -5691,11 +6003,13 @@ dependencies = [
+@@ -5715,11 +6034,13 @@ dependencies = [
   "system-configuration 0.5.1",
   "tokio",
   "tokio-native-tls",
@@ -1270,7 +1147,7 @@ index d3fbe05a6..1d28ba591 100644
   "winreg",
  ]
  
-@@ -5753,7 +6067,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -5777,7 +6098,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "7743f17af12fa0b03b803ba12cd6a8d9483a587e89c69445e3909655c0b9fabb"
  dependencies = [
   "crypto-bigint 0.4.9",
@@ -1279,7 +1156,7 @@ index d3fbe05a6..1d28ba591 100644
   "zeroize",
  ]
  
-@@ -5781,6 +6095,26 @@ dependencies = [
+@@ -5805,6 +6126,26 @@ dependencies = [
   "windows-sys 0.52.0",
  ]
  
@@ -1306,7 +1183,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "rtcp-types"
  version = "0.1.0"
-@@ -5830,6 +6164,12 @@ version = "0.1.24"
+@@ -5854,6 +6195,12 @@ version = "0.1.24"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "719b953e2095829ee67db738b3bfa9fa368c94900df327b3f07fe6e794d2fe1f"
  
@@ -1319,16 +1196,16 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "rustc-hash"
  version = "2.0.0"
-@@ -5914,6 +6254,8 @@ version = "0.23.13"
+@@ -5938,6 +6285,8 @@ version = "0.23.15"
  source = "registry+https://github.com/rust-lang/crates.io-index"
- checksum = "f2dabaac7466917e566adb06783a81ca48944c6898a1b08b9374106dd671f4c8"
+ checksum = "5fbb44d7acc4e873d613422379f69f237a1b141928c02f6bc6ccfddddc2d7993"
  dependencies = [
 + "aws-lc-rs",
 + "log",
   "once_cell",
   "ring",
   "rustls-pki-types",
-@@ -5947,6 +6289,19 @@ dependencies = [
+@@ -5971,6 +6320,19 @@ dependencies = [
   "security-framework",
  ]
  
@@ -1348,7 +1225,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "rustls-pemfile"
  version = "1.0.4"
-@@ -5988,7 +6343,7 @@ dependencies = [
+@@ -6012,7 +6374,7 @@ dependencies = [
   "rustls-webpki 0.102.8",
   "security-framework",
   "security-framework-sys",
@@ -1357,7 +1234,7 @@ index d3fbe05a6..1d28ba591 100644
   "winapi",
  ]
  
-@@ -6014,11 +6369,18 @@ version = "0.102.8"
+@@ -6038,11 +6400,18 @@ version = "0.102.8"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "64ca1bc8749bd4cf37b5ce386cc146580777b4e8572c7b97baf22c83f444bee9"
  dependencies = [
@@ -1369,14 +1246,14 @@ index d3fbe05a6..1d28ba591 100644
  
 +[[package]]
 +name = "rustversion"
-+version = "1.0.17"
++version = "1.0.18"
 +source = "registry+https://github.com/rust-lang/crates.io-index"
-+checksum = "955d28af4278de8121b7ebeb796b6a45735dc01436d898801014aced2773a3d6"
++checksum = "0e819f2bc632f285be6d7cd36e25940d45b2391dd6d9b939e79de557f7014248"
 +
  [[package]]
  name = "ryu"
  version = "1.0.18"
-@@ -6097,9 +6459,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -6121,9 +6490,9 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "3be24c1842290c45df0a7bf069e0c268a747ad05a192f2fd7dcfdbc1cba40928"
  dependencies = [
   "base16ct",
@@ -1388,8 +1265,8 @@ index d3fbe05a6..1d28ba591 100644
   "subtle",
   "zeroize",
  ]
-@@ -6261,19 +6623,6 @@ dependencies = [
-  "syn 2.0.79",
+@@ -6285,19 +6654,6 @@ dependencies = [
+  "syn 2.0.82",
  ]
  
 -[[package]]
@@ -1408,7 +1285,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "sha1"
  version = "0.10.6"
-@@ -6282,7 +6631,7 @@ checksum = "e3bf829a2d51ab4a5ddf1352d8470c140cadc8301b2ae1789db023f01cedd6ba"
+@@ -6306,7 +6662,7 @@ checksum = "e3bf829a2d51ab4a5ddf1352d8470c140cadc8301b2ae1789db023f01cedd6ba"
  dependencies = [
   "cfg-if",
   "cpufeatures",
@@ -1417,7 +1294,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -6293,7 +6642,7 @@ checksum = "793db75ad2bcafc3ffa7c68b215fee268f537982cd901d132f89c6343f3a3dc8"
+@@ -6317,7 +6673,7 @@ checksum = "793db75ad2bcafc3ffa7c68b215fee268f537982cd901d132f89c6343f3a3dc8"
  dependencies = [
   "cfg-if",
   "cpufeatures",
@@ -1426,7 +1303,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -6351,7 +6700,17 @@ version = "1.6.4"
+@@ -6375,7 +6731,17 @@ version = "1.6.4"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "74233d3b3b2f6d4b006dc19dee745e73e2a6bfb6f93607cd3b02bd5b00797d7c"
  dependencies = [
@@ -1445,7 +1322,7 @@ index d3fbe05a6..1d28ba591 100644
   "rand_core",
  ]
  
-@@ -6422,6 +6781,15 @@ dependencies = [
+@@ -6446,6 +6812,15 @@ dependencies = [
   "lock_api",
  ]
  
@@ -1461,7 +1338,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "spki"
  version = "0.6.0"
-@@ -6429,7 +6797,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -6453,7 +6828,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "67cf02bbac7a337dc36e4f5a693db6c21e7863f45070f7064577eb4367a3212b"
  dependencies = [
   "base64ct",
@@ -1480,7 +1357,7 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -6471,6 +6849,90 @@ version = "2.6.1"
+@@ -6489,6 +6874,90 @@ version = "2.6.1"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "13c2bddecc57b384dee18652358fb23172facb8a2c51ccc10d74c157bdea3292"
  
@@ -1571,7 +1448,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "syn"
  version = "0.11.11"
-@@ -6527,6 +6989,19 @@ dependencies = [
+@@ -6546,6 +7015,19 @@ dependencies = [
   "unicode-xid",
  ]
  
@@ -1591,7 +1468,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "system-configuration"
  version = "0.5.1"
-@@ -6708,7 +7183,9 @@ checksum = "5dfd88e563464686c916c7e46e623e520ddc6d79fa6641390f2e3fa86e83e885"
+@@ -6727,7 +7209,9 @@ checksum = "5dfd88e563464686c916c7e46e623e520ddc6d79fa6641390f2e3fa86e83e885"
  dependencies = [
   "deranged",
   "itoa",
@@ -1601,7 +1478,7 @@ index d3fbe05a6..1d28ba591 100644
   "powerfmt",
   "serde",
   "time-core",
-@@ -6854,6 +7331,22 @@ dependencies = [
+@@ -6873,6 +7357,22 @@ dependencies = [
   "tungstenite 0.21.0",
  ]
  
@@ -1613,7 +1490,7 @@ index d3fbe05a6..1d28ba591 100644
 +dependencies = [
 + "futures-util",
 + "log",
-+ "rustls 0.23.13",
++ "rustls 0.23.15",
 + "rustls-native-certs 0.8.0",
 + "rustls-pki-types",
 + "tokio",
@@ -1624,16 +1501,16 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "tokio-util"
  version = "0.7.12"
-@@ -7038,6 +7531,8 @@ dependencies = [
+@@ -7057,6 +7557,8 @@ dependencies = [
   "log",
   "native-tls",
   "rand",
-+ "rustls 0.23.13",
++ "rustls 0.23.15",
 + "rustls-pki-types",
   "sha1",
   "thiserror",
   "url",
-@@ -7113,6 +7608,7 @@ dependencies = [
+@@ -7129,6 +7631,7 @@ dependencies = [
   "form_urlencoded",
   "idna 0.5.0",
   "percent-encoding",
@@ -1641,15 +1518,15 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -7149,6 +7645,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
- checksum = "81dfa00651efa65069b0b6b651f4aaa31ba9e3c3ce0137aaad053604ee7e0314"
+@@ -7165,6 +7668,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+ checksum = "f8c5f0a0af699448548ad1a2fbf920fb4bee257eae39953ba95cb84891a0446a"
  dependencies = [
   "getrandom",
 + "rand",
  ]
  
  [[package]]
-@@ -7182,13 +7679,40 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
+@@ -7198,13 +7702,40 @@ checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
  
  [[package]]
  name = "vergen"
@@ -1695,8 +1572,8 @@ index d3fbe05a6..1d28ba591 100644
  ]
  
  [[package]]
-@@ -7348,6 +7872,22 @@ dependencies = [
-  "wasm-bindgen",
+@@ -7373,6 +7904,22 @@ dependencies = [
+  "ebml-iterable",
  ]
  
 +[[package]]
@@ -1718,7 +1595,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "webpki-roots"
  version = "0.26.6"
-@@ -7363,6 +7903,18 @@ version = "0.1.8"
+@@ -7388,6 +7935,18 @@ version = "0.1.8"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "53a85b86a771b1c87058196170769dd264f66c0782acf1ae6cc51bfd64b39082"
  
@@ -1737,16 +1614,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "winapi"
  version = "0.3.9"
-@@ -7385,7 +7937,7 @@ version = "0.1.9"
- source = "registry+https://github.com/rust-lang/crates.io-index"
- checksum = "cf221c93e13a30d793f7645a0e7762c55d169dbb0a49671918a2319d289b10bb"
- dependencies = [
-- "windows-sys 0.48.0",
-+ "windows-sys 0.59.0",
- ]
- 
- [[package]]
-@@ -7394,6 +7946,16 @@ version = "0.4.0"
+@@ -7419,6 +7978,16 @@ version = "0.4.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
  
@@ -1763,7 +1631,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "windows-core"
  version = "0.52.0"
-@@ -7403,17 +7965,60 @@ dependencies = [
+@@ -7428,17 +7997,60 @@ dependencies = [
   "windows-targets 0.52.6",
  ]
  
@@ -1787,7 +1655,7 @@ index d3fbe05a6..1d28ba591 100644
 +dependencies = [
 + "proc-macro2",
 + "quote 1.0.37",
-+ "syn 2.0.79",
++ "syn 2.0.82",
 +]
 +
 +[[package]]
@@ -1798,7 +1666,7 @@ index d3fbe05a6..1d28ba591 100644
 +dependencies = [
 + "proc-macro2",
 + "quote 1.0.37",
-+ "syn 2.0.79",
++ "syn 2.0.82",
 +]
 +
  [[package]]
@@ -1825,7 +1693,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "windows-result"
  version = "0.2.0"
-@@ -7429,7 +8034,7 @@ version = "0.1.0"
+@@ -7454,7 +8066,7 @@ version = "0.1.0"
  source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "4cd9b125c486025df0eabcb585e62173c6c9eddcec5d117d3b6e8c30e2ee4d10"
  dependencies = [
@@ -1834,7 +1702,7 @@ index d3fbe05a6..1d28ba591 100644
   "windows-targets 0.52.6",
  ]
  
-@@ -7647,16 +8252,6 @@ dependencies = [
+@@ -7672,16 +8284,6 @@ dependencies = [
   "time",
  ]
  
@@ -1851,7 +1719,7 @@ index d3fbe05a6..1d28ba591 100644
  [[package]]
  name = "zerocopy"
  version = "0.7.35"
-@@ -7664,18 +8259,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
+@@ -7689,18 +8291,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
  checksum = "1b9b4fd18abc82b8136838da5d50bae7bdea537c574d8dc1a34ed098d6c166f0"
  dependencies = [
   "byteorder",
@@ -1866,30 +1734,30 @@ index d3fbe05a6..1d28ba591 100644
 -dependencies = [
 - "proc-macro2",
 - "quote 1.0.37",
-- "syn 2.0.79",
+- "syn 2.0.82",
 + "zerocopy-derive",
  ]
  
  [[package]]
 diff --git a/audio/spotify/Cargo.toml b/audio/spotify/Cargo.toml
-index b06f7613d..1c6353121 100644
+index 593115bf27..1c6353121e 100644
 --- a/audio/spotify/Cargo.toml
 +++ b/audio/spotify/Cargo.toml
-@@ -11,10 +11,8 @@ rust-version.workspace = true
+@@ -11,9 +11,9 @@ rust-version.workspace = true
  [dependencies]
  gst.workspace = true
  gst-base.workspace = true
--librespot-core = { git = "https://github.com/librespot-org/librespot.git", rev = "e02e4ae224173fe63612e7542d656b0eadabc719" }
--librespot-playback = { git = "https://github.com/librespot-org/librespot.git", rev = "e02e4ae224173fe63612e7542d656b0eadabc719", default-features = false, features = [
--    'passthrough-decoder',
--] }
+-librespot-core = "0.4"
+-librespot-playback = "0.4"
+-tokio = { version = "1", features = ["rt-multi-thread"] }
 +librespot-core = "0.5"
 +librespot-playback = { version = "0.5", features = ['passthrough-decoder'] }
- tokio = { version = "1.0", features = ["rt-multi-thread"] }
++tokio = { version = "1.0", features = ["rt-multi-thread"] }
  futures = "0.3"
  anyhow = "1.0"
+ url = "2.3"
 diff --git a/audio/spotify/README.md b/audio/spotify/README.md
-index 982377470..2e3649260 100644
+index 982377470a..2e36492600 100644
 --- a/audio/spotify/README.md
 +++ b/audio/spotify/README.md
 @@ -9,23 +9,36 @@ to respect their legal/licensing restrictions.
@@ -1937,7 +1805,7 @@ index 982377470..2e3649260 100644
  ```
 \ No newline at end of file
 diff --git a/audio/spotify/src/common.rs b/audio/spotify/src/common.rs
-index 374a6587d..a5764ef8b 100644
+index ed77dcc649..a5764ef8b7 100644
 --- a/audio/spotify/src/common.rs
 +++ b/audio/spotify/src/common.rs
 @@ -18,8 +18,7 @@ use librespot_core::{
@@ -2049,7 +1917,7 @@ index 374a6587d..a5764ef8b 100644
              "cache-credentials" => self.cache_credentials.to_value(),
              "cache-files" => self.cache_files.to_value(),
              "cache-max-size" => self.cache_max_size.to_value(),
-@@ -132,26 +124,20 @@ impl Settings {
+@@ -132,32 +124,20 @@ impl Settings {
          let cache = Cache::new(credentials_cache, None, files_cache, max_size)?;
  
          if let Some(cached_cred) = cache.credentials() {
@@ -2068,10 +1936,16 @@ index 374a6587d..a5764ef8b 100644
 -                    "reuse cached credentials for user {}",
 -                    cached_cred.username
 -                );
--
--                let session = Session::new(SessionConfig::default(), Some(cache));
--                session.connect(cached_cred, true).await?;
--                return Ok(session);
+-                if let Ok((session, _credentials)) = Session::connect(
+-                    SessionConfig::default(),
+-                    cached_cred,
+-                    Some(cache.clone()),
+-                    true,
+-                )
+-                .await
+-                {
+-                    return Ok(session);
+-                }
 -            }
 +            let cached_username = cached_cred
 +                .username
@@ -2090,7 +1964,7 @@ index 374a6587d..a5764ef8b 100644
          }
  
          gst::debug!(
-@@ -160,14 +146,11 @@ impl Settings {
+@@ -166,17 +146,14 @@ impl Settings {
              "credentials not in cache or cached credentials invalid",
          );
  
@@ -2106,13 +1980,53 @@ index 374a6587d..a5764ef8b 100644
 -        let cred = Credentials::with_password(&self.username, &self.password);
 +        let cred = Credentials::with_access_token(&self.access_token);
  
-         let session = Session::new(SessionConfig::default(), Some(cache));
-         session.connect(cred, true).await?;
+-        let (session, _credentials) =
+-            Session::connect(SessionConfig::default(), cred, Some(cache), true).await?;
++        let session = Session::new(SessionConfig::default(), Some(cache));
++        session.connect(cred, true).await?;
+ 
+         Ok(session)
+     }
+@@ -185,9 +162,7 @@ impl Settings {
+         if self.track.is_empty() {
+             bail!("track is not set");
+         }
+-        let track = SpotifyId::from_uri(&self.track).map_err(|_| {
+-            anyhow::anyhow!("failed to create Spotify URI from track {}", self.track)
+-        })?;
++        let track = SpotifyId::from_uri(&self.track)?;
+ 
+         Ok(track)
+     }
 diff --git a/audio/spotify/src/spotifyaudiosrc/imp.rs b/audio/spotify/src/spotifyaudiosrc/imp.rs
-index 8a7416980..932f5a9fd 100644
+index 6f429682bd..932f5a9fde 100644
 --- a/audio/spotify/src/spotifyaudiosrc/imp.rs
 +++ b/audio/spotify/src/spotifyaudiosrc/imp.rs
-@@ -359,7 +359,7 @@ impl URIHandlerImpl for SpotifyAudioSrc {
+@@ -52,7 +52,7 @@ enum Message {
+ }
+ 
+ struct State {
+-    player: Player,
++    player: Arc<Player>,
+ 
+     /// receiver sending buffer to streaming thread
+     receiver: mpsc::Receiver<Message>,
+@@ -321,11 +321,10 @@ struct BufferSink {
+ 
+ impl Sink for BufferSink {
+     fn write(&mut self, packet: AudioPacket, _converter: &mut Converter) -> SinkResult<()> {
+-        let oggdata = match packet {
+-            AudioPacket::OggData(data) => data,
+-            AudioPacket::Samples(_) => unimplemented!(),
++        let buffer = match packet {
++            AudioPacket::Samples(_) => unreachable!(),
++            AudioPacket::Raw(ogg) => gst::Buffer::from_slice(ogg),
+         };
+-        let buffer = gst::Buffer::from_slice(oggdata);
+ 
+         // ignore if sending fails as that means the source element is being shutdown
+         let _ = self.sender.send(Message::Buffer(buffer));
+@@ -360,7 +359,7 @@ impl URIHandlerImpl for SpotifyAudioSrc {
          // allow to configure auth and cache settings from the URI
          for (key, value) in url.query_pairs() {
              match key.as_ref() {
@@ -2121,11 +2035,26 @@ index 8a7416980..932f5a9fd 100644
                      self.obj().set_property(&key, value.as_ref());
                  }
                  _ => {
+@@ -435,10 +434,10 @@ impl SpotifyAudioSrc {
+         let (sender, receiver) = mpsc::sync_channel(2);
+         let sender_clone = sender.clone();
+ 
+-        let (mut player, mut player_event_channel) =
+-            Player::new(player_config, session, Box::new(NoOpVolume), || {
+-                Box::new(BufferSink { sender })
+-            });
++        let player = Player::new(player_config, session, Box::new(NoOpVolume), || {
++            Box::new(BufferSink { sender })
++        });
++        let mut player_event_channel = player.get_player_event_channel();
+ 
+         player.load(track, true, 0);
+ 
 diff --git a/docs/plugins/gst_plugins_cache.json b/docs/plugins/gst_plugins_cache.json
-index 89e64ce61..306f9926f 100644
+index dfecc382f2..b645c90b17 100644
 --- a/docs/plugins/gst_plugins_cache.json
 +++ b/docs/plugins/gst_plugins_cache.json
-@@ -11770,6 +11770,18 @@
+@@ -11802,6 +11802,18 @@
                      }
                  },
                  "properties": {
