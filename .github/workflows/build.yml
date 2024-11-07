@@ -50,7 +50,7 @@ env:
 
   pixman_version: '0.44.0'
 
-  expat_version: '2.6.3'
+  expat_version: '2.6.4'
 
   boost_version: '1.86.0'
 
