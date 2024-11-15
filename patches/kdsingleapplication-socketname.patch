@@ -1,0 +1,157 @@
+From b31fcf8f52f3865fd24e5ed1b131f8e5b9e20c5e Mon Sep 17 00:00:00 2001
+From: Jonas Kvinge <jonas@jkvinge.net>
+Date: Sat, 16 Nov 2024 00:00:28 +0100
+Subject: [PATCH 1/2] KDSingleApplication: Do not exceed maximum socket name
+ length
+
+In cases where there is a long name given (usually the application name) or a long username, `QLocalServer::listen` fails because `sockaddr_un.sun_path` has a char array of 108 on Linux, and 104 on BSD/macOS.
+On macOS, the TMPDIR path is long, ie.: `/var/folders/zg/b242mhvd125344h5zrnpkzk80000gn/T/`, so 49 characters just for the temp path alone.
+To fix this, use the uid instead of the username if the total length of the socket name is expected to exceed the maximum length.
+If it still exceeds the maximum allowed length, ie.: the given name is too long, chop the socket name which cuts off the last part of the name.
+
+I've tested this to work on both Linux and macOS, Windows should be unaffected by these changes.
+
+Fixes https://github.com/strawberrymusicplayer/strawberry/issues/1603
+---
+ src/kdsingleapplication_localsocket.cpp | 70 ++++++++++++++++++-------
+ 1 file changed, 52 insertions(+), 18 deletions(-)
+
+diff --git a/src/kdsingleapplication_localsocket.cpp b/src/kdsingleapplication_localsocket.cpp
+index 688e48d..d971922 100644
+--- a/src/kdsingleapplication_localsocket.cpp
++++ b/src/kdsingleapplication_localsocket.cpp
+@@ -30,6 +30,9 @@
+ #include <sys/types.h>
+ #include <unistd.h>
+ #include <pwd.h>
++#if defined(Q_OS_LINUX)
++#include <linux/un.h>
++#endif
+ #endif
+ 
+ #if defined(Q_OS_WIN)
+@@ -50,24 +53,36 @@ KDSingleApplicationLocalSocket::KDSingleApplicationLocalSocket(const QString &na
+     /* cppcheck-suppress useInitializationList */
+     m_socketName = QStringLiteral("kdsingleapp");
+ 
++    QString userName;
++    QString sessionId;
++
+ #if defined(Q_OS_UNIX)
++
++    // Make sure the socket name does not exceed the size of sockaddr_un.sun_path
++#ifdef Q_OS_LINUX
++    constexpr int maxSocketNameLength = UNIX_PATH_MAX - 1;
++#else
++    constexpr int maxSocketNameLength = 103; // BSD and macOS
++#endif
++
++    const int tempPathLength = QDir::cleanPath(QDir::tempPath()).length() + 1;
++
++    QString alternativeUserName;
+     if (options.testFlag(KDSingleApplication::Option::IncludeUsernameInSocketName)) {
+-        m_socketName += QStringLiteral("-");
+         uid_t uid = ::getuid();
++        alternativeUserName = QString::number(uid);
+         struct passwd *pw = ::getpwuid(uid);
+-        if (pw) {
+-            QString username = QString::fromUtf8(pw->pw_name);
+-            m_socketName += username;
+-        } else {
+-            m_socketName += QString::number(uid);
+-        }
++        userName = pw ? QString::fromUtf8(pw->pw_name) : alternativeUserName;
+     }
+     if (options.testFlag(KDSingleApplication::Option::IncludeSessionInSocketName)) {
+-        QString sessionId = qEnvironmentVariable("XDG_SESSION_ID");
+-        if (!sessionId.isEmpty()) {
+-            m_socketName += QStringLiteral("-");
+-            m_socketName += sessionId;
+-        }
++        sessionId = qEnvironmentVariable("XDG_SESSION_ID");
++    }
++    int socketNameLength = tempPathLength + m_socketName.length() + 1 + name.length() + 1 + userName.length();
++    if (options.testFlag(KDSingleApplication::Option::IncludeSessionInSocketName) && !sessionId.isEmpty()) {
++        socketNameLength += sessionId.length() + 1;
++    }
++    if (socketNameLength > maxSocketNameLength) {
++        userName = alternativeUserName;
+     }
+ #elif defined(Q_OS_WIN)
+     // I'm not sure of a "global session identifier" on Windows; are
+@@ -77,25 +92,44 @@ KDSingleApplicationLocalSocket::KDSingleApplicationLocalSocket(const QString &na
+         DWORD usernameLen = UNLEN + 1;
+         wchar_t username[UNLEN + 1];
+         if (GetUserNameW(username, &usernameLen)) {
+-            m_socketName += QStringLiteral("-");
+-            m_socketName += QString::fromWCharArray(username);
++            userName = QString::fromWCharArray(username);
+         }
+     }
+     if (options.testFlag(KDSingleApplication::Option::IncludeSessionInSocketName)) {
+-        DWORD sessionId;
+-        BOOL haveSessionId = ProcessIdToSessionId(GetCurrentProcessId(), &sessionId);
++        DWORD pSessionId;
++        BOOL haveSessionId = ProcessIdToSessionId(GetCurrentProcessId(), &pSessionId);
+         if (haveSessionId) {
+-            m_socketName += QStringLiteral("-");
+-            m_socketName += QString::number(sessionId);
++            sessionId = QString::number(pSessionId);
+         }
+     }
+ #else
+ #error "KDSingleApplication has not been ported to this platform"
+ #endif
+ 
++    if (options.testFlag(KDSingleApplication::Option::IncludeUsernameInSocketName) && !userName.isEmpty()) {
++        m_socketName += QStringLiteral("-");
++        m_socketName += userName;
++    }
++
++    if (options.testFlag(KDSingleApplication::Option::IncludeSessionInSocketName) && !sessionId.isEmpty()) {
++        m_socketName += QStringLiteral("-");
++        m_socketName += sessionId;
++    }
++
+     m_socketName += QStringLiteral("-");
+     m_socketName += name;
+ 
++#if defined(Q_OS_UNIX)
++    int fullSocketNameLength = tempPathLength + m_socketName.length();
++#if defined(Q_OS_LINUX) || defined(Q_OS_QNX)
++    fullSocketNameLength += 1;  // PlatformSupportsAbstractNamespace, see qlocalserver_unix.cpp
++#endif
++    if (fullSocketNameLength > maxSocketNameLength) {
++        qCDebug(kdsaLocalSocket) << "Chopping socket name because it is longer than" << maxSocketNameLength;
++        m_socketName.chop(fullSocketNameLength - maxSocketNameLength);
++    }
++#endif
++
+     const QString lockFilePath =
+         QDir::tempPath() + QLatin1Char('/') + m_socketName + QLatin1String(".lock");
+ 
+
+From 62df868307e6690793f6f9c9f47b4c1d4b6ee0ea Mon Sep 17 00:00:00 2001
+From: "pre-commit-ci[bot]"
+ <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+Date: Fri, 15 Nov 2024 23:05:32 +0000
+Subject: [PATCH 2/2] [pre-commit.ci] auto fixes from pre-commit.com hooks
+
+for more information, see https://pre-commit.ci
+---
+ src/kdsingleapplication_localsocket.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/kdsingleapplication_localsocket.cpp b/src/kdsingleapplication_localsocket.cpp
+index d971922..d9b3e97 100644
+--- a/src/kdsingleapplication_localsocket.cpp
++++ b/src/kdsingleapplication_localsocket.cpp
+@@ -122,7 +122,7 @@ KDSingleApplicationLocalSocket::KDSingleApplicationLocalSocket(const QString &na
+ #if defined(Q_OS_UNIX)
+     int fullSocketNameLength = tempPathLength + m_socketName.length();
+ #if defined(Q_OS_LINUX) || defined(Q_OS_QNX)
+-    fullSocketNameLength += 1;  // PlatformSupportsAbstractNamespace, see qlocalserver_unix.cpp
++    fullSocketNameLength += 1; // PlatformSupportsAbstractNamespace, see qlocalserver_unix.cpp
+ #endif
+     if (fullSocketNameLength > maxSocketNameLength) {
+         qCDebug(kdsaLocalSocket) << "Chopping socket name because it is longer than" << maxSocketNameLength;

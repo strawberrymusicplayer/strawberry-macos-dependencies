@@ -3177,6 +3177,11 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz
 
+      - name: Patch KDSingleApplication
+        shell: bash
+        working-directory: build/kdsingleapplication-${{env.kdsingleapplication_version}}
+        run: patch -p1 < ../../patches/kdsingleapplication-socketname.patch
+
       - name: Configure KDSingleApplication
         shell: bash
         env:
