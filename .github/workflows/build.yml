@@ -2669,18 +2669,6 @@ jobs:
       - name: Build gst-plugins-rs
         shell: bash
         working-directory: build/gst-plugins-rs/build
-        run: ninja || true
-
-      - name: Copy libs
-        shell: bash
-        working-directory: build/gst-plugins-rs/build
-        run: |
-          ls -la target/${{env.arch2}}-apple-darwin/${{env.buildtype}}/build
-          cp -v ${{env.prefix_path}}/lib/{libglib*.dylib,libgobject*.dylib,libgio*.dylib,libintl*.dylib,libgstreamer*.dylib,libgstbase*.dylib} target/${{env.arch2}}-apple-darwin/${{env.buildtype}}/build/$(ls -1 target/${{env.arch2}}-apple-darwin/${{env.buildtype}}/build | grep '^ring-' | head -1)/out/
-
-      - name: Build gst-plugins-rs
-        shell: bash
-        working-directory: build/gst-plugins-rs/build
         run: ninja
 
       - name: Install gst-plugins-rs
