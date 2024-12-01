@@ -18,7 +18,7 @@ env:
 
   libpng_version: '1.6.44'
 
-  libjpeg_turbo_version: '3.0.1'
+  libjpeg_turbo_version: '32/gapps/Photos/files/system/product/app'
 
   pcre2_version: '10.44'
 
