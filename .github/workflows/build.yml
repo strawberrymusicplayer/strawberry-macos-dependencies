@@ -4,7 +4,7 @@ on: push
 env:
   pkgconf_version: '2.3.0'
 
-  cmake_version: '3.31.1'
+  cmake_version: '3.31.2'
 
   gmp_version: '6.3.0'
 
