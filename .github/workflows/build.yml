@@ -140,6 +140,8 @@ env:
 
   kdsingleapplication_version: '1.1.0'
 
+  sparkle_version: '2.6.4'
+
   max_releases: '6'
 
   curl_options: '-f -O -L --connect-timeout 15 -m 900 --retry 15 --retry-delay 10 --retry-max-time 300 --retry-all-errors'
@@ -3279,6 +3281,25 @@ jobs:
         shell: bash
         working-directory: build/create-dmg
         run: make install
+
+
+      - name: Download sparkle
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/sparkle-project/Sparkle/releases/download/${{env.sparkle_version}}/Sparkle-${{env.sparkle_version}}.tar.xz
+
+      - name: Extract sparkle
+        shell: bash
+        working-directory: build
+        run: |
+          mkdir sparkle
+          cd sparkle
+          tar -xf ../../downloads/Sparkle-${{env.sparkle_version}}.tar.xz
+
+      - name: Install sparkle
+        shell: bash
+        working-directory: build/sparkle
+        run: cp -R Sparkle.framework ${{env.prefix_path}}/lib/
 
 
       - name: Cleanup build directory

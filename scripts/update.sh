@@ -341,6 +341,9 @@ function update_package() {
     "protobuf")
       package_version_latest=$(latest_github_release "protocolbuffers" "protobuf")
       ;;
+    "sparkle")
+      package_version_latest=$(latest_github_release "sparkle-project" "Sparkle")
+      ;;
     *)
       package_version_latest=
       error "No update rule for package: ${package}"
