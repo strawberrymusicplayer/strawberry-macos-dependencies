@@ -3309,6 +3309,39 @@ jobs:
         run: rm -rf *
 
 
+      - name: Download qtsparkle
+        shell: bash
+        working-directory: build
+        run: git clone https://github.com/davidsansome/qtsparkle qtsparkle-git
+
+      - name: Patch qtsparkle
+        shell: bash
+        working-directory: build/qtsparkle-git
+        run: patch -p1 < ../../patches/qtsparkle-fixes.patch
+
+      - name: Configure qtsparkle
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/qtsparkle-git
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_WITH_QT6=ON
+
+      - name: Build qtsparkle
+        shell: bash
+        working-directory: build/qtsparkle-git/build
+        run: cmake --build .
+
+      - name: Install qtsparkle
+        shell: bash
+        working-directory: build/qtsparkle-git/build
+        run: cmake --install .
+
+
+
       - name: Create archive
         shell: bash
         run: tar -cJf strawberry-macos-${{env.arch}}-${{env.buildtype}}.tar.xz ${{env.prefix_path}}
