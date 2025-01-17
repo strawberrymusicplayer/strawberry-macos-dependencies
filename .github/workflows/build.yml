@@ -275,10 +275,12 @@ jobs:
         run: brew uninstall $(brew list)
 
       - name: brew list
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         run: brew list
 
       - name: Uninstall homebrew
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
 
@@ -348,6 +350,11 @@ jobs:
           make
           sudo make install
           sudo rm -rf *
+
+      - name: which gh
+        shell: bash
+        run: which gh
+
 
       - name: Download pkgconf
         shell: bash
