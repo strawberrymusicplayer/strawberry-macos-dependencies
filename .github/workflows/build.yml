@@ -4,6 +4,16 @@ on: push
 env:
   pkgconf_version: '2.3.0'
 
+  m4_version: '1.4.19'
+
+  bison_version: '3.8.2'
+
+  autoconf_version: '2.72'
+
+  automake_version: '1.17'
+
+  libtool_version: '2.5.4'
+
   cmake_version: '3.31.4'
 
   gmp_version: '6.3.0'
@@ -259,47 +269,18 @@ jobs:
         shell: bash
         run: echo "/opt/homebrew/bin" >> $GITHUB_PATH
 
-      - name: brew list
-        shell: bash
-        run: brew list
-
       - name: Remove installed brew packages
         if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         shell: bash
         run: brew uninstall $(brew list)
 
-      - name: brew update
-        shell: bash
-        run: brew update
-
-      - name: brew upgrade
-        shell: bash
-        run: brew upgrade
-
       - name: brew list
         shell: bash
         run: brew list
 
-      - name: brew install
-        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
+      - name: Uninstall homebrew
         shell: bash
-        run: brew install autoconf automake bison libtool gh rustup-init
-
-      - name: brew list
-        shell: bash
-        run: brew list
-
-      - name: Update PATH
-        if: env.arch == 'x86_64'
-        shell: bash
-        run: echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
-
-      - name: Update PATH
-        if: env.arch == 'arm64'
-        shell: bash
-        run: |
-          echo "/opt/homebrew/opt/bison/bin" >> $GITHUB_PATH
-          echo "/opt/homebrew/opt/m4/bin" >> $GITHUB_PATH
+        run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
 
       - name: Delete old prefix path
         shell: bash
@@ -342,10 +323,31 @@ jobs:
         shell: bash
         run: mkdir build
 
-      - name: List directory contents
+      - name: Install rustup
+        working-directory: downloads
         shell: bash
-        run: ls -la downloads build
+        run: |
+          curl --proto '=https' --tlsv1.2 -fsS -o rustup.sh https://sh.rustup.rs
+          chmod u+x rustup.sh
+          ./rustup.sh -y
 
+      - name: Install go
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.5'
+
+
+      - name: Install github tools
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
+        shell: bash
+        working-directory: build
+        run: |
+          git clone https://github.com/cli/cli.git gh-cli
+          cd gh-cli
+          make
+          sudo make install
+          sudo rm -rf *
 
       - name: Download pkgconf
         shell: bash
@@ -379,6 +381,169 @@ jobs:
       - name: which pkg-config
         shell: bash
         run: which pkg-config
+
+
+      - name: Download m4
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/m4/m4-${{env.m4_version}}.tar.gz
+
+      - name: Extract m4
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/m4-${{env.m4_version}}.tar.gz
+
+      - name: Configure m4
+        shell: bash
+        working-directory: build/m4-${{env.m4_version}}
+        run: ./configure --prefix="${{env.prefix_path}}"
+
+      - name: Build m4
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/m4-${{env.m4_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install m4
+        shell: bash
+        working-directory: build/m4-${{env.m4_version}}
+        run: make install
+
+
+      - name: Download bison
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/bison/bison-${{env.bison_version}}.tar.gz
+
+      - name: Extract bison
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/bison-${{env.bison_version}}.tar.gz
+
+      - name: Configure bison
+        shell: bash
+        working-directory: build/bison-${{env.bison_version}}
+        run: ./configure --prefix="${{env.prefix_path}}"
+
+      - name: Build bison
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/bison-${{env.bison_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install bison
+        shell: bash
+        working-directory: build/bison-${{env.bison_version}}
+        run: make install
+
+
+      - name: Download autoconf
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/autoconf/autoconf-${{env.autoconf_version}}.tar.gz
+
+      - name: Extract autoconf
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/autoconf-${{env.autoconf_version}}.tar.gz
+
+      - name: Configure autoconf
+        shell: bash
+        working-directory: build/autoconf-${{env.autoconf_version}}
+        run: ./configure --prefix="${{env.prefix_path}}"
+
+      - name: Build autoconf
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/autoconf-${{env.autoconf_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install autoconf
+        shell: bash
+        working-directory: build/autoconf-${{env.autoconf_version}}
+        run: make install
+
+
+      - name: Download automake
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/automake/automake-${{env.automake_version}}.tar.gz
+
+      - name: Extract automake
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/automake-${{env.automake_version}}.tar.gz
+
+      - name: Configure automake
+        shell: bash
+        working-directory: build/automake-${{env.automake_version}}
+        run: ./configure --prefix="${{env.prefix_path}}"
+
+      - name: Build automake
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/automake-${{env.automake_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install automake
+        shell: bash
+        working-directory: build/automake-${{env.automake_version}}
+        run: make install
+
+
+      - name: Download libtool
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libtool/libtool-${{env.libtool_version}}.tar.gz
+
+      - name: Extract libtool
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/libtool-${{env.libtool_version}}.tar.gz
+
+      - name: Configure libtool
+        shell: bash
+        working-directory: build/libtool-${{env.libtool_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+
+      - name: Build libtool
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/libtool-${{env.libtool_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install libtool
+        shell: bash
+        working-directory: build/libtool-${{env.libtool_version}}
+        run: |
+          make install
+          ln -s ${{env.prefix_path}}/bin/libtool ${{env.prefix_path}}/bin/glibtool
+          ln -s ${{env.prefix_path}}/bin/libtoolize ${{env.prefix_path}}/bin/glibtoolize
 
 
       - name: Download cmake
@@ -2883,7 +3048,6 @@ jobs:
         shell: bash
         working-directory: build/gst-libav-${{env.gstreamer_version}}/build
         run: ninja install
-
 
       - name: Install cargo-c
         if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'

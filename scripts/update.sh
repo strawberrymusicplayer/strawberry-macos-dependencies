@@ -139,6 +139,21 @@ function update_package() {
     "pkgconf")
       package_version_latest=$(curl ${curl_options} 'https://github.com/pkgconf/pkgconf/tags' | sed -n 's#.*releases/tag/\([^"]*\).*#\1#p' | sed 's/^pkgconf\-//g' | sort -V | tail -1)
       ;;
+    "m4")
+      package_version_latest=$(curl ${curl_options} 'https://ftp.gnu.org/gnu/m4/?C=M;O=D' | sed -n 's,.*<a href="m4-\([0-9][^"]*\)\.tar.*,\1,p'| sort -V | tail -1)
+      ;;
+    "bison")
+      package_version_latest=$(curl ${curl_options} 'https://ftp.gnu.org/gnu/bison/?C=M;O=D' | sed -n 's,.*<a href="bison-\([0-9][^"]*\)\.tar.*,\1,p'| sort -V | tail -1)
+      ;;
+    "autoconf")
+      package_version_latest=$(curl ${curl_options} 'https://ftp.gnu.org/gnu/autoconf/?C=M;O=D' | sed -n 's,.*<a href="autoconf-\([0-9][^"]*\)\.tar.*,\1,p'| sort -V | tail -1)
+      ;;
+    "automake")
+      package_version_latest=$(curl ${curl_options} 'https://ftp.gnu.org/gnu/automake/?C=M;O=D' | sed -n 's,.*<a href="automake-\([0-9][^"]*\)\.tar.*,\1,p'| sort -V | tail -1)
+      ;;
+    "libtool")
+      package_version_latest=$(curl ${curl_options} 'https://ftp.gnu.org/gnu/libtool/?C=M;O=D' | sed -n 's,.*<a href="libtool-\([0-9][^"]*\)\.tar.*,\1,p'| sort -V | tail -1)
+      ;;
     "cmake")
       package_version_latest=$(latest_github_release "Kitware" "CMake")
       ;;
