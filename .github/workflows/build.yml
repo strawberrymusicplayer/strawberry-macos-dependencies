@@ -334,6 +334,11 @@ jobs:
           chmod u+x rustup.sh
           ./rustup.sh -y
 
+      - name: Add cargo bin to PATH
+        if: env.runner == 'macos-arm64'
+        shell: bash
+        run: echo "/Users/jonas/.cargo/bin" >> $GITHUB_PATH
+
       - name: Install go
         if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         uses: actions/setup-go@v5
