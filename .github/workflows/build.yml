@@ -326,6 +326,7 @@ jobs:
         run: mkdir build
 
       - name: Install rustup
+        if: env.runner == 'macos-11' || env.runner == 'macos-12' || env.runner == 'macos-13' || env.runner == 'macos-14'
         working-directory: downloads
         shell: bash
         run: |
