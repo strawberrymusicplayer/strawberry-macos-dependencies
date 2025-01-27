@@ -152,6 +152,8 @@ env:
 
   sparkle_version: '2.6.4'
 
+  sparsehash_version: '2.0.4'
+
   max_releases: '6'
 
   curl_options: '-f -O -L --connect-timeout 15 -m 900 --retry 15 --retry-delay 10 --retry-max-time 300 --retry-all-errors'
@@ -557,6 +559,38 @@ jobs:
           make install
           ln -s ${{env.prefix_path}}/bin/libtool ${{env.prefix_path}}/bin/glibtool
           ln -s ${{env.prefix_path}}/bin/libtoolize ${{env.prefix_path}}/bin/glibtoolize
+
+
+      - name: Download sparsehash
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/sparsehash/sparsehash/archive/refs/tags/sparsehash-${{env.sparsehash_version}}.tar.gz
+
+      - name: Extract sparsehash
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/sparsehash-${{env.sparsehash_version}}.tar.gz
+
+      - name: Configure sparsehash
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/sparsehash-sparsehash-${{env.sparsehash_version}}
+        run: ./configure --prefix="${{env.prefix_path}}"
+
+      - name: Build sparsehash
+        shell: bash
+        working-directory: build/sparsehash-sparsehash-${{env.sparsehash_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install sparsehash
+        shell: bash
+        working-directory: build/sparsehash-sparsehash-${{env.sparsehash_version}}
+        run: make install
 
 
       - name: Download cmake
