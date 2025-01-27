@@ -408,17 +408,17 @@ jobs:
 
       - name: Configure m4
         shell: bash
-        working-directory: build/m4-${{env.m4_version}}
-        run: ./configure --prefix="${{env.prefix_path}}"
-
-      - name: Build m4
-        shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/m4-${{env.m4_version}}
+        run: ./configure --prefix="${{env.prefix_path}}"
+
+      - name: Build m4
+        shell: bash
         working-directory: build/m4-${{env.m4_version}}
         run: make -j ${{env.make_jobs}}
 
@@ -440,17 +440,17 @@ jobs:
 
       - name: Configure bison
         shell: bash
-        working-directory: build/bison-${{env.bison_version}}
-        run: ./configure --prefix="${{env.prefix_path}}"
-
-      - name: Build bison
-        shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/bison-${{env.bison_version}}
+        run: ./configure --prefix="${{env.prefix_path}}"
+
+      - name: Build bison
+        shell: bash
         working-directory: build/bison-${{env.bison_version}}
         run: make -j ${{env.make_jobs}}
 
@@ -472,17 +472,17 @@ jobs:
 
       - name: Configure autoconf
         shell: bash
-        working-directory: build/autoconf-${{env.autoconf_version}}
-        run: ./configure --prefix="${{env.prefix_path}}"
-
-      - name: Build autoconf
-        shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/autoconf-${{env.autoconf_version}}
+        run: ./configure --prefix="${{env.prefix_path}}"
+
+      - name: Build autoconf
+        shell: bash
         working-directory: build/autoconf-${{env.autoconf_version}}
         run: make -j ${{env.make_jobs}}
 
@@ -504,17 +504,17 @@ jobs:
 
       - name: Configure automake
         shell: bash
-        working-directory: build/automake-${{env.automake_version}}
-        run: ./configure --prefix="${{env.prefix_path}}"
-
-      - name: Build automake
-        shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/automake-${{env.automake_version}}
+        run: ./configure --prefix="${{env.prefix_path}}"
+
+      - name: Build automake
+        shell: bash
         working-directory: build/automake-${{env.automake_version}}
         run: make -j ${{env.make_jobs}}
 
@@ -536,17 +536,17 @@ jobs:
 
       - name: Configure libtool
         shell: bash
-        working-directory: build/libtool-${{env.libtool_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
-
-      - name: Build libtool
-        shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/libtool-${{env.libtool_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+
+      - name: Build libtool
+        shell: bash
         working-directory: build/libtool-${{env.libtool_version}}
         run: make -j ${{env.make_jobs}}
 
@@ -1005,17 +1005,17 @@ jobs:
 
       - name: Configure libiconv
         shell: bash
-        working-directory: build/libiconv-${{env.libiconv_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-nls --disable-silent-rules
-
-      - name: Build libiconv
-        shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/libiconv-${{env.libiconv_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-nls --disable-silent-rules
+
+      - name: Build libiconv
+        shell: bash
         working-directory: build/libiconv-${{env.libiconv_version}}
         run: make -j ${{env.make_jobs}}
 
@@ -1069,17 +1069,17 @@ jobs:
 
       - name: Configure gettext
         shell: bash
-        working-directory: build/gettext-${{env.gettext_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --without-libxml2-prefix --disable-java
-
-      - name: Build gettext
-        shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/gettext-${{env.gettext_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --without-libxml2-prefix --disable-java
+
+      - name: Build gettext
+        shell: bash
         working-directory: build/gettext-${{env.gettext_version}}
         run: make -j ${{env.make_jobs}}
 
@@ -1106,17 +1106,17 @@ jobs:
 
       - name: Configure flex
         shell: bash
-        working-directory: build/flex-${{env.flex_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
-
-      - name: Build flex
-        shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/flex-${{env.flex_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+
+      - name: Build flex
+        shell: bash
         working-directory: build/flex-${{env.flex_version}}
         run: make -j ${{env.make_jobs}}
 
@@ -1554,14 +1554,14 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz
 
-      - name: Configure SQlite
+      - name: Configure SQLite
         shell: bash
         env:
           CFLAGS: -DSQLITE_ENABLE_COLUMN_METADATA
         working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-fts5 --disable-readline --enable-threadsafe --disable-silent-rules
 
-      - name: Build SQlite
+      - name: Build SQLite
         shell: bash
         working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
         run: make -j ${{env.make_jobs}}
