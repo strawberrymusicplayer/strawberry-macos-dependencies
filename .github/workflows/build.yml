@@ -40,7 +40,7 @@ env:
 
   zstd_version: '1.5.7'
 
-  libiconv_version: '1.17'
+  libiconv_version: '1.18'
 
   libunistring_version: '1.3'
 
@@ -954,10 +954,10 @@ jobs:
         working-directory: build/libiconv-${{env.libiconv_version}}
         run: make -j ${{env.make_jobs}}
 
-      #- name: Install libiconv
-        #shell: bash
-        #working-directory: build/libiconv-${{env.libiconv_version}}
-        #run: make install
+      - name: Install libiconv
+        shell: bash
+        working-directory: build/libiconv-${{env.libiconv_version}}
+        run: make install
 
 
       - name: Download libunistring
