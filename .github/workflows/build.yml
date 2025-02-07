@@ -1605,6 +1605,10 @@ jobs:
         working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
         run: make install
 
+      - name: Change SQLite library id
+        shell: bash
+        run: install_name_tool -id ${{env.prefix_path}}/lib/libsqlite3.dylib ${{env.prefix_path}}/lib/libsqlite3.dylib
+
 
       - name: Download GLib
         shell: bash
