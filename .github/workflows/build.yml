@@ -118,7 +118,7 @@ env:
 
   faad2_version: '2.11.1'
 
-  faac_version: '1.30'
+  faac_version: '1.31'
 
   fdk_aac_version: '2.0.3'
 
@@ -260,7 +260,6 @@ jobs:
           echo "glib_networking_version_short=$(echo ${{env.glib_networking_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           echo "libsoup_version_short=$(echo ${{env.libsoup_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           echo "qt_version_short=$(echo ${{env.qt_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
-          echo "faac_version_underscore=$(echo ${{env.faac_version}} | sed 's/\./_/g')" >> $GITHUB_ENV
           echo "gnutls_version_short=$(echo ${{env.gnutls_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           echo "libxml2_version_short=$(echo ${{env.libxml2_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
           echo "gdk_pixbuf_version_short=$(echo ${{env.gdk_pixbuf_version}} | cut -d '.' -f 1-2)" >> $GITHUB_ENV
@@ -2384,16 +2383,16 @@ jobs:
       - name: Download faac
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/faac/faac-src/faac-${{env.faac_version}}/faac-${{env.faac_version_underscore}}.tar.gz
+        run: curl ${{env.curl_options}} https://github.com/knik0/faac/archive/refs/tags/faac-${{env.faac_version}}.tar.gz
 
       - name: Extract faac
         shell: bash
         working-directory: build
-        run: tar -xf ../downloads/faac-${{env.faac_version_underscore}}.tar.gz
+        run: tar -xvf ../downloads/faac-${{env.faac_version}}.tar.gz
 
       - name: Bootstrap faac
         shell: bash
-        working-directory: build/faac-${{env.faac_version_underscore}}
+        working-directory: build/faac-faac-${{env.faac_version}}
         run: ./bootstrap
 
       - name: Configure faac
@@ -2404,17 +2403,17 @@ jobs:
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
-        working-directory: build/faac-${{env.faac_version_underscore}}
+        working-directory: build/faac-faac-${{env.faac_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build faac
         shell: bash
-        working-directory: build/faac-${{env.faac_version_underscore}}
+        working-directory: build/faac-faac-${{env.faac_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install faac
         shell: bash
-        working-directory: build/faac-${{env.faac_version_underscore}}
+        working-directory: build/faac-faac-${{env.faac_version}}
         run: make install
 
 

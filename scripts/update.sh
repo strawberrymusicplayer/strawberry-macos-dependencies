@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #  STRAWBERRY MSVC GITHUB ACTION UPDATE SCRIPT
-#  Copyright (C) 2022-2024 Jonas Kvinge
+#  Copyright (C) 2022-2025 Jonas Kvinge
 #
 #  This program is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ function error() { echo "[$(timestamp)] ERROR: $*" >&2; }
 
 function latest_github_release() {
 
-  curl ${curl_options} -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/$1/$2/releases/latest" | jq -r '.tag_name' | sed 's/^v//g' | sed 's/^sparsehash-//g' | sort -V | head -1
+  curl ${curl_options} -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" "https://api.github.com/repos/$1/$2/releases/latest" | jq -r '.tag_name' | sed 's/^v//g' | sed 's/^sparsehash-//g' | sed 's/^faac-//g' | sort -V | head -1
 
 }
 
@@ -306,6 +306,9 @@ function update_package() {
       ;;
     "faad2")
       package_version_latest=$(latest_github_release "knik0" "faad2")
+      ;;
+    "faac")
+      package_version_latest=$(latest_github_release "knik0" "faac")
       ;;
     "fdk_aac")
       package_version_latest=$(curl ${curl_options} 'https://sourceforge.net/projects/opencore-amr/files/fdk-aac/' | sed -n 's,.*fdk-aac-\([0-9.]*\)\.tar.*,\1,p' | sort -V | tail -1)
