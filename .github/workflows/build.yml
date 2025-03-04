@@ -116,7 +116,7 @@ env:
 
   libgme_version: '0.6.3'
 
-  faad2_version: '2.11.1'
+  faad2_version: '2.11.2'
 
   faac_version: '1.31.1'
 
