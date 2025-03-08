@@ -2,7 +2,7 @@ name: Build
 on: push
 
 env:
-  pkgconf_version: '2.4.1'
+  pkgconf_version: '2.4.3'
 
   m4_version: '1.4.19'
 
