@@ -3576,12 +3576,12 @@ jobs:
 
       - name: Build rapidjson
         shell: bash
-        working-directory: build/rapidjson
+        working-directory: build/rapidjson/build
         run: cmake --build .
 
       - name: Install rapidjson
         shell: bash
-        working-directory: build/rapidjson
+        working-directory: build/rapidjson/build
         run: cmake --install .
 
 
