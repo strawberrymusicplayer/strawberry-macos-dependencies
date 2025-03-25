@@ -3561,13 +3561,8 @@ jobs:
 
       - name: Download rapidjson
         shell: bash
-        working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/Tencent/rapidjson/archive/refs/tags/v${{env.rapidjson_version}}/rapidjson-${{env.rapidjson_version}}.tar.gz
-
-      - name: Extract rapidjson
-        shell: bash
         working-directory: build
-        run: tar -xf ../downloads/rapidjson-${{env.rapidjson_version}}.tar.gz
+        run: git clone --depth 1 --recurse-submodules https://github.com/Tencent/rapidjson
 
       - name: Configure rapidjson
         shell: bash
@@ -3576,17 +3571,17 @@ jobs:
           PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
           CXXFLAGS: -Wno-shadow -Wno-zero-as-null-pointer-constant -Wno-deprecated-declarations -Wno-suggest-override -Wno-suggest-destructor-override -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
-        working-directory: build/rapidjson-${{env.rapidjson_version}}
+        working-directory: build/rapidjson
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
 
       - name: Build rapidjson
         shell: bash
-        working-directory: build/rapidjson-${{env.rapidjson_version}}/build
+        working-directory: build/rapidjson
         run: cmake --build .
 
       - name: Install rapidjson
         shell: bash
-        working-directory: build/rapidjson-${{env.rapidjson_version}}/build
+        working-directory: build/rapidjson
         run: cmake --install .
 
 
