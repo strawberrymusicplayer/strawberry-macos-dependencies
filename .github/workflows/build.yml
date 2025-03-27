@@ -14,7 +14,7 @@ env:
 
   libtool_version: '2.5.4'
 
-  cmake_version: '3.31.5'
+  cmake_version: '4.0.0'
 
   gmp_version: '6.3.0'
 
@@ -708,6 +708,11 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/yasm-${{env.yasm_version}}.tar.gz
 
+      - name: Patch yasm
+        shell: bash
+        working-directory: build/yasm-${{env.yasm_version}}
+        run: patch -p1 < ../../patches/yasm-cmake.patch
+
       - name: Configure yasm
         shell: bash
         env:
@@ -852,7 +857,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libjpeg-turbo-${{env.libjpeg_turbo_version}}
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G Ninja -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DENABLE_SHARED=ON
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G Ninja -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DENABLE_SHARED=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build libjpeg-turbo
         shell: bash
@@ -921,7 +926,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/bzip2-${{env.bzip2_version}}
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build bzip2
         shell: bash
@@ -2263,7 +2268,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/musepack_src_r${{env.musepack_version}}
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DSHARED=ON
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DSHARED=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build musepack
         shell: bash
@@ -2337,7 +2342,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/game-music-emu-${{env.libgme_version}}
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build libgme
         shell: bash
@@ -2583,7 +2588,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/libebur128-${{env.libebur128_version}}
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build libebur128
         shell: bash
@@ -2695,7 +2700,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/chromaprint-${{env.chromaprint_version}}
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DFFTW3_DIR=${{env.prefix_path}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DFFTW3_DIR=${{env.prefix_path}} -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build Chromaprint
         shell: bash
@@ -3236,7 +3241,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/strawberry-libgpod
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DENABLE_GDKPIXBUF=ON
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DENABLE_GDKPIXBUF=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build libgpod
         shell: bash
@@ -3572,7 +3577,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/rapidjson
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_TESTING=OFF -DRAPIDJSON_BUILD_TESTS=OFF -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_DOC=OFF
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_TESTING=OFF -DRAPIDJSON_BUILD_TESTS=OFF -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_DOC=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build rapidjson
         shell: bash
