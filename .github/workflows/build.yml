@@ -3109,8 +3109,7 @@ jobs:
         run: ninja install
 
       - name: Install cargo-c
-        #if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
-        if: false
+        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
         shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
@@ -3125,14 +3124,12 @@ jobs:
           install_name_tool -change "@rpath/libz.1.dylib" "${{env.prefix_path}}/lib/libz.1.dylib" "/Users/runner/.cargo/bin/cargo-cbuild"
 
       - name: Download gst-plugins-rs
-        if: false
         shell: bash
         working-directory: build
         #run: git clone --depth 1 --recurse-submodules -b "${{env.gstreamer_plugins_rs_version}}" "https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git"
         run: git clone --depth 1 --recurse-submodules "https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git"
 
       - name: Configure gst-plugins-rs
-        if: false
         shell: bash
         env:
           PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
@@ -3144,13 +3141,11 @@ jobs:
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload --auto-features=disabled -Dspotify=enabled build
 
       - name: Build gst-plugins-rs
-        if: false
         shell: bash
         working-directory: build/gst-plugins-rs/build
         run: ninja || true
 
       - name: Copy libs
-        if: false
         shell: bash
         working-directory: build/gst-plugins-rs/build
         run: |
@@ -3158,13 +3153,11 @@ jobs:
           cp -v ${{env.prefix_path}}/lib/{libglib*.dylib,libgobject*.dylib,libgio*.dylib,libintl*.dylib,libgstreamer*.dylib,libgstbase*.dylib} target/${{env.arch2}}-apple-darwin/${{env.buildtype}}/build/$(ls -1 target/${{env.arch2}}-apple-darwin/${{env.buildtype}}/build | grep '^ring-' | head -1)/out/
 
       - name: Build gst-plugins-rs
-        if: false
         shell: bash
         working-directory: build/gst-plugins-rs/build
         run: ninja
 
       - name: Install gst-plugins-rs
-        if: false
         shell: bash
         working-directory: build/gst-plugins-rs/build
         run: ninja install
