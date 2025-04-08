@@ -2716,7 +2716,7 @@ jobs:
       - name: Download libcdio
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libcdio/libcdio-${{env.libcdio_version}}.tar.bz2
+        run: curl ${{env.curl_options}} https://github.com/libcdio/libcdio/releases/download/${{env.libcdio_version}}/libcdio-${{env.libcdio_version}}.tar.bz2
 
       - name: Extract libcdio
         shell: bash
