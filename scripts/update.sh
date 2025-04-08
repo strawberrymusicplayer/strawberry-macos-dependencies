@@ -344,7 +344,7 @@ function update_package() {
       package_version_latest=$(latest_github_release "libmtp" "libmtp")
       ;;
     "libcdio")
-      package_version_latest=$(curl ${curl_options} 'http://ftp.gnu.org/gnu/libcdio/' | sed -n 's,.*libcdio-\([0-9][^>]*\)\.tar.*,\1,p' | sort -V | tail -1)
+      package_version_latest=$(latest_github_release "libcdio" "libcdio")
       ;;
     "qt")
       qt_major_version=$(curl ${curl_options} "https://download.qt.io/official_releases/qt/" | sed -n 's,.*<a href=\"\([0-9]*\.[0-9]*\).*,\1,p' | sort -V | tail -1)
