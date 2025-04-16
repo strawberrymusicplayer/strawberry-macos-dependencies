@@ -664,7 +664,8 @@ jobs:
       - name: Download nasm
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://www.nasm.us/pub/nasm/releasebuilds/${{env.nasm_version}}/nasm-${{env.nasm_version}}.tar.xz
+        #run: curl ${{env.curl_options}} https://www.nasm.us/pub/nasm/releasebuilds/${{env.nasm_version}}/nasm-${{env.nasm_version}}.tar.xz
+        run: curl ${{env.curl_options}} https://files.jkvinge.net/packages/strawberry-dependencies/nasm-${{env.nasm_version}}.tar.xz
 
       - name: Extract nasm
         shell: bash
