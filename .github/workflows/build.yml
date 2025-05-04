@@ -84,7 +84,7 @@ env:
 
   glib_networking_version: '2.80.1'
 
-  freetype_version: '2.13.3'
+  freetype_version: '7.5.1'
 
   harfbuzz_version: '11.2.0'
 
