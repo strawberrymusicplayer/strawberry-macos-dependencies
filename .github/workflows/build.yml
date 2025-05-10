@@ -4,7 +4,7 @@ on: push
 env:
   pkgconf_version: '2.4.3'
 
-  m4_version: '1.4.19'
+  m4_version: '1.4.20'
 
   bison_version: '3.8.2'
 
