@@ -140,7 +140,7 @@ env:
 
   gstreamer_plugins_rs_version: '0.13.0'
 
-  libplist_version: '2.6.0'
+  libplist_version: '2.7.0'
 
   libmtp_version: '1.1.22'
 
