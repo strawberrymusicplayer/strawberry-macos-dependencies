@@ -10,7 +10,7 @@ env:
 
   autoconf_version: '2.72'
 
-  automake_version: '1.17'
+  automake_version: '1.18'
 
   libtool_version: '2.5.4'
 
