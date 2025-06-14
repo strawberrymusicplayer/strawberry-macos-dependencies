@@ -78,7 +78,7 @@ env:
 
   glib_version: '2.85.1'
 
-  gdk_pixbuf_version: '2.42.12'
+  gdk_pixbuf_version: '2.43.2'
 
   libsoup_version: '3.6.5'
 
@@ -1670,7 +1670,7 @@ jobs:
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
         working-directory: build/gdk-pixbuf-${{env.gdk_pixbuf_version}}
-        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=false -Dinstalled_tests=false -Dgtk_doc=false -Ddocs=false -Dman=false -Dintrospection=disabled -Drelocatable=true -Dpng=enabled -Djpeg=enabled -Dtiff=disabled build
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=false -Dinstalled_tests=false -Ddocumentation=false -Dman=false -Dintrospection=disabled -Drelocatable=true -Dpng=enabled -Djpeg=enabled -Dtiff=disabled build
 
       - name: Build gdk-pixbuf
         shell: bash
