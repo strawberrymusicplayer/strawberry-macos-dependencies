@@ -196,9 +196,6 @@ function update_package() {
     "libunistring")
       package_version_latest=$(curl ${curl_options} 'https://ftp.gnu.org/gnu/libunistring/?C=M;O=D' | sed -n 's,.*<a href="libunistring-\([0-9][^"]*\)\.tar.*,\1,p'| sort -V | tail -1)
       ;;
-    "gettext")
-      package_version_latest=$(curl ${curl_options} 'https://ftp.gnu.org/gnu/gettext/' | sed -n 's,.*gettext-\([0-9][^>]*\)\.tar.*,\1,p' | sort -V | tail -1)
-      ;;
     "flex")
       package_version_latest=$(latest_github_release "westes" "flex")
       ;;
