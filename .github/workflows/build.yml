@@ -44,6 +44,8 @@ env:
 
   libunistring_version: '1.3'
 
+  gettext_version: '0.22.5'
+
   flex_version: '2.6.4'
 
   libtasn1_version: '4.20.0'
@@ -1095,6 +1097,38 @@ jobs:
       - name: Install libunistring
         shell: bash
         working-directory: build/libunistring-${{env.libunistring_version}}
+        run: make install
+
+
+      - name: Download gettext
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/gettext/gettext-${{env.gettext_version}}.tar.xz
+
+      - name: Extract gettext
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/gettext-${{env.gettext_version}}.tar.xz
+
+      - name: Configure gettext
+        shell: bash
+        env:
+          PKG_CONFIG_EXECUTABLE: ${{env.prefix_path}}/bin/pkgconf
+          PKG_CONFIG_PATH: ${{env.prefix_path}}/lib/pkgconfig
+          CFLAGS: -I${{env.prefix_path}}/include
+          CXXFLAGS: -I${{env.prefix_path}}/include
+          LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
+        working-directory: build/gettext-${{env.gettext_version}}
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --without-libxml2-prefix --disable-java
+
+      - name: Build gettext
+        shell: bash
+        working-directory: build/gettext-${{env.gettext_version}}
+        run: make -j ${{env.make_jobs}}
+
+      - name: Install gettext
+        shell: bash
+        working-directory: build/gettext-${{env.gettext_version}}
         run: make install
 
 
