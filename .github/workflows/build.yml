@@ -46,7 +46,7 @@ env:
 
   libunistring_version: '1.4.1'
 
-  gettext_version: '0.22.5'
+  gettext_version: '0.26'
 
   flex_version: '2.6.4'
 
@@ -1084,6 +1084,8 @@ jobs:
 
       - name: Configure gettext
         shell: bash
+        env:
+          CFLAGS: -I${{env.prefix_path}}/include -Wno-incompatible-function-pointer-types
         working-directory: build/gettext-${{env.gettext_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --without-libxml2-prefix --disable-java
 
