@@ -138,7 +138,7 @@ env:
 
   gstreamer_version: '1.26.5'
 
-  gstreamer_plugins_rs_version: '0.13.0'
+  gstreamer_plugins_rs_version: '0.14.1'
 
   libplist_version: '2.7.0'
 
@@ -3105,8 +3105,7 @@ jobs:
       - name: Download gst-plugins-rs
         shell: bash
         working-directory: build
-        #run: git clone --depth 1 --recurse-submodules -b "${{env.gstreamer_plugins_rs_version}}" "https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git"
-        run: git clone --depth 1 --recurse-submodules "https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git"
+        run: git clone --depth 1 --recurse-submodules -b "${{env.gstreamer_plugins_rs_version}}" "https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git"
 
       - name: Configure gst-plugins-rs
         shell: bash

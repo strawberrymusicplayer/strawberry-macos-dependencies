@@ -337,6 +337,9 @@ function update_package() {
     "gstreamer")
       package_version_latest=$(curl ${curl_options} 'https://gstreamer.freedesktop.org/src/gstreamer' | sed -n "s,.*gstreamer-\([0-9]\.[0-9][02468]\.[0-9]*\)\.tar\.xz.*,\\1,p" | sort -V | tail -1)
       ;;
+    "gst_plugins_rs")
+      package_version_latest=$(git ls-remote --tags https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git/ | cut -d ' ' -f 2 | grep -v 'gstreamer' | cut -d '/' -f 3 | sed '/.\^/d' | sort -V | tail -1)
+      ;;
     "libplist")
       package_version_latest=$(latest_github_release "libimobiledevice" "libplist")
       ;;
