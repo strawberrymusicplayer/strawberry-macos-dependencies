@@ -78,7 +78,7 @@ env:
 
   glib_version: '2.85.4'
 
-  gdk_pixbuf_version: '2.43.3'
+  gdk_pixbuf_version: '2.43.4'
 
   libsoup_version: '3.6.5'
 
