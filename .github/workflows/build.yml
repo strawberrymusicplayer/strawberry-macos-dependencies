@@ -404,7 +404,7 @@ jobs:
       - name: Download m4
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/m4/m4-${{env.m4_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/m4/m4-${{env.m4_version}}.tar.gz
 
       - name: Extract m4
         shell: bash
