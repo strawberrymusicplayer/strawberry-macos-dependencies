@@ -346,7 +346,7 @@ jobs:
 
       - name: Install go
         if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: '1.23.5'
 
