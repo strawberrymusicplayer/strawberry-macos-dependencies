@@ -436,7 +436,7 @@ jobs:
       - name: Download bison
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/bison/bison-${{env.bison_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/bison/bison-${{env.bison_version}}.tar.gz
 
       - name: Extract bison
         shell: bash
@@ -468,7 +468,7 @@ jobs:
       - name: Download autoconf
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/autoconf/autoconf-${{env.autoconf_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/autoconf/autoconf-${{env.autoconf_version}}.tar.gz
 
       - name: Extract autoconf
         shell: bash
@@ -500,7 +500,7 @@ jobs:
       - name: Download automake
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/automake/automake-${{env.automake_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/automake/automake-${{env.automake_version}}.tar.gz
 
       - name: Extract automake
         shell: bash
@@ -532,7 +532,7 @@ jobs:
       - name: Download libtool
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libtool/libtool-${{env.libtool_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libtool/libtool-${{env.libtool_version}}.tar.gz
 
       - name: Extract libtool
         shell: bash
@@ -1039,7 +1039,7 @@ jobs:
       - name: Download libiconv
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libiconv/libiconv-${{env.libiconv_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libiconv/libiconv-${{env.libiconv_version}}.tar.gz
 
       - name: Extract libiconv
         shell: bash
@@ -1071,7 +1071,7 @@ jobs:
       - name: Download libunistring
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libunistring/libunistring-${{env.libunistring_version}}.tar.xz
+        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libunistring/libunistring-${{env.libunistring_version}}.tar.xz
 
       - name: Extract libunistring
         shell: bash
@@ -1103,7 +1103,7 @@ jobs:
       - name: Download gettext
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/gettext/gettext-${{env.gettext_version}}.tar.xz
+        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/gettext/gettext-${{env.gettext_version}}.tar.xz
 
       - name: Extract gettext
         shell: bash
@@ -1172,7 +1172,7 @@ jobs:
       - name: Download libtasn1
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libtasn1/libtasn1-${{env.libtasn1_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libtasn1/libtasn1-${{env.libtasn1_version}}.tar.gz
 
       - name: Extract libtasn1
         shell: bash
@@ -1204,7 +1204,7 @@ jobs:
       - name: Download libidn2
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ftp.gnu.org/gnu/libidn/libidn2-${{env.libidn2_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libidn/libidn2-${{env.libidn2_version}}.tar.gz
 
       - name: Extract libidn2
         shell: bash
