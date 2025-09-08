@@ -2103,16 +2103,16 @@ jobs:
       - name: Download speex
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://gitlab.xiph.org/xiph/speex/-/archive/Speex-${{env.speex_version}}/speex-Speex-${{env.speex_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://ftp.osuosl.org/pub/xiph/releases/speex/speex-${{env.speex_version}}.tar.gz
 
       - name: Extract speex
         shell: bash
         working-directory: build
-        run: tar -xf ../downloads/speex-Speex-${{env.speex_version}}.tar.gz
+        run: tar -xf ../downloads/speex-${{env.speex_version}}.tar.gz
 
       - name: Autogen speex
         shell: bash
-        working-directory: build/speex-Speex-${{env.speex_version}}
+        working-directory: build/speex-${{env.speex_version}}
         run: ./autogen.sh
 
       - name: Configure speex
@@ -2123,17 +2123,17 @@ jobs:
           CFLAGS: -I${{env.prefix_path}}/include
           CXXFLAGS: -I${{env.prefix_path}}/include
           LDFLAGS: -L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib
-        working-directory: build/speex-Speex-${{env.speex_version}}
+        working-directory: build/speex-${{env.speex_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build speex
         shell: bash
-        working-directory: build/speex-Speex-${{env.speex_version}}
+        working-directory: build/speex-${{env.speex_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install speex
         shell: bash
-        working-directory: build/speex-Speex-${{env.speex_version}}
+        working-directory: build/speex-${{env.speex_version}}
         run: make install
 
 
