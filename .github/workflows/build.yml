@@ -264,6 +264,7 @@ jobs:
           echo "DYLD_LIBRARY_PATH=${{env.prefix_path}}/lib" >> $GITHUB_ENV
           echo "CFLAGS=-I${{env.prefix_path}}/include" >> $GITHUB_ENV
           echo "CXXFLAGS=-I${{env.prefix_path}}/include" >> $GITHUB_ENV
+          echo "LDFLAGS=-L${{env.prefix_path}}/lib -Wl,-rpath,${{env.prefix_path}}/lib" >> $GITHUB_ENV
 
       - name: Set extra version variables
         shell: bash
