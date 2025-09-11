@@ -259,7 +259,6 @@ jobs:
         run: |
           echo "PKG_CONFIG_EXECUTABLE=${{env.prefix_path}}/bin/pkgconf" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=${{env.prefix_path}}/lib/pkgconfig" >> $GITHUB_ENV
-          echo "LIBRARY_PATH=${{env.prefix_path}}/lib" >> $GITHUB_ENV
           echo "LD_LIBRARY_PATH=${{env.prefix_path}}/lib" >> $GITHUB_ENV
           echo "DYLD_LIBRARY_PATH=${{env.prefix_path}}/lib" >> $GITHUB_ENV
           echo "CFLAGS=-I${{env.prefix_path}}/include" >> $GITHUB_ENV
