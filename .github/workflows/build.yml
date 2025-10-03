@@ -18,7 +18,7 @@ env:
 
   gmp_version: '6.3.0'
 
-  nasm_version: '2.16.03'
+  nasm_version: '3.00'
 
   yasm_version: '1.3.0'
 
@@ -628,8 +628,7 @@ jobs:
       - name: Download nasm
         shell: bash
         working-directory: downloads
-        #run: curl ${{env.curl_options}} https://www.nasm.us/pub/nasm/releasebuilds/${{env.nasm_version}}/nasm-${{env.nasm_version}}.tar.xz
-        run: curl ${{env.curl_options}} https://files.jkvinge.net/packages/strawberry-dependencies/nasm-${{env.nasm_version}}.tar.xz
+        run: curl ${{env.curl_options}} https://www.nasm.us/pub/nasm/releasebuilds/${{env.nasm_version}}/nasm-${{env.nasm_version}}.tar.xz
 
       - name: Extract nasm
         shell: bash
