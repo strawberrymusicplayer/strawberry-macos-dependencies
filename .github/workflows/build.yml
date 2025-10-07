@@ -146,7 +146,7 @@ env:
 
   libcdio_version: '2.2.0'
 
-  qt_version: '6.9.3'
+  qt_version: '6.10.0'
 
   kdsingleapplication_version: '1.2.0'
 
