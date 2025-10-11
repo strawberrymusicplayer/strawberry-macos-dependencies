@@ -18,7 +18,7 @@ env:
 
   gmp_version: '6.3.0'
 
-  nasm_version: '3.00'
+  nasm_version: '3.01'
 
   yasm_version: '1.3.0'
 
@@ -634,11 +634,6 @@ jobs:
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/nasm-${{env.nasm_version}}.tar.xz
-
-      - name: Patch nasm
-        shell: bash
-        working-directory: build/nasm-${{env.nasm_version}}
-        run: patch -p1 < ../../patches/nasm.patch
 
       - name: Autogen nasm
         shell: bash
