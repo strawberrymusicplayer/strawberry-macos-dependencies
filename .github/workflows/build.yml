@@ -182,7 +182,7 @@ jobs:
       - name: Set runners
         id: set_runner
         shell: bash
-        run: echo "runners=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "[\"macos-arm64\"]" || echo "[ \"macos-13\", \"macos-15\" ]")" >> $GITHUB_OUTPUT
+        run: echo "runners=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "[\"macos-arm64\"]" || echo "[\"macos-15\"]")" >> $GITHUB_OUTPUT
 
       - name: Set release tag
         id: set_release_tag
@@ -285,17 +285,17 @@ jobs:
         run: echo "/opt/homebrew/bin" >> $GITHUB_PATH
 
       - name: Remove installed brew packages
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         run: brew uninstall $(brew list)
 
       - name: brew list
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         run: brew list
 
       - name: Uninstall homebrew
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
 
@@ -341,7 +341,7 @@ jobs:
         run: mkdir build
 
       - name: Install rustup
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         working-directory: downloads
         shell: bash
         run: |
@@ -355,14 +355,14 @@ jobs:
         run: echo "/Users/jonas/.cargo/bin" >> $GITHUB_PATH
 
       - name: Install go
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         uses: actions/setup-go@v5
         with:
           go-version: '1.23.5'
 
 
       - name: Install github tools
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         working-directory: build
         run: |
@@ -1246,7 +1246,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -1607,7 +1607,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2343,7 +2343,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2649,7 +2649,7 @@ jobs:
         run: ninja install
 
       - name: Install cargo-c
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         run: cargo install cargo-c
 
@@ -2748,7 +2748,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2921,7 +2921,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2984,7 +2984,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-13' || env.runner == 'macos-14' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         working-directory: build
         run: rm -rf *
