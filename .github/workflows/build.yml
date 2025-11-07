@@ -184,7 +184,7 @@ jobs:
       - name: Set runners
         id: set_runner
         shell: bash
-        run: echo "runners=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "[\"macos-arm64\"]" || echo "[ \"macos-15-intel\", \"macos-15\" ]")" >> $GITHUB_OUTPUT
+        run: echo "runners=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "[\"macos-arm64\"]" || echo "[ \"macos-15-intel\", \"macos-26\" ]")" >> $GITHUB_OUTPUT
 
       - name: Set release tag
         id: set_release_tag
@@ -287,17 +287,17 @@ jobs:
         run: echo "/opt/homebrew/bin" >> $GITHUB_PATH
 
       - name: Remove installed brew packages
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-26'
         shell: bash
         run: brew uninstall $(brew list)
 
       - name: brew list
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-26'
         shell: bash
         run: brew list
 
       - name: Uninstall homebrew
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-26'
         shell: bash
         run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
 
@@ -435,10 +435,12 @@ jobs:
         run: mkdir build
 
       - name: Install rustup
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-26'
         working-directory: downloads
         shell: bash
         run: |
+          rm -rf $HOME/.cargo
+          mkdir -p $HOME/.cargo/bin
           curl --proto '=https' --tlsv1.2 -fsS -o rustup.sh https://sh.rustup.rs
           chmod u+x rustup.sh
           ./rustup.sh -y
@@ -447,7 +449,6 @@ jobs:
         if: env.runner == 'macos-arm64'
         shell: bash
         run: echo "/Users/jonas/.cargo/bin" >> $GITHUB_PATH
-
 
       - name: Install github cli tool
         if: env.runner == 'macos-15-intel'
@@ -1320,7 +1321,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-26'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -1681,7 +1682,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-26'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2417,7 +2418,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-26'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2724,7 +2725,7 @@ jobs:
 
 
       - name: Install cargo-c
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-26'
         shell: bash
         run: cargo install cargo-c
 
@@ -2824,7 +2825,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-26'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -2997,7 +2998,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-26'
         shell: bash
         working-directory: build
         run: rm -rf *
@@ -3060,7 +3061,7 @@ jobs:
 
 
       - name: Cleanup build directory
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-26'
         shell: bash
         working-directory: build
         run: rm -rf *
