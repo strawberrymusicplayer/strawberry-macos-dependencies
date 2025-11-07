@@ -345,7 +345,9 @@ jobs:
         working-directory: downloads
         shell: bash
         run: |
-          mkdir -p /Users/runner/.cargo/bin
+          ls -la /Users/runner/.rustup/ || true
+          ls -la /Users/runner/.cargo/ || true
+          rm -rf /Users/runner/{.rustup,.cargo}
           curl --proto '=https' --tlsv1.2 -fsS -o rustup.sh https://sh.rustup.rs
           chmod u+x rustup.sh
           ./rustup.sh -y
