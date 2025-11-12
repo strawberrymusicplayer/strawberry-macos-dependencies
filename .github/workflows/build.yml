@@ -184,7 +184,7 @@ jobs:
       - name: Set runners
         id: set_runner
         shell: bash
-        run: echo "runners=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "[\"macos-arm64\"]" || echo "[\"macos-15\"]")" >> $GITHUB_OUTPUT
+        run: echo "runners=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "[\"macos-arm64\"]" || echo "[ \"macos-15-intel\", \"macos-15\" ]")" >> $GITHUB_OUTPUT
 
       - name: Set release tag
         id: set_release_tag
