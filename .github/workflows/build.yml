@@ -42,7 +42,7 @@ env:
 
   libiconv_version: '1.17'
 
-  libunistring_version: '1.3'
+  libunistring_version: '1.4.1'
 
   gettext_version: '0.22.5'
 
