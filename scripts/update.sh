@@ -157,6 +157,9 @@ function update_package() {
     "cmake")
       package_version_latest=$(latest_github_release "Kitware" "CMake")
       ;;
+    "ccache")
+      package_version_latest=$(latest_github_release "ccache" "ccache")
+      ;;
     "gmp")
       package_version_latest=$(curl ${curl_options} 'https://gmplib.org/' | sed -n 's,.*gmp-\([0-9][^>]*\)\.tar.*,\1,p' | sort -V | tail -1)
       ;;

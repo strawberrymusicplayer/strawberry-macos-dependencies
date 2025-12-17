@@ -16,6 +16,8 @@ env:
 
   cmake_version: '4.2.1'
 
+  ccache_version: '4.10.2'
+
   gmp_version: '6.3.0'
 
   nasm_version: '3.01'
@@ -321,6 +323,93 @@ jobs:
       - name: Update PATH
         shell: bash
         run: echo "${{env.prefix_path}}/bin" >> $GITHUB_PATH
+
+      - name: Install ccache
+        shell: bash
+        run: |
+          if ! command -v ccache &> /dev/null; then
+            curl -L -o ccache.tar.gz https://github.com/ccache/ccache/releases/download/v${{env.ccache_version}}/ccache-${{env.ccache_version}}-darwin.tar.gz
+            tar -xf ccache.tar.gz
+            sudo cp ccache-${{env.ccache_version}}-darwin/ccache /usr/local/bin/
+            sudo chmod +x /usr/local/bin/ccache
+          fi
+          ccache --version
+
+      - name: Setup ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ccache-${{env.arch}}-${{env.buildtype}}-${{hashFiles('.github/workflows/build.yml')}}
+          restore-keys: |
+            ccache-${{env.arch}}-${{env.buildtype}}-
+
+      - name: Configure ccache
+        shell: bash
+        run: |
+          ccache --set-config=max_size=2G
+          ccache --set-config=compression=true
+          ccache --set-config=compression_level=6
+          ccache --zero-stats
+          ccache --show-stats
+
+      - name: Setup compiler wrappers for ccache
+        shell: bash
+        run: |
+          # Create wrapper scripts to handle preprocessor-only mode
+          mkdir -p ${{env.prefix_path}}/bin
+          
+          # Create CC wrapper
+          cat > ${{env.prefix_path}}/bin/cc_wrapper.sh << 'EOF'
+          #!/bin/bash
+          # Check if this is a preprocessor-only invocation
+          # Preprocessor-only mode uses -E flag without -c flag
+          has_E=false
+          has_c=false
+          for arg in "$@"; do
+            if [[ "$arg" == "-E" ]]; then
+              has_E=true
+            elif [[ "$arg" == "-c" ]]; then
+              has_c=true
+            fi
+          done
+          
+          if [[ "$has_E" == "true" ]] && [[ "$has_c" == "false" ]]; then
+            # Run clang directly for preprocessor-only mode
+            exec clang "$@"
+          else
+            # Use ccache for compilation
+            exec ccache clang "$@"
+          fi
+          EOF
+          chmod +x ${{env.prefix_path}}/bin/cc_wrapper.sh
+          
+          # Create CXX wrapper
+          cat > ${{env.prefix_path}}/bin/cxx_wrapper.sh << 'EOF'
+          #!/bin/bash
+          # Check if this is a preprocessor-only invocation
+          # Preprocessor-only mode uses -E flag without -c flag
+          has_E=false
+          has_c=false
+          for arg in "$@"; do
+            if [[ "$arg" == "-E" ]]; then
+              has_E=true
+            elif [[ "$arg" == "-c" ]]; then
+              has_c=true
+            fi
+          done
+          
+          if [[ "$has_E" == "true" ]] && [[ "$has_c" == "false" ]]; then
+            # Run clang++ directly for preprocessor-only mode
+            exec clang++ "$@"
+          else
+            # Use ccache for compilation
+            exec ccache clang++ "$@"
+          fi
+          EOF
+          chmod +x ${{env.prefix_path}}/bin/cxx_wrapper.sh
+          
+          echo "CC=${{env.prefix_path}}/bin/cc_wrapper.sh" >> $GITHUB_ENV
+          echo "CXX=${{env.prefix_path}}/bin/cxx_wrapper.sh" >> $GITHUB_ENV
 
 
       - name: Install python dependencies
@@ -3036,6 +3125,10 @@ jobs:
         working-directory: build/rapidjson/build
         run: cmake --install .
 
+
+      - name: Show ccache statistics
+        shell: bash
+        run: ccache --show-stats
 
       - name: Create archive
         shell: bash
