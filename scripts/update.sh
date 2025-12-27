@@ -199,8 +199,8 @@ function update_package() {
     "libunistring")
       package_version_latest=$(curl ${curl_options} 'https://gnuftp.uib.no/libunistring/?C=M;O=D' | sed -n 's,.*<a href="libunistring-\([0-9][^"]*\)\.tar.*,\1,p'| sort -V | tail -1)
       ;;
-    "gettext")
-      package_version_latest=$(curl ${curl_options} 'https://gnuftp.uib.no/gettext/' | sed -n 's,.*gettext-\([0-9][^>]*\)\.tar.*,\1,p' | sort -V | tail -1)
+    "proxy_libintl")
+      package_version_latest=$(curl ${curl_options} 'https://github.com/frida/proxy-libintl/tags' | sed -n 's#.*releases/tag/\([^"]*\).*#\1#p' | sort -V | tail -1)
       ;;
     "flex")
       package_version_latest=$(latest_github_release "westes" "flex")

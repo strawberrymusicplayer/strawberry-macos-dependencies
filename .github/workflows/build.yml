@@ -46,7 +46,7 @@ env:
 
   libunistring_version: '1.4.1'
 
-  gettext_version: '0.22.5'
+  proxy_libintl_version: '0.5'
 
   flex_version: '2.6.4'
 
@@ -339,9 +339,9 @@ jobs:
         uses: actions/cache@v5
         with:
           path: ~/.ccache
-          key: ccache-${{env.arch}}-${{env.buildtype}}-${{hashFiles('.github/workflows/build.yml')}}
+          key: ccache-macos-${{env.arch}}-${{env.buildtype}}
           restore-keys: |
-            ccache-${{env.arch}}-${{env.buildtype}}-
+            ccache-macos-${{env.arch}}-${{env.buildtype}}
 
       - name: Configure ccache
         shell: bash
@@ -429,6 +429,16 @@ jobs:
         shell: bash
         run: mkdir build
 
+      - name: Install cmake
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        shell: bash
+        working-directory: build
+        run: |
+          curl ${{env.curl_options}} https://github.com/Kitware/CMake/releases/download/v${{env.cmake_version}}/cmake-${{env.cmake_version}}-macos-universal.tar.gz
+          tar -xvf cmake-${{env.cmake_version}}-macos-universal.tar.gz
+          sudo mv cmake-${{env.cmake_version}}-macos-universal/CMake.app /Applications/
+          echo "/Applications/CMake.app/Contents/bin" >> $GITHUB_PATH
+
       - name: Install rustup
         if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         working-directory: downloads
@@ -444,14 +454,14 @@ jobs:
         run: echo "/Users/jonas/.cargo/bin" >> $GITHUB_PATH
 
       - name: Install go
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        if: false
         uses: actions/setup-go@v5
         with:
           go-version: '1.23.5'
 
 
-      - name: Install github tools
-        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+      - name: Build and install github tools
+        if: false
         shell: bash
         working-directory: build
         run: |
@@ -460,6 +470,24 @@ jobs:
           make
           sudo make install
           sudo rm -rf *
+
+      - name: Install github tools
+        if: env.runner == 'macos-15-intel'
+        shell: bash
+        working-directory: build
+        run: |
+          curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v2.83.2/gh_2.83.2_macOS_amd64.zip
+          unzip gh_2.83.2_macOS_amd64.zip
+          sudo cp gh_2.83.2_macOS_amd64/bin/gh /usr/local/bin/
+
+      - name: Install github tools
+        if: env.runner == 'macos-15'
+        shell: bash
+        working-directory: build
+        run: |
+          curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v2.83.2/gh_2.83.2_macOS_arm64.zip
+          unzip gh_2.83.2_macOS_arm64.zip
+          sudo cp gh_2.83.2_macOS_arm64/bin/gh /usr/local/bin/
 
       - name: which gh
         shell: bash
@@ -633,6 +661,32 @@ jobs:
           ln -s ${{env.prefix_path}}/bin/libtoolize ${{env.prefix_path}}/bin/glibtoolize
 
 
+      - name: Download proxy-libintl
+        shell: bash
+        working-directory: downloads
+        run: curl ${{env.curl_options}} https://github.com/frida/proxy-libintl/archive/refs/tags/${{env.proxy_libintl_version}}/proxy-libintl-${{env.proxy_libintl_version}}.tar.gz
+
+      - name: Extract proxy-libintl
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/proxy-libintl-${{env.proxy_libintl_version}}.tar.gz
+
+      - name: Configure proxy-libintl
+        shell: bash
+        working-directory: build/proxy-libintl-${{env.proxy_libintl_version}}
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload build
+
+      - name: Build proxy-libintl
+        shell: bash
+        working-directory: build/proxy-libintl-${{env.proxy_libintl_version}}/build
+        run: ninja
+
+      - name: Install proxy-libintl
+        shell: bash
+        working-directory: build/proxy-libintl-${{env.proxy_libintl_version}}/build
+        run: ninja install
+
+
       - name: Download sparsehash
         shell: bash
         working-directory: downloads
@@ -660,26 +714,31 @@ jobs:
 
 
       - name: Download cmake
+        if: env.runner != 'macos-15-intel' && env.runner != 'macos-15'
         shell: bash
         working-directory: downloads
         run: curl ${{env.curl_options}} https://github.com/Kitware/CMake/releases/download/v${{env.cmake_version}}/cmake-${{env.cmake_version}}.tar.gz
 
       - name: Extract cmake
+        if: env.runner != 'macos-15-intel' && env.runner != 'macos-15'
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/cmake-${{env.cmake_version}}.tar.gz
 
       - name: Configure cmake
+        if: env.runner != 'macos-15-intel' && env.runner != 'macos-15'
         shell: bash
         working-directory: build/cmake-${{env.cmake_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --parallel=${{env.make_jobs}}
 
       - name: Build cmake
+        if: env.runner != 'macos-15-intel' && env.runner != 'macos-15'
         shell: bash
         working-directory: build/cmake-${{env.cmake_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install cmake
+        if: env.runner != 'macos-15-intel' && env.runner != 'macos-15'
         shell: bash
         working-directory: build/cmake-${{env.cmake_version}}
         run: make install
@@ -1069,32 +1128,6 @@ jobs:
       - name: Install libunistring
         shell: bash
         working-directory: build/libunistring-${{env.libunistring_version}}
-        run: make install
-
-
-      - name: Download gettext
-        shell: bash
-        working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/gettext/gettext-${{env.gettext_version}}.tar.xz
-
-      - name: Extract gettext
-        shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/gettext-${{env.gettext_version}}.tar.xz
-
-      - name: Configure gettext
-        shell: bash
-        working-directory: build/gettext-${{env.gettext_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --without-libxml2-prefix --disable-java
-
-      - name: Build gettext
-        shell: bash
-        working-directory: build/gettext-${{env.gettext_version}}
-        run: make -j ${{env.make_jobs}}
-
-      - name: Install gettext
-        shell: bash
-        working-directory: build/gettext-${{env.gettext_version}}
         run: make install
 
 
@@ -2737,10 +2770,12 @@ jobs:
         working-directory: build/gst-libav-${{env.gstreamer_version}}/build
         run: ninja install
 
+
       - name: Install cargo-c
         if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
         run: cargo install cargo-c
+
 
       - name: Download gst-plugins-rs
         shell: bash
