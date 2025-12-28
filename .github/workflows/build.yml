@@ -334,11 +334,12 @@ jobs:
             sudo chmod +x /usr/local/bin/ccache
           fi
           ccache --version
+          echo "CCACHE_DIR=$(ccache --show-config | grep '.* cache_dir' | tr -d '[:blank:]' | cut -d '=' -f 2)" >> $GITHUB_ENV
 
       - name: Setup ccache
         uses: actions/cache@v5
         with:
-          path: ~/.ccache
+          path: ${{env.CCACHE_DIR}}
           key: ccache-macos-${{env.arch}}-${{env.buildtype}}
           restore-keys: |
             ccache-macos-${{env.arch}}-${{env.buildtype}}
@@ -346,10 +347,9 @@ jobs:
       - name: Configure ccache
         shell: bash
         run: |
-          ccache --set-config=max_size=2G
+          ccache --set-config=max_size=6G
           ccache --set-config=compression=true
           ccache --set-config=compression_level=6
-          ccache --zero-stats
           ccache --show-stats
 
       - name: Setup compiler wrappers for ccache
