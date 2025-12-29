@@ -136,6 +136,9 @@ function update_package() {
   fi
 
   case ${package_name} in
+    "ghcli")
+      package_version_latest=$(latest_github_release "cli" "cli")
+      ;;
     "pkgconf")
       package_version_latest=$(curl ${curl_options} 'https://github.com/pkgconf/pkgconf/tags' | sed -n 's#.*releases/tag/\([^"]*\).*#\1#p' | sed 's/^pkgconf\-//g' | sort -V | tail -1)
       ;;
