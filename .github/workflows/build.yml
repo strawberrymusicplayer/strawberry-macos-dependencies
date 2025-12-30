@@ -44,8 +44,6 @@ env:
 
   zstd_version: '1.5.7'
 
-  libiconv_version: '1.17'
-
   libunistring_version: '1.4.1'
 
   proxy_libintl_version: '0.5'
@@ -1047,32 +1045,6 @@ jobs:
         shell: bash
         working-directory: build/zstd-${{env.zstd_version}}/build_dir
         run: cmake --install .
-
-
-      - name: Download libiconv
-        shell: bash
-        working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libiconv/libiconv-${{env.libiconv_version}}.tar.gz
-
-      - name: Extract libiconv
-        shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libiconv-${{env.libiconv_version}}.tar.gz
-
-      - name: Configure libiconv
-        shell: bash
-        working-directory: build/libiconv-${{env.libiconv_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-nls --disable-silent-rules
-
-      - name: Build libiconv
-        shell: bash
-        working-directory: build/libiconv-${{env.libiconv_version}}
-        run: make -j ${{env.make_jobs}}
-
-      #- name: Install libiconv
-        #shell: bash
-        #working-directory: build/libiconv-${{env.libiconv_version}}
-        #run: make install
 
 
       - name: Download libunistring
@@ -3171,7 +3143,6 @@ jobs:
           echo "* xz ${{env.xz_version}}" >> "${{env.release_notes_file}}"
           echo "* Brotli ${{env.brotli_version}}" >> "${{env.release_notes_file}}"
           echo "* zstd ${{env.zstd_version}}" >> "${{env.release_notes_file}}"
-          echo "* libiconv ${{env.libiconv_version}}" >> "${{env.release_notes_file}}"
           echo "* libunistring ${{env.libunistring_version}}" >> "${{env.release_notes_file}}"
           echo "* libtasn1 ${{env.libtasn1_version}}" >> "${{env.release_notes_file}}"
           echo "* libidn2 ${{env.libidn2_version}}" >> "${{env.release_notes_file}}"
