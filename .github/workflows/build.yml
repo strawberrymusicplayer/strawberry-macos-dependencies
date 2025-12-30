@@ -326,7 +326,9 @@ jobs:
         shell: bash
         run: echo "${{env.prefix_path}}/bin" >> $GITHUB_PATH
 
+
       - name: Install ccache
+        if: env.runner == 'macos-15-intel'
         shell: bash
         run: |
           if ! command -v ccache &> /dev/null; then
@@ -339,6 +341,7 @@ jobs:
           echo "CCACHE_DIR=$(ccache --show-config | grep '.* cache_dir' | tr -d '[:blank:]' | cut -d '=' -f 2)" >> $GITHUB_ENV
 
       - name: Setup ccache
+        if: env.runner == 'macos-15-intel'
         uses: actions/cache@v5
         with:
           path: ${{env.CCACHE_DIR}}
@@ -347,6 +350,7 @@ jobs:
             ccache-macos-${{env.arch}}-${{env.buildtype}}
 
       - name: Configure ccache
+        if: env.runner == 'macos-15-intel'
         shell: bash
         run: |
           ccache --set-config=max_size=6G
@@ -355,6 +359,7 @@ jobs:
           ccache --show-stats
 
       - name: Setup compiler wrappers for ccache
+        if: env.runner == 'macos-15-intel'
         shell: bash
         run: |
           # Create wrapper scripts to handle preprocessor-only mode
