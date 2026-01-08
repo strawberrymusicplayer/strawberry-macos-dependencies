@@ -50,7 +50,7 @@ env:
 
   flex_version: '2.6.4'
 
-  libtasn1_version: '4.20.0'
+  libtasn1_version: '4.21.0'
 
   libidn2_version: '2.3.0'
 
