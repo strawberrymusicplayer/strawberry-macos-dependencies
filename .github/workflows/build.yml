@@ -170,6 +170,10 @@ env:
 
   make_jobs: '4'
 
+  PKG_CONFIG_ALLOW_SYSTEM_CFLAGS: '1'
+
+  PKG_CONFIG_ALLOW_SYSTEM_LIBS: '1'
+
 jobs:
 
   setup:
