@@ -747,6 +747,10 @@ jobs:
         working-directory: build/gmp-${{env.gmp_version}}
         run: make install
 
+      - name: Check gmp
+        shell: bash
+        run: pkg-config gmp --libs --cflags
+
 
       - name: Download nasm
         shell: bash
@@ -835,6 +839,10 @@ jobs:
         working-directory: build/zlib-${{env.zlib_version}}/build
         run: cmake --install .
 
+      - name: Check zlib
+        shell: bash
+        run: pkg-config zlib --libs --cflags
+
 
       - name: Download openssl
         shell: bash
@@ -860,6 +868,13 @@ jobs:
         shell: bash
         working-directory: build/openssl-${{env.openssl_version}}
         run: make install_sw
+
+      - name: Check openssl
+        shell: bash
+        run: |
+          pkg-config libcrypto --libs --cflags
+          pkg-config libssl --libs --cflags
+          pkg-config openssl --libs --cflags
 
 
       - name: Download libpng
@@ -894,6 +909,10 @@ jobs:
           ln -s ${{env.prefix_path}}/lib/libpng16d.a ${{env.prefix_path}}/lib/libpng16.a
           ln -s ${{env.prefix_path}}/lib/libpng16d.dylib ${{env.prefix_path}}/lib/libpng16.dylib
 
+      - name: Check libpng
+        shell: bash
+        run: pkg-config libpng --libs --cflags
+
 
       - name: Download libjpeg-turbo
         shell: bash
@@ -920,6 +939,10 @@ jobs:
         working-directory: build/libjpeg-turbo-${{env.libjpeg_turbo_version}}/build
         run: cmake --install .
 
+      - name: Check libjpeg
+        shell: bash
+        run: pkg-config libjpeg --libs --cflags
+
 
       - name: Download pcre2
         shell: bash
@@ -945,6 +968,14 @@ jobs:
         shell: bash
         working-directory: build/pcre2-${{env.pcre2_version}}/build
         run: cmake --install .
+
+      - name: Check pcre2
+        shell: bash
+        run: |
+          pkg-config libpcre2-posix --libs --cflags
+          pkg-config libpcre2-8 --libs --cflags
+          pkg-config libpcre2-16 --libs --cflags
+          pkg-config libpcre2-32 --libs --cflags
 
 
       - name: Download bzip2
@@ -977,6 +1008,10 @@ jobs:
         working-directory: build/bzip2-${{env.bzip2_version}}/build
         run: cmake --install .
 
+      - name: Check bzip2
+        shell: bash
+        run: pkg-config bzip2 --libs --cflags
+
 
       - name: Download xz
         shell: bash
@@ -1002,6 +1037,10 @@ jobs:
         shell: bash
         working-directory: build/xz-${{env.xz_version}}
         run: make install
+
+      - name: Check xz
+        shell: bash
+        run: pkg-config liblzma --libs --cflags
 
 
       - name: Download brotli
@@ -1029,6 +1068,12 @@ jobs:
         working-directory: build/brotli-${{env.brotli_version}}/build_dir
         run: cmake --install .
 
+      - name: Check brotli
+        shell: bash
+        run: |
+          pkg-config libbrotlidec --libs --cflags
+          pkg-config libbrotlienc --libs --cflags
+
 
       - name: Download zstd
         shell: bash
@@ -1054,6 +1099,10 @@ jobs:
         shell: bash
         working-directory: build/zstd-${{env.zstd_version}}/build_dir
         run: cmake --install .
+
+      - name: Check zstd
+        shell: bash
+        run: pkg-config libzstd --libs --cflags
 
 
       - name: Download libunistring
@@ -1138,6 +1187,10 @@ jobs:
         working-directory: build/libtasn1-${{env.libtasn1_version}}
         run: make install
 
+      - name: Check libtasn1
+        shell: bash
+        run: pkg-config libtasn1 --libs --cflags
+
 
       - name: Download libidn2
         shell: bash
@@ -1164,6 +1217,10 @@ jobs:
         working-directory: build/libidn2-${{env.libidn2_version}}
         run: make install
 
+      - name: Check libidn2
+        shell: bash
+        run: pkg-config libidn2 --libs --cflags
+
 
       - name: Download nettle
         shell: bash
@@ -1189,6 +1246,12 @@ jobs:
         shell: bash
         working-directory: build/nettle-${{env.nettle_version}}
         run: make install
+
+      - name: Check nettle
+        shell: bash
+        run: |
+          pkg-config nettle --libs --cflags
+          pkg-config hogweed --libs --cflags
 
 
       - name: Download GnuTLS
@@ -1218,6 +1281,10 @@ jobs:
         working-directory: build/gnutls-${{env.gnutls_version}}
         run: make install
 
+      - name: Check gnutls
+        shell: bash
+        run: pkg-config gnutls --libs --cflags
+
 
       - name: Download icu
         shell: bash
@@ -1243,6 +1310,13 @@ jobs:
         shell: bash
         working-directory: build/icu/source
         run: make install
+
+      - name: Check icu
+        shell: bash
+        run: |
+          pkg-config icu-uc --libs --cflags
+          pkg-config icu-io --libs --cflags
+          pkg-config icu-i18n --libs --cflags
 
 
       - name: Download pixman
@@ -1270,6 +1344,10 @@ jobs:
         working-directory: build/pixman-${{env.pixman_version}}/build
         run: ninja install
 
+      - name: Check pixman
+        shell: bash
+        run: pkg-config pixman-1 --libs --cflags
+
 
       - name: Download expat
         shell: bash
@@ -1295,6 +1373,10 @@ jobs:
         shell: bash
         working-directory: build/expat-${{env.expat_version}}/build
         run: cmake --install .
+
+      - name: Check expat
+        shell: bash
+        run: pkg-config expat --libs --cflags
 
 
       - name: Download Boost
@@ -1355,6 +1437,10 @@ jobs:
         working-directory: build/libxml2-${{env.libxml2_version}}/build
         run: cmake --install .
 
+      - name: Check libxml2
+        shell: bash
+        run: pkg-config libxml-2.0 --libs --cflags
+
 
       - name: Download nghttp2
         shell: bash
@@ -1380,6 +1466,10 @@ jobs:
         shell: bash
         working-directory: build/nghttp2-${{env.nghttp2_version}}/build
         run: cmake --install .
+
+      - name: Check nghttp2
+        shell: bash
+        run: pkg-config libnghttp2 --libs --cflags
 
 
       - name: Download libffi
@@ -1407,6 +1497,10 @@ jobs:
         working-directory: build/libffi-${{env.libffi_version}}
         run: make install
 
+      - name: Check libffi
+        shell: bash
+        run: pkg-config libffi --libs --cflags
+
 
       - name: Download libpsl
         shell: bash
@@ -1432,6 +1526,10 @@ jobs:
         shell: bash
         working-directory: build/libpsl-${{env.libpsl_version}}/build
         run: ninja install
+
+      - name: Check libpsl
+        shell: bash
+        run: pkg-config libpsl --libs --cflags
 
 
       - name: Download orc
@@ -1491,6 +1589,10 @@ jobs:
         shell: bash
         run: install_name_tool -id ${{env.prefix_path}}/lib/libsqlite3.dylib ${{env.prefix_path}}/lib/libsqlite3.dylib
 
+      - name: Check SQLite
+        shell: bash
+        run: pkg-config sqlite3 --libs --cflags
+
 
       - name: Download GLib
         shell: bash
@@ -1516,6 +1618,13 @@ jobs:
         shell: bash
         working-directory: build/glib-${{env.glib_version}}/build
         run: ninja install
+
+      - name: Check GLib
+        shell: bash
+        run: |
+          pkg-config glib-2.0 --libs --cflags
+          pkg-config gobject-2.0 --libs --cflags
+          pkg-config gio-2.0 --libs --cflags
 
 
       - name: Download gdk-pixbuf
@@ -1543,6 +1652,10 @@ jobs:
         working-directory: build/gdk-pixbuf-${{env.gdk_pixbuf_version}}/build
         run: ninja install
 
+      - name: Check gdk-pixbuf
+        shell: bash
+        run: pkg-config gdk-pixbuf-2.0 --libs --cflags
+
 
       - name: Download libsoup
         shell: bash
@@ -1568,6 +1681,10 @@ jobs:
         shell: bash
         working-directory: build/libsoup-${{env.libsoup_version}}/build
         run: ninja install
+
+      - name: Check libsoup
+        shell: bash
+        run: pkg-config libsoup-3.0 --libs --cflags
 
 
       - name: Download glib-networking
@@ -1631,6 +1748,10 @@ jobs:
         shell: bash
         run: ln -s ${{env.prefix_path}}/lib/libfreetyped.dylib ${{env.prefix_path}}/lib/libfreetype.dylib
 
+      - name: Check freetype
+        shell: bash
+        run: pkg-config freetype2 --libs --cflags
+
 
       - name: Download harfbuzz
         shell: bash
@@ -1657,6 +1778,12 @@ jobs:
         working-directory: build/harfbuzz-${{env.harfbuzz_version}}/build
         run: ninja install
 
+      - name: Check harfbuzz
+        shell: bash
+        run: |
+          pkg-config harfbuzz --libs --cflags
+          pkg-config harfbuzz-icu --libs --cflags
+
 
       - name: Delete freetype bootstrap
         shell: bash
@@ -1682,6 +1809,10 @@ jobs:
         shell: bash
         working-directory: build/freetype-${{env.freetype_version}}/build
         run: cmake --install .
+
+      - name: Check freetype
+        shell: bash
+        run: pkg-config freetype2 --libs --cflags
 
 
       - name: Cleanup build directory
@@ -1716,6 +1847,10 @@ jobs:
         working-directory: build/libusb-${{env.libusb_version}}
         run: make install
 
+      - name: Check libusb
+        shell: bash
+        run: pkg-config libusb-1.0 --libs --cflags
+
 
       - name: Download libogg
         shell: bash
@@ -1741,6 +1876,10 @@ jobs:
         shell: bash
         working-directory: build/libogg-${{env.libogg_version}}
         run: make install
+
+      - name: Check libogg
+        shell: bash
+        run: pkg-config ogg --libs --cflags
 
 
       - name: Download libvorbis
@@ -1779,6 +1918,10 @@ jobs:
         working-directory: build/libvorbis-${{env.libvorbis_version}}
         run: make install
 
+      - name: Check libvorbis
+        shell: bash
+        run: pkg-config vorbis --libs --cflags
+
 
       - name: Download flac
         shell: bash
@@ -1805,6 +1948,10 @@ jobs:
         working-directory: build/flac-${{env.flac_version}}/build
         run: cmake --install .
 
+      - name: Check flac
+        shell: bash
+        run: pkg-config flac --libs --cflags
+
 
       - name: Download wavpack
         shell: bash
@@ -1830,6 +1977,10 @@ jobs:
         shell: bash
         working-directory: build/wavpack-${{env.wavpack_version}}/build
         run: cmake --install .
+
+      - name: Check wavpack
+        shell: bash
+        run: pkg-config wavpack --libs --cflags
 
 
       - name: Download opus
@@ -1862,6 +2013,10 @@ jobs:
         working-directory: build/opus-${{env.opus_version}}/build
         run: cmake --install .
 
+      - name: Check opus
+        shell: bash
+        run: pkg-config opus --libs --cflags
+
 
       - name: Download opusfile
         shell: bash
@@ -1887,6 +2042,10 @@ jobs:
         shell: bash
         working-directory: build/opusfile-${{env.opusfile_version}}
         run: make install || true
+
+      - name: Check opusfile
+        shell: bash
+        run: pkg-config opusfile --libs --cflags
 
 
       - name: Download speex
@@ -1919,6 +2078,10 @@ jobs:
         working-directory: build/speex-Speex-${{env.speex_version}}
         run: make install
 
+      - name: Check speex
+        shell: bash
+        run: pkg-config speex --libs --cflags
+
 
       - name: Download mpg123
         shell: bash
@@ -1945,6 +2108,10 @@ jobs:
         shell: bash
         working-directory: build/mpg123-${{env.mpg123_version}}/build
         run: cmake --install .
+
+      - name: Check mpg123
+        shell: bash
+        run: pkg-config libmpg123 --libs --cflags
 
 
       - name: Download lame
@@ -2007,6 +2174,10 @@ jobs:
         shell: bash
         working-directory: build/twolame-${{env.twolame_version}}
         run: make install
+
+      - name: Check twolame
+        shell: bash
+        run: pkg-config twolame --libs --cflags
 
 
       - name: Download musepack
@@ -2075,6 +2246,10 @@ jobs:
         working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
         run: make install
 
+      - name: Check libopenmpt
+        shell: bash
+        run: pkg-config libopenmpt --libs --cflags
+
 
       - name: Download libgme
         shell: bash
@@ -2100,6 +2275,10 @@ jobs:
         shell: bash
         working-directory: build/libgme-${{env.libgme_version}}/build
         run: cmake --install .
+
+      - name: Check libgme
+        shell: bash
+        run: pkg-config libgme --libs --cflags
 
 
       - name: Download faad2
@@ -2128,6 +2307,10 @@ jobs:
         shell: bash
         working-directory: build/faad2-${{env.faad2_version}}/build
         run: cmake --install .
+
+      - name: Check faad2
+        shell: bash
+        run: pkg-config faad2 --libs --cflags
 
 
       - name: Download faac
@@ -2160,6 +2343,10 @@ jobs:
         working-directory: build/faac-faac-${{env.faac_version}}
         run: make install
 
+      - name: Check faac
+        shell: bash
+        run: pkg-config faac --libs --cflags
+
 
       - name: Download fdk-aac
         shell: bash
@@ -2185,6 +2372,10 @@ jobs:
         shell: bash
         working-directory: build/fdk-aac-${{env.fdk_aac_version}}/build
         run: cmake --install .
+
+      - name: Check fdk-aac
+        shell: bash
+        run: pkg-config fdk-aac --libs --cflags
 
 
       - name: Download utfcpp
@@ -2238,6 +2429,10 @@ jobs:
         working-directory: build/taglib-${{env.taglib_version}}/build
         run: cmake --install .
 
+      - name: Check TagLib
+        shell: bash
+        run: pkg-config taglib --libs --cflags
+
 
       - name: Download libbs2b
         shell: bash
@@ -2279,6 +2474,10 @@ jobs:
         working-directory: build/libbs2b-${{env.libbs2b_version}}
         run: make install
 
+      - name: Check libbs2b
+        shell: bash
+        run: pkg-config libbs2b --libs --cflags
+
 
       - name: Download libebur128
         shell: bash
@@ -2307,6 +2506,10 @@ jobs:
 
       - name: Change id for libebur128
         run: install_name_tool -id ${{env.prefix_path}}/lib/libebur128.1.2.6.dylib ${{env.prefix_path}}/lib/libebur128.1.2.6.dylib
+
+      - name: Check libebur128
+        shell: bash
+        run: pkg-config libebur128 --libs --cflags
 
 
       - name: Download fftw
@@ -2341,6 +2544,10 @@ jobs:
         working-directory: build/fftw-${{env.fftw_version}}
         run: make install
 
+      - name: Check fftw
+        shell: bash
+        run: pkg-config fftw3 --libs --cflags
+
 
       - name: Download ffmpeg
         shell: bash
@@ -2366,6 +2573,14 @@ jobs:
         shell: bash
         working-directory: build/ffmpeg-${{env.ffmpeg_version}}
         run: make install
+
+      - name: Check ffmpeg
+        shell: bash
+        run: |
+          pkg-config libavcodec --libs --cflags
+          pkg-config libavformat --libs --cflags
+          pkg-config libavfilter --libs --cflags
+          pkg-config libavutil --libs --cflags
 
 
       - name: Download Chromaprint
@@ -2393,6 +2608,10 @@ jobs:
         working-directory: build/chromaprint-${{env.chromaprint_version}}/build
         run: cmake --install .
 
+      - name: Check Chromaprint
+        shell: bash
+        run: pkg-config libchromaprint --libs --cflags
+
 
       - name: Download libcdio
         shell: bash
@@ -2418,6 +2637,10 @@ jobs:
         shell: bash
         working-directory: build/libcdio-${{env.libcdio_version}}
         run: make install
+
+      - name: Check libcdio
+        shell: bash
+        run: pkg-config libcdio --libs --cflags
 
 
       - name: Cleanup build directory
@@ -2469,6 +2692,12 @@ jobs:
         shell: bash
         working-directory: build/gstreamer-${{env.gstreamer_version}}/build
         run: ninja install
+
+      - name: Check GStreamer
+        shell: bash
+        run: |
+          pkg-config gstreamer-1.0 --libs --cflags
+          pkg-config gstreamer-base-1.0 --libs --cflags
 
 
       - name: Download gst-plugins-base
@@ -2779,6 +3008,10 @@ jobs:
         working-directory: build/libplist-${{env.libplist_version}}
         run: make install
 
+      - name: Check libplist
+        shell: bash
+        run: pkg-config libplist-2.0 --libs --cflags
+
 
       - name: Download libmtp
         shell: bash
@@ -2805,6 +3038,10 @@ jobs:
         working-directory: build/libmtp-${{env.libmtp_version}}
         run: make install
 
+      - name: Check libmtp
+        shell: bash
+        run: pkg-config libmtp --libs --cflags
+
 
       - name: Clone libgpod
         shell: bash
@@ -2825,6 +3062,10 @@ jobs:
         shell: bash
         working-directory: build/strawberry-libgpod/build
         run: cmake --install .
+
+      - name: Check libgpod
+        shell: bash
+        run: pkg-config libgpod-1.0 --libs --cflags
 
 
       - name: Cleanup build directory
