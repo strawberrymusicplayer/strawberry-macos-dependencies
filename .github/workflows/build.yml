@@ -1235,7 +1235,7 @@ jobs:
       - name: Configure nettle
         shell: bash
         working-directory: build/nettle-${{env.nettle_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-documentation
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-documentation --with-include-path="${{env.prefix_path}}/include" --with-lib-path="${{env.prefix_path}}/lib"
 
       - name: Build nettle
         shell: bash
