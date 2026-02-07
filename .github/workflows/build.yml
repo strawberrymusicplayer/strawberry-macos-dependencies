@@ -6,7 +6,7 @@ env:
 
   pkgconf_version: '2.5.1'
 
-  m4_version: '1.4.20'
+  m4_version: '1.4.21'
 
   bison_version: '3.8.2'
 
