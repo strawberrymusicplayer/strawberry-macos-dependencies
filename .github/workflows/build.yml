@@ -156,8 +156,6 @@ env:
 
   sparsehash_version: '2.0.4'
 
-  rapidjson_version: '1.1.0'
-
   max_releases: '6'
 
   curl_options: '-f -O -L --connect-timeout 60 -m 900 --retry 15 --retry-delay 10 --retry-max-time 300 --retry-all-errors'
@@ -3309,27 +3307,6 @@ jobs:
         shell: bash
         working-directory: build
         run: rm -rf *
-
-
-      - name: Download rapidjson
-        shell: bash
-        working-directory: build
-        run: git clone --depth 1 --recurse-submodules https://github.com/Tencent/rapidjson
-
-      - name: Configure rapidjson
-        shell: bash
-        working-directory: build/rapidjson
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_TESTING=OFF -DRAPIDJSON_BUILD_TESTS=OFF -DRAPIDJSON_BUILD_EXAMPLES=OFF -DRAPIDJSON_BUILD_DOC=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
-
-      - name: Build rapidjson
-        shell: bash
-        working-directory: build/rapidjson/build
-        run: cmake --build .
-
-      - name: Install rapidjson
-        shell: bash
-        working-directory: build/rapidjson/build
-        run: cmake --install .
 
 
       - name: Show ccache statistics

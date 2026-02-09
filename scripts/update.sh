@@ -374,9 +374,6 @@ function update_package() {
     "sparsehash")
       package_version_latest=$(latest_github_release "sparsehash" "sparsehash")
       ;;
-    "rapidjson")
-      package_version_latest=$(latest_github_release "Tencent" "rapidjson")
-      ;;
     *)
       package_version_latest=
       error "No update rule for package: ${package}"
