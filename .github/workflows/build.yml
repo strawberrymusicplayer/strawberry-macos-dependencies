@@ -3246,27 +3246,6 @@ jobs:
         run: rm -rf *
 
 
-      - name: Download SPMediaKeyTap
-        shell: bash
-        working-directory: build
-        run: git clone https://github.com/strawberrymusicplayer/SPMediaKeyTap.git
-
-      - name: Configure SPMediaKeyTap
-        shell: bash
-        working-directory: build/SPMediaKeyTap
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
-
-      - name: Build SPMediaKeyTap
-        shell: bash
-        working-directory: build/SPMediaKeyTap/build
-        run: cmake --build .
-
-      - name: Install SPMediaKeyTap
-        shell: bash
-        working-directory: build/SPMediaKeyTap/build
-        run: cmake --install .
-
-
       - name: Clone create-dmg
         shell: bash
         working-directory: build
