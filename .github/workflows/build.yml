@@ -144,7 +144,7 @@ env:
 
   libplist_version: '2.7.0'
 
-  libmtp_version: '1.1.22'
+  libmtp_version: '1.1.23'
 
   libcdio_version: '2.3.0'
 
