@@ -2,7 +2,7 @@ name: Build
 on: push
 
 env:
-  ghcli_version: '2.87.0'
+  ghcli_version: '2.87.2'
 
   pkgconf_version: '2.5.1'
 
