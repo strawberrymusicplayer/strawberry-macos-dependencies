@@ -723,7 +723,7 @@ jobs:
         shell: bash
         working-directory: downloads
         #run: curl ${{env.curl_options}} https://gmplib.org/download/gmp/gmp-${{env.gmp_version}}.tar.xz
-        run: curl ${{env.curl_options}} https://files.jkvinge.net/packages/strawberry-dependencies/gmp-${{env.gmp_version}}.tar.xz
+        run: curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gmp-${{env.gmp_version}}.tar.xz
 
       - name: Extract gmp
         shell: bash
@@ -1884,7 +1884,7 @@ jobs:
         shell: bash
         working-directory: downloads
         #run: curl ${{env.curl_options}} https://downloads.xiph.org/releases/vorbis/libvorbis-${{env.libvorbis_version}}.tar.xz
-        run: curl ${{env.curl_options}} https://files.jkvinge.net/packages/strawberry-dependencies/libvorbis-${{env.libvorbis_version}}.tar.gz
+        run: curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libvorbis-${{env.libvorbis_version}}.tar.gz
 
       - name: Extract libvorbis
         shell: bash
