@@ -44,7 +44,7 @@ env:
 
   zstd_version: '1.5.7'
 
-  libunistring_version: '1.4.1'
+  libunistring_version: '1.4.2'
 
   proxy_libintl_version: '0.5'
 
