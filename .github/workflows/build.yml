@@ -88,7 +88,7 @@ env:
 
   freetype_version: '2.14.2'
 
-  harfbuzz_version: '13.0.0'
+  harfbuzz_version: '13.0.1'
 
   libusb_version: '1.0.29'
 
