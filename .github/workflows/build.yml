@@ -88,7 +88,7 @@ env:
 
   freetype_version: '2.14.2'
 
-  harfbuzz_version: '13.0.1'
+  harfbuzz_version: '13.1.0'
 
   libusb_version: '1.0.29'
 
@@ -1764,7 +1764,7 @@ jobs:
       - name: Configure harfbuzz
         shell: bash
         working-directory: build/harfbuzz-${{env.harfbuzz_version}}
-        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix="${{env.prefix_path}}" --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dcpp_std=c++17 -Dtests=disabled -Ddocs=disabled -Dfreetype=enabled -Dicu=enabled build
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix="${{env.prefix_path}}" --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dcpp_std=c++17 -Dtests=disabled -Ddocs=disabled -Dfreetype=enabled -Dicu=enabled -Dcairo=disabled -Dutilities=disabled build
 
       - name: Build harfbuzz
         shell: bash
