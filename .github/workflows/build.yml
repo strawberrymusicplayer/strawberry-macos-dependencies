@@ -120,7 +120,7 @@ env:
 
   faad2_version: '2.11.2'
 
-  faac_version: '1.31.1'
+  faac_version: '1.40'
 
   fdk_aac_version: '2.0.3'
 
@@ -2321,25 +2321,20 @@ jobs:
         working-directory: build
         run: tar -xvf ../downloads/faac-${{env.faac_version}}.tar.gz
 
-      - name: Bootstrap faac
-        shell: bash
-        working-directory: build/faac-faac-${{env.faac_version}}
-        run: ./bootstrap
-
       - name: Configure faac
         shell: bash
         working-directory: build/faac-faac-${{env.faac_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dfrontend=false build
 
       - name: Build faac
         shell: bash
-        working-directory: build/faac-faac-${{env.faac_version}}
-        run: make -j ${{env.make_jobs}}
+        working-directory: build/faac-faac-${{env.faac_version}}/build
+        run: ninja
 
       - name: Install faac
         shell: bash
-        working-directory: build/faac-faac-${{env.faac_version}}
-        run: make install
+        working-directory: build/faac-faac-${{env.faac_version}}/build
+        run: ninja install
 
       - name: Check faac
         shell: bash
