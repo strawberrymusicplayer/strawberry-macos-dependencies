@@ -218,7 +218,7 @@ function update_package() {
       package_version_latest=$(curl ${curl_options} 'https://www.lysator.liu.se/~nisse/archive/' | sed -n 's,.*nettle-\([0-9][^>]*\)\.tar.*,\1,p' | grep -v 'pre' | grep -v 'rc' | sort -V | tail -1)
       ;;
     "gnutls")
-      package_version_latest=$(curl ${curl_options} 'https://gnupg.org/ftp/gcrypt/gnutls/v3.7/' | sed -n 's,.*gnutls-\([1-9]\+\(\.[0-9]\+\)\+\)\..*,\1,p' | sort -V | tail -1)
+      package_version_latest=$(curl ${curl_options} 'https://gnupg.org/ftp/gcrypt/gnutls/v3.8/' | sed -n 's,.*gnutls-\([1-9]\+\(\.[0-9]\+\)\+\)\..*,\1,p' | sort -V | tail -1)
       ;;
     "icu4c")
       package_version_latest=$(latest_github_release "unicode-org" "icu" | sed 's/release\-//g' | tr '\-' '\.')
