@@ -1977,7 +1977,7 @@ jobs:
         shell: bash
         working-directory: downloads
         run: |
-          curl ${{env.curl_options}} https://downloads.xiph.org/releases/vorbis/libvorbis-${{env.libvorbis_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://downloads.xiph.org/releases/vorbis/libvorbis-${{env.libvorbis_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libvorbis-${{env.libvorbis_version}}.tar.gz
 
       - name: Extract libvorbis
