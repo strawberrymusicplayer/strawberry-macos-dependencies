@@ -162,6 +162,8 @@ env:
 
   sourceforge_mirror: 'downloads.sourceforge.net'
 
+  sourceforge_mirror2: 'netcologne.dl.sourceforge.net'
+
   qt_mirror: 'mirrors.ukfast.co.uk/sites/qt.io'
 
   cmake_loglevel: 'DEBUG'
@@ -456,7 +458,8 @@ jobs:
         shell: bash
         working-directory: build
         run: |
-          curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v${{env.ghcli_version}}/gh_${{env.ghcli_version}}_macOS_amd64.zip
+          curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v${{env.ghcli_version}}/gh_${{env.ghcli_version}}_macOS_amd64.zip || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gh_${{env.ghcli_version}}_macOS_amd64.zip
           unzip gh_${{env.ghcli_version}}_macOS_amd64.zip
           sudo cp gh_${{env.ghcli_version}}_macOS_amd64/bin/gh /usr/local/bin/
 
@@ -465,7 +468,8 @@ jobs:
         shell: bash
         working-directory: build
         run: |
-          curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v${{env.ghcli_version}}/gh_${{env.ghcli_version}}_macOS_arm64.zip
+          curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v${{env.ghcli_version}}/gh_${{env.ghcli_version}}_macOS_arm64.zip || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gh_${{env.ghcli_version}}_macOS_arm64.zip
           unzip gh_${{env.ghcli_version}}_macOS_arm64.zip
           sudo cp gh_${{env.ghcli_version}}_macOS_arm64/bin/gh /usr/local/bin/
 
@@ -477,7 +481,9 @@ jobs:
       - name: Download pkgconf
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/pkgconf/pkgconf/archive/refs/tags/pkgconf-${{env.pkgconf_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/pkgconf/pkgconf/archive/refs/tags/pkgconf-${{env.pkgconf_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/pkgconf-${{env.pkgconf_version}}.tar.gz
 
       - name: Extract pkgconf
         shell: bash
@@ -511,7 +517,9 @@ jobs:
       - name: Download m4
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/m4/m4-${{env.m4_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/m4/m4-${{env.m4_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/m4-${{env.m4_version}}.tar.gz
 
       - name: Extract m4
         shell: bash
@@ -537,7 +545,9 @@ jobs:
       - name: Download bison
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/bison/bison-${{env.bison_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/bison/bison-${{env.bison_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/bison-${{env.bison_version}}.tar.gz
 
       - name: Extract bison
         shell: bash
@@ -563,7 +573,9 @@ jobs:
       - name: Download autoconf
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/autoconf/autoconf-${{env.autoconf_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/autoconf/autoconf-${{env.autoconf_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/autoconf-${{env.autoconf_version}}.tar.gz
 
       - name: Extract autoconf
         shell: bash
@@ -589,7 +601,9 @@ jobs:
       - name: Download automake
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/automake/automake-${{env.automake_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/automake/automake-${{env.automake_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/automake-${{env.automake_version}}.tar.gz
 
       - name: Extract automake
         shell: bash
@@ -615,7 +629,9 @@ jobs:
       - name: Download libtool
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libtool/libtool-${{env.libtool_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libtool/libtool-${{env.libtool_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libtool-${{env.libtool_version}}.tar.gz
 
       - name: Extract libtool
         shell: bash
@@ -644,7 +660,9 @@ jobs:
       - name: Download proxy-libintl
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/frida/proxy-libintl/archive/refs/tags/${{env.proxy_libintl_version}}/proxy-libintl-${{env.proxy_libintl_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/frida/proxy-libintl/archive/refs/tags/${{env.proxy_libintl_version}}/proxy-libintl-${{env.proxy_libintl_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/proxy-libintl-${{env.proxy_libintl_version}}.tar.gz
 
       - name: Extract proxy-libintl
         shell: bash
@@ -670,7 +688,9 @@ jobs:
       - name: Download sparsehash
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/sparsehash/sparsehash/archive/refs/tags/sparsehash-${{env.sparsehash_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/sparsehash/sparsehash/archive/refs/tags/sparsehash-${{env.sparsehash_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/sparsehash-${{env.sparsehash_version}}.tar.gz
 
       - name: Extract sparsehash
         shell: bash
@@ -696,7 +716,9 @@ jobs:
       - name: Download cmake
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/Kitware/CMake/releases/download/v${{env.cmake_version}}/cmake-${{env.cmake_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/Kitware/CMake/releases/download/v${{env.cmake_version}}/cmake-${{env.cmake_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/cmake-${{env.cmake_version}}.tar.gz
 
       - name: Extract cmake
         shell: bash
@@ -722,8 +744,9 @@ jobs:
       - name: Download gmp
         shell: bash
         working-directory: downloads
-        #run: curl ${{env.curl_options}} https://gmplib.org/download/gmp/gmp-${{env.gmp_version}}.tar.xz
-        run: curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gmp-${{env.gmp_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://gmplib.org/download/gmp/gmp-${{env.gmp_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gmp-${{env.gmp_version}}.tar.xz
 
       - name: Extract gmp
         shell: bash
@@ -753,7 +776,9 @@ jobs:
       - name: Download nasm
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://www.nasm.us/pub/nasm/releasebuilds/${{env.nasm_version}}/nasm-${{env.nasm_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://www.nasm.us/pub/nasm/releasebuilds/${{env.nasm_version}}/nasm-${{env.nasm_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/nasm-${{env.nasm_version}}.tar.xz
 
       - name: Extract nasm
         shell: bash
@@ -784,7 +809,9 @@ jobs:
       - name: Download yasm
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} http://www.tortall.net/projects/yasm/releases/yasm-${{env.yasm_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://www.tortall.net/projects/yasm/releases/yasm-${{env.yasm_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/yasm-${{env.yasm_version}}.tar.gz
 
       - name: Extract yasm
         shell: bash
@@ -815,7 +842,9 @@ jobs:
       - name: Download zlib
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/madler/zlib/releases/download/v${{env.zlib_version}}/zlib-${{env.zlib_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/madler/zlib/releases/download/v${{env.zlib_version}}/zlib-${{env.zlib_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/zlib-${{env.zlib_version}}.tar.gz
 
       - name: Extract zlib
         shell: bash
@@ -845,7 +874,9 @@ jobs:
       - name: Download openssl
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/openssl/openssl/releases/download/openssl-${{env.openssl_version}}/openssl-${{env.openssl_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/openssl/openssl/releases/download/openssl-${{env.openssl_version}}/openssl-${{env.openssl_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/openssl-${{env.openssl_version}}.tar.gz
 
       - name: Extract openssl
         shell: bash
@@ -878,7 +909,9 @@ jobs:
       - name: Download libpng
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/libpng/libpng16/${{env.libpng_version}}/libpng-${{env.libpng_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/libpng/libpng16/${{env.libpng_version}}/libpng-${{env.libpng_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/libpng/libpng16/${{env.libpng_version}}/libpng-${{env.libpng_version}}.tar.xz
 
       - name: Extract libpng
         shell: bash
@@ -915,7 +948,9 @@ jobs:
       - name: Download libjpeg-turbo
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${{env.libjpeg_turbo_version}}/libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${{env.libjpeg_turbo_version}}/libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz
 
       - name: Extract libjpeg-turbo
         shell: bash
@@ -945,7 +980,9 @@ jobs:
       - name: Download pcre2
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${{env.pcre2_version}}/pcre2-${{env.pcre2_version}}.tar.bz2
+        run: |
+          curl ${{env.curl_options}} https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${{env.pcre2_version}}/pcre2-${{env.pcre2_version}}.tar.bz2 || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/pcre2-${{env.pcre2_version}}.tar.bz2
 
       - name: Extract pcre2
         shell: bash
@@ -979,7 +1016,9 @@ jobs:
       - name: Download bzip2
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://sourceware.org/pub/bzip2/bzip2-${{env.bzip2_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://sourceware.org/pub/bzip2/bzip2-${{env.bzip2_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/bzip2-${{env.bzip2_version}}.tar.gz
 
       - name: Extract bzip2
         shell: bash
@@ -1014,7 +1053,9 @@ jobs:
       - name: Download xz
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/tukaani-project/xz/releases/download/v${{env.xz_version}}/xz-${{env.xz_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://github.com/tukaani-project/xz/releases/download/v${{env.xz_version}}/xz-${{env.xz_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/xz-${{env.xz_version}}.tar.xz
 
       - name: Extract xz
         shell: bash
@@ -1044,7 +1085,9 @@ jobs:
       - name: Download brotli
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/google/brotli/archive/refs/tags/v${{env.brotli_version}}/brotli-${{env.brotli_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/google/brotli/archive/refs/tags/v${{env.brotli_version}}/brotli-${{env.brotli_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/brotli-${{env.brotli_version}}.tar.gz
 
       - name: Extract brotli
         shell: bash
@@ -1076,7 +1119,9 @@ jobs:
       - name: Download zstd
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/facebook/zstd/releases/download/v${{env.zstd_version}}/zstd-${{env.zstd_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/facebook/zstd/releases/download/v${{env.zstd_version}}/zstd-${{env.zstd_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/zstd-${{env.zstd_version}}.tar.gz
 
       - name: Extract zstd
         shell: bash
@@ -1106,7 +1151,9 @@ jobs:
       - name: Download libunistring
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libunistring/libunistring-${{env.libunistring_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libunistring/libunistring-${{env.libunistring_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libunistring-${{env.libunistring_version}}.tar.xz
 
       - name: Extract libunistring
         shell: bash
@@ -1132,7 +1179,9 @@ jobs:
       - name: Download flex
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/westes/flex/releases/download/v${{env.flex_version}}/flex-${{env.flex_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/westes/flex/releases/download/v${{env.flex_version}}/flex-${{env.flex_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/flex-${{env.flex_version}}.tar.gz
 
       - name: Extract flex
         shell: bash
@@ -1163,7 +1212,9 @@ jobs:
       - name: Download libtasn1
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libtasn1/libtasn1-${{env.libtasn1_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libtasn1/libtasn1-${{env.libtasn1_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libtasn1-${{env.libtasn1_version}}.tar.gz
 
       - name: Extract libtasn1
         shell: bash
@@ -1193,7 +1244,9 @@ jobs:
       - name: Download libidn2
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libidn/libidn2-${{env.libidn2_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libidn/libidn2-${{env.libidn2_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libidn2-${{env.libidn2_version}}.tar.gz
 
       - name: Extract libidn2
         shell: bash
@@ -1223,7 +1276,9 @@ jobs:
       - name: Download nettle
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://www.lysator.liu.se/~nisse/archive/nettle-${{env.nettle_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://www.lysator.liu.se/~nisse/archive/nettle-${{env.nettle_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/nettle-${{env.nettle_version}}.tar.gz
 
       - name: Extract nettle
         shell: bash
@@ -1255,7 +1310,9 @@ jobs:
       - name: Download GnuTLS
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://www.gnupg.org/ftp/gcrypt/gnutls/v${{env.gnutls_version_short}}/gnutls-${{env.gnutls_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://www.gnupg.org/ftp/gcrypt/gnutls/v${{env.gnutls_version_short}}/gnutls-${{env.gnutls_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gnutls-${{env.gnutls_version}}.tar.xz
 
       - name: Extract GnuTLS
         shell: bash
@@ -1287,7 +1344,9 @@ jobs:
       - name: Download icu
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/unicode-org/icu/releases/download/release-${{env.icu4c_version}}/icu4c-${{env.icu4c_version}}-sources.tgz
+        run: |
+          curl ${{env.curl_options}} https://github.com/unicode-org/icu/releases/download/release-${{env.icu4c_version}}/icu4c-${{env.icu4c_version}}-sources.tgz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/icu4c-${{env.icu4c_version}}-sources.tgz
 
       - name: Extract icu
         shell: bash
@@ -1320,7 +1379,9 @@ jobs:
       - name: Download pixman
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://www.cairographics.org/releases/pixman-${{env.pixman_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://www.cairographics.org/releases/pixman-${{env.pixman_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/pixman-${{env.pixman_version}}.tar.gz
 
       - name: Extract pixman
         shell: bash
@@ -1350,7 +1411,9 @@ jobs:
       - name: Download expat
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/libexpat/libexpat/releases/download/R_${{env.expat_version_underscore}}/expat-${{env.expat_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://github.com/libexpat/libexpat/releases/download/R_${{env.expat_version_underscore}}/expat-${{env.expat_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/expat-${{env.expat_version}}.tar.xz
 
       - name: Extract expat
         shell: bash
@@ -1380,7 +1443,9 @@ jobs:
       - name: Download Boost
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://archives.boost.io/release/${{env.boost_version}}/source/boost_${{env.boost_version_underscore}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://archives.boost.io/release/${{env.boost_version}}/source/boost_${{env.boost_version_underscore}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/boost_${{env.boost_version_underscore}}.tar.gz
 
       - name: Extract Boost
         shell: bash
@@ -1413,7 +1478,9 @@ jobs:
       - name: Download libxml2
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://download.gnome.org/sources/libxml2/${{env.libxml2_version_short}}/libxml2-${{env.libxml2_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://download.gnome.org/sources/libxml2/${{env.libxml2_version_short}}/libxml2-${{env.libxml2_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libxml2-${{env.libxml2_version}}.tar.xz
 
       - name: Extract libxml2
         shell: bash
@@ -1443,7 +1510,9 @@ jobs:
       - name: Download nghttp2
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/nghttp2/nghttp2/releases/download/v${{env.nghttp2_version}}/nghttp2-${{env.nghttp2_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://github.com/nghttp2/nghttp2/releases/download/v${{env.nghttp2_version}}/nghttp2-${{env.nghttp2_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/nghttp2-${{env.nghttp2_version}}.tar.xz
 
       - name: Extract nghttp2
         shell: bash
@@ -1473,7 +1542,9 @@ jobs:
       - name: Download libffi
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/libffi/libffi/releases/download/v${{env.libffi_version}}/libffi-${{env.libffi_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/libffi/libffi/releases/download/v${{env.libffi_version}}/libffi-${{env.libffi_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libffi-${{env.libffi_version}}.tar.gz
 
       - name: Extract libffi
         shell: bash
@@ -1503,7 +1574,9 @@ jobs:
       - name: Download libpsl
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/rockdaboot/libpsl/releases/download/${{env.libpsl_version}}/libpsl-${{env.libpsl_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/rockdaboot/libpsl/releases/download/${{env.libpsl_version}}/libpsl-${{env.libpsl_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libpsl-${{env.libpsl_version}}.tar.gz
 
       - name: Extract libpsl
         shell: bash
@@ -1533,7 +1606,9 @@ jobs:
       - name: Download orc
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/orc/orc-${{env.orc_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/orc/orc-${{env.orc_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/orc-${{env.orc_version}}.tar.xz
 
       - name: Extract orc
         shell: bash
@@ -1559,7 +1634,9 @@ jobs:
       - name: Download SQLite
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://sqlite.org/2026/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://sqlite.org/2026/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz
 
       - name: Extract SQLite
         shell: bash
@@ -1595,7 +1672,9 @@ jobs:
       - name: Download GLib
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://download.gnome.org/sources/glib/${{env.glib_version_short}}/glib-${{env.glib_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://download.gnome.org/sources/glib/${{env.glib_version_short}}/glib-${{env.glib_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/glib-${{env.glib_version}}.tar.xz
 
       - name: Extract GLib
         shell: bash
@@ -1628,7 +1707,9 @@ jobs:
       - name: Download gdk-pixbuf
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://download.gnome.org/sources/gdk-pixbuf/${{env.gdk_pixbuf_version_short}}/gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://download.gnome.org/sources/gdk-pixbuf/${{env.gdk_pixbuf_version_short}}/gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz
 
       - name: Extract gdk-pixbuf
         shell: bash
@@ -1658,7 +1739,9 @@ jobs:
       - name: Download libsoup
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://download.gnome.org/sources/libsoup/${{env.libsoup_version_short}}/libsoup-${{env.libsoup_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://download.gnome.org/sources/libsoup/${{env.libsoup_version_short}}/libsoup-${{env.libsoup_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libsoup-${{env.libsoup_version}}.tar.xz
 
       - name: Extract libsoup
         shell: bash
@@ -1688,7 +1771,9 @@ jobs:
       - name: Download glib-networking
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://download.gnome.org/sources/glib-networking/${{env.glib_networking_version_short}}/glib-networking-${{env.glib_networking_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://download.gnome.org/sources/glib-networking/${{env.glib_networking_version_short}}/glib-networking-${{env.glib_networking_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/glib-networking-${{env.glib_networking_version}}.tar.xz
 
       - name: Extract glib-networking
         shell: bash
@@ -1719,7 +1804,9 @@ jobs:
       - name: Download freetype
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/freetype/freetype2/${{env.freetype_version}}/freetype-${{env.freetype_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/freetype/freetype2/${{env.freetype_version}}/freetype-${{env.freetype_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/freetype/freetype2/${{env.freetype_version}}/freetype-${{env.freetype_version}}.tar.gz
 
       - name: Extract freetype (boostrap)
         shell: bash
@@ -1754,7 +1841,9 @@ jobs:
       - name: Download harfbuzz
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/harfbuzz/harfbuzz/releases/download/${{env.harfbuzz_version}}/harfbuzz-${{env.harfbuzz_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://github.com/harfbuzz/harfbuzz/releases/download/${{env.harfbuzz_version}}/harfbuzz-${{env.harfbuzz_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/harfbuzz-${{env.harfbuzz_version}}.tar.xz
 
       - name: Extract harfbuzz
         shell: bash
@@ -1823,7 +1912,9 @@ jobs:
       - name: Download libusb
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/libusb/libusb/releases/download/v${{env.libusb_version}}/libusb-${{env.libusb_version}}.tar.bz2
+        run: |
+          curl ${{env.curl_options}} https://github.com/libusb/libusb/releases/download/v${{env.libusb_version}}/libusb-${{env.libusb_version}}.tar.bz2 || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libusb-${{env.libusb_version}}.tar.bz2
 
       - name: Extract libusb
         shell: bash
@@ -1853,7 +1944,9 @@ jobs:
       - name: Download libogg
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://downloads.xiph.org/releases/ogg/libogg-${{env.libogg_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://downloads.xiph.org/releases/ogg/libogg-${{env.libogg_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libogg-${{env.libogg_version}}.tar.xz
 
       - name: Extract libogg
         shell: bash
@@ -1883,8 +1976,9 @@ jobs:
       - name: Download libvorbis
         shell: bash
         working-directory: downloads
-        #run: curl ${{env.curl_options}} https://downloads.xiph.org/releases/vorbis/libvorbis-${{env.libvorbis_version}}.tar.xz
-        run: curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libvorbis-${{env.libvorbis_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://downloads.xiph.org/releases/vorbis/libvorbis-${{env.libvorbis_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libvorbis-${{env.libvorbis_version}}.tar.gz
 
       - name: Extract libvorbis
         shell: bash
@@ -1924,7 +2018,9 @@ jobs:
       - name: Download flac
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/xiph/flac/releases/download/${{env.flac_version}}/flac-${{env.flac_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://github.com/xiph/flac/releases/download/${{env.flac_version}}/flac-${{env.flac_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/flac-${{env.flac_version}}.tar.xz
 
       - name: Extract flac
         shell: bash
@@ -1954,7 +2050,9 @@ jobs:
       - name: Download wavpack
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://www.wavpack.com/wavpack-${{env.wavpack_version}}.tar.bz2
+        run: |
+          curl ${{env.curl_options}} https://www.wavpack.com/wavpack-${{env.wavpack_version}}.tar.bz2 || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/wavpack-${{env.wavpack_version}}.tar.bz2
 
       - name: Extract wavpack
         shell: bash
@@ -1984,7 +2082,9 @@ jobs:
       - name: Download opus
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://downloads.xiph.org/releases/opus/opus-${{env.opus_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://downloads.xiph.org/releases/opus/opus-${{env.opus_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/opus-${{env.opus_version}}.tar.gz
 
       - name: Extract opus
         shell: bash
@@ -2019,7 +2119,9 @@ jobs:
       - name: Download opusfile
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://downloads.xiph.org/releases/opus/opusfile-${{env.opusfile_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://downloads.xiph.org/releases/opus/opusfile-${{env.opusfile_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/opusfile-${{env.opusfile_version}}.tar.gz
 
       - name: Extract opusfile
         shell: bash
@@ -2049,7 +2151,9 @@ jobs:
       - name: Download speex
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://gitlab.xiph.org/xiph/speex/-/archive/Speex-${{env.speex_version}}/speex-Speex-${{env.speex_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://gitlab.xiph.org/xiph/speex/-/archive/Speex-${{env.speex_version}}/speex-Speex-${{env.speex_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/speex-Speex-${{env.speex_version}}.tar.gz
 
       - name: Extract speex
         shell: bash
@@ -2084,7 +2188,9 @@ jobs:
       - name: Download mpg123
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://www.mpg123.de/download/mpg123-${{env.mpg123_version}}.tar.bz2
+        run: |
+          curl ${{env.curl_options}} https://www.mpg123.de/download/mpg123-${{env.mpg123_version}}.tar.bz2 || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/mpg123-${{env.mpg123_version}}.tar.bz2
 
       - name: Extract mpg123
         shell: bash
@@ -2115,7 +2221,9 @@ jobs:
       - name: Download lame
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/lame/lame/${{env.lame_version}}/lame-${{env.lame_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/lame/lame/${{env.lame_version}}/lame-${{env.lame_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/lame/lame/${{env.lame_version}}/lame-${{env.lame_version}}.tar.gz
 
       - name: Extract lame
         shell: bash
@@ -2146,7 +2254,9 @@ jobs:
       - name: Download twolame
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/twolame/twolame/${{env.twolame_version}}/twolame-${{env.twolame_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/twolame/twolame/${{env.twolame_version}}/twolame-${{env.twolame_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/twolame/twolame/${{env.twolame_version}}/twolame-${{env.twolame_version}}.tar.gz
 
       - name: Extract twolame
         shell: bash
@@ -2181,7 +2291,9 @@ jobs:
       - name: Download musepack
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://files.musepack.net/source/musepack_src_r${{env.musepack_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://files.musepack.net/source/musepack_src_r${{env.musepack_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/musepack_src_r${{env.musepack_version}}.tar.gz
 
       - name: Extract musepack
         shell: bash
@@ -2222,7 +2334,9 @@ jobs:
       - name: Download libopenmpt
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz
 
       - name: Extract libopenmpt
         shell: bash
@@ -2252,7 +2366,9 @@ jobs:
       - name: Download libgme
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/libgme/game-music-emu/releases/download/${{env.libgme_version}}/libgme-${{env.libgme_version}}-src.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/libgme/game-music-emu/releases/download/${{env.libgme_version}}/libgme-${{env.libgme_version}}-src.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libgme-${{env.libgme_version}}-src.tar.gz
 
       - name: Extract libgme
         shell: bash
@@ -2282,7 +2398,9 @@ jobs:
       - name: Download faad2
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/knik0/faad2/tarball/${{env.faad2_version}}/faad2-${{env.faad2_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/knik0/faad2/tarball/${{env.faad2_version}}/faad2-${{env.faad2_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/faad2-${{env.faad2_version}}.tar.gz
 
       - name: Extract faad2
         shell: bash
@@ -2314,7 +2432,9 @@ jobs:
       - name: Download faac
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/knik0/faac/archive/refs/tags/faac-${{env.faac_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/knik0/faac/archive/refs/tags/faac-${{env.faac_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/faac-${{env.faac_version}}.tar.gz
 
       - name: Extract faac
         shell: bash
@@ -2344,7 +2464,9 @@ jobs:
       - name: Download fdk-aac
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/opencore-amr/fdk-aac/fdk-aac-${{env.fdk_aac_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/opencore-amr/fdk-aac/fdk-aac-${{env.fdk_aac_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/opencore-amr/fdk-aac/fdk-aac-${{env.fdk_aac_version}}.tar.gz
 
       - name: Extract fdk-aac
         shell: bash
@@ -2374,7 +2496,9 @@ jobs:
       - name: Download utfcpp
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/nemtrif/utfcpp/archive/refs/tags/v${{env.utfcpp_version}}/utfcpp-${{env.utfcpp_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/nemtrif/utfcpp/archive/refs/tags/v${{env.utfcpp_version}}/utfcpp-${{env.utfcpp_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/utfcpp-${{env.utfcpp_version}}.tar.gz
 
       - name: Extract utfcpp
         shell: bash
@@ -2400,7 +2524,9 @@ jobs:
       - name: Download TagLib
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://taglib.org/releases/taglib-${{env.taglib_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://taglib.org/releases/taglib-${{env.taglib_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/taglib-${{env.taglib_version}}.tar.gz
 
       - name: Extract TagLib
         shell: bash
@@ -2430,7 +2556,9 @@ jobs:
       - name: Download libbs2b
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/bs2b/libbs2b/${{env.libbs2b_version}}/libbs2b-${{env.libbs2b_version}}.tar.bz2
+        run: |
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/bs2b/libbs2b/${{env.libbs2b_version}}/libbs2b-${{env.libbs2b_version}}.tar.bz2 || \
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/bs2b/libbs2b/${{env.libbs2b_version}}/libbs2b-${{env.libbs2b_version}}.tar.bz2
 
       - name: Extract libbs2b
         shell: bash
@@ -2475,7 +2603,9 @@ jobs:
       - name: Download libebur128
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/jiixyj/libebur128/archive/refs/tags/v${{env.libebur128_version}}/libebur128-${{env.libebur128_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/jiixyj/libebur128/archive/refs/tags/v${{env.libebur128_version}}/libebur128-${{env.libebur128_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libebur128-${{env.libebur128_version}}.tar.gz
 
       - name: Extract libebur128
         shell: bash
@@ -2508,7 +2638,9 @@ jobs:
       - name: Download fftw
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} http://www.fftw.org/fftw-${{env.fftw_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://www.fftw.org/fftw-${{env.fftw_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/fftw-${{env.fftw_version}}.tar.gz
 
       - name: Extract fftw
         shell: bash
@@ -2545,7 +2677,9 @@ jobs:
       - name: Download ffmpeg
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://ffmpeg.org/releases/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
+        run: |
+          curl ${{env.curl_options}} https://ffmpeg.org/releases/ffmpeg-${{env.ffmpeg_version}}.tar.bz2 || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
 
       - name: Extract ffmpeg
         shell: bash
@@ -2579,7 +2713,9 @@ jobs:
       - name: Download Chromaprint
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/acoustid/chromaprint/releases/download/v${{env.chromaprint_version}}/chromaprint-${{env.chromaprint_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/acoustid/chromaprint/releases/download/v${{env.chromaprint_version}}/chromaprint-${{env.chromaprint_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/chromaprint-${{env.chromaprint_version}}.tar.gz
 
       - name: Extract Chromaprint
         shell: bash
@@ -2609,7 +2745,9 @@ jobs:
       - name: Download libcdio
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/libcdio/libcdio/releases/download/${{env.libcdio_version}}/libcdio-${{env.libcdio_version}}.tar.bz2
+        run: |
+          curl ${{env.curl_options}} https://github.com/libcdio/libcdio/releases/download/${{env.libcdio_version}}/libcdio-${{env.libcdio_version}}.tar.bz2 || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libcdio-${{env.libcdio_version}}.tar.bz2
 
       - name: Extract libcdio
         shell: bash
@@ -2647,7 +2785,9 @@ jobs:
       - name: Download GStreamer
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-${{env.gstreamer_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-${{env.gstreamer_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gstreamer-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract GStreamer
         shell: bash
@@ -2696,7 +2836,9 @@ jobs:
       - name: Download gst-plugins-base
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-${{env.gstreamer_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-${{env.gstreamer_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-base-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract gst-plugins-base
         shell: bash
@@ -2756,7 +2898,9 @@ jobs:
       - name: Download gst-plugins-good
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-${{env.gstreamer_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-${{env.gstreamer_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-good-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract gst-plugins-good
         shell: bash
@@ -2825,7 +2969,9 @@ jobs:
       - name: Download gst-plugins-bad
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract gst-plugins-bad
         shell: bash
@@ -2886,7 +3032,9 @@ jobs:
       - name: Download gst-plugins-ugly
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract gst-plugins-ugly
         shell: bash
@@ -2927,7 +3075,9 @@ jobs:
       - name: Download gst-libav
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-libav/gst-libav-${{env.gstreamer_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-libav/gst-libav-${{env.gstreamer_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-libav-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract gst-libav
         shell: bash
@@ -2980,7 +3130,9 @@ jobs:
       - name: Download libplist
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/libimobiledevice/libplist/releases/download/${{env.libplist_version}}/libplist-${{env.libplist_version}}.tar.bz2
+        run: |
+          curl ${{env.curl_options}} https://github.com/libimobiledevice/libplist/releases/download/${{env.libplist_version}}/libplist-${{env.libplist_version}}.tar.bz2 || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libplist-${{env.libplist_version}}.tar.bz2
 
       - name: Extract libplist
         shell: bash
@@ -3010,7 +3162,9 @@ jobs:
       - name: Download libmtp
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/libmtp/libmtp/releases/download/v${{env.libmtp_version}}/libmtp-${{env.libmtp_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/libmtp/libmtp/releases/download/v${{env.libmtp_version}}/libmtp-${{env.libmtp_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libmtp-${{env.libmtp_version}}.tar.gz
 
       - name: Extract libmtp
         shell: bash
@@ -3072,7 +3226,9 @@ jobs:
       - name: Download qtbase
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
 
       - name: Extract qtbase
         shell: bash
@@ -3147,7 +3303,9 @@ jobs:
       - name: Download qttools
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz
 
       - name: Extract qttools
         shell: bash
@@ -3191,7 +3349,9 @@ jobs:
       - name: Download KDSingleApplication
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/KDAB/KDSingleApplication/releases/download/v${{env.kdsingleapplication_version}}/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz
+        run: |
+          curl ${{env.curl_options}} https://github.com/KDAB/KDSingleApplication/releases/download/v${{env.kdsingleapplication_version}}/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz
 
       - name: Extract KDSingleApplication
         shell: bash
@@ -3261,7 +3421,9 @@ jobs:
       - name: Download sparkle
         shell: bash
         working-directory: downloads
-        run: curl ${{env.curl_options}} https://github.com/sparkle-project/Sparkle/releases/download/${{env.sparkle_version}}/Sparkle-${{env.sparkle_version}}.tar.xz
+        run: |
+          curl ${{env.curl_options}} https://github.com/sparkle-project/Sparkle/releases/download/${{env.sparkle_version}}/Sparkle-${{env.sparkle_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/Sparkle-${{env.sparkle_version}}.tar.xz
 
       - name: Extract sparkle
         shell: bash
