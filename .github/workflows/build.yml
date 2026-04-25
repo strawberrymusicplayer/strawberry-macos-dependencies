@@ -329,6 +329,22 @@ jobs:
         run: echo "${{env.prefix_path}}/bin" >> $GITHUB_PATH
 
 
+      - name: Create and mount RAM disk
+        if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        run: |
+          DEV=$(hdiutil attach -nomount -nobrowse ram://4194304)
+          DEV=$(echo $DEV | tr -d ' ')
+          newfs_hfs -v "RAM Disk" $DEV
+          mkdir -p /private/tmp/ramdisk
+          mount -t hfs $DEV /private/tmp/ramdisk
+          echo "RAM disk mounted at /private/tmp/ramdisk"
+          echo "build_path=/private/tmp/ramdisk" >> $GITHUB_ENV
+
+      - name: Set build dir
+        if: env.runner != 'macos-15-intel' && env.runner != 'macos-15'
+        run: echo "build_path=/private/tmp/ramdisk" >> $GITHUB_ENV
+
+
       - name: Install ccache
         if: env.runner == 'macos-15-intel'
         shell: bash
@@ -432,7 +448,9 @@ jobs:
 
       - name: Create downloads directory
         shell: bash
-        run: mkdir downloads
+        run: |
+          mkdir downloads
+          echo "downloads_path=$(pwd)/downloads" >> $GITHUB_ENV
 
       - name: Create build directory
         shell: bash
@@ -440,7 +458,7 @@ jobs:
 
       - name: Install rustup
         if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         shell: bash
         run: |
           curl --proto '=https' --tlsv1.2 -fsS -o rustup.sh https://sh.rustup.rs
@@ -456,7 +474,7 @@ jobs:
       - name: Install github cli tool
         if: env.runner == 'macos-15-intel'
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v${{env.ghcli_version}}/gh_${{env.ghcli_version}}_macOS_amd64.zip || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gh_${{env.ghcli_version}}_macOS_amd64.zip
@@ -466,7 +484,7 @@ jobs:
       - name: Install github cli tool
         if: env.runner != 'macos-15-intel'
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v${{env.ghcli_version}}/gh_${{env.ghcli_version}}_macOS_arm64.zip || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gh_${{env.ghcli_version}}_macOS_arm64.zip
@@ -480,29 +498,29 @@ jobs:
 
       - name: Download pkgconf
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/pkgconf/pkgconf/archive/refs/tags/pkgconf-${{env.pkgconf_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/pkgconf-${{env.pkgconf_version}}.tar.gz
 
       - name: Extract pkgconf
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/pkgconf-${{env.pkgconf_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/pkgconf-${{env.pkgconf_version}}.tar.gz
 
       - name: Configure pkgconf
         shell: bash
-        working-directory: build/pkgconf-pkgconf-${{env.pkgconf_version}}
+        working-directory: ${{env.build_path}}/pkgconf-pkgconf-${{env.pkgconf_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --wrap-mode=nodownload -Dtests=disabled build
 
       - name: Build pkgconf
         shell: bash
-        working-directory: build/pkgconf-pkgconf-${{env.pkgconf_version}}/build
+        working-directory: ${{env.build_path}}/pkgconf-pkgconf-${{env.pkgconf_version}}/build
         run: ninja
 
       - name: Install pkgconf
         shell: bash
-        working-directory: build/pkgconf-pkgconf-${{env.pkgconf_version}}/build
+        working-directory: ${{env.build_path}}/pkgconf-pkgconf-${{env.pkgconf_version}}/build
         run: ninja install
 
       - name: Link pkgconf
@@ -516,141 +534,141 @@ jobs:
 
       - name: Download m4
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/m4/m4-${{env.m4_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/m4-${{env.m4_version}}.tar.gz
 
       - name: Extract m4
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/m4-${{env.m4_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/m4-${{env.m4_version}}.tar.gz
 
       - name: Configure m4
         shell: bash
-        working-directory: build/m4-${{env.m4_version}}
+        working-directory: ${{env.build_path}}/m4-${{env.m4_version}}
         run: ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build m4
         shell: bash
-        working-directory: build/m4-${{env.m4_version}}
+        working-directory: ${{env.build_path}}/m4-${{env.m4_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install m4
         shell: bash
-        working-directory: build/m4-${{env.m4_version}}
+        working-directory: ${{env.build_path}}/m4-${{env.m4_version}}
         run: make install
 
 
       - name: Download bison
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/bison/bison-${{env.bison_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/bison-${{env.bison_version}}.tar.gz
 
       - name: Extract bison
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/bison-${{env.bison_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xvf ${{env.downloads_path}}/bison-${{env.bison_version}}.tar.gz
 
       - name: Configure bison
         shell: bash
-        working-directory: build/bison-${{env.bison_version}}
+        working-directory: ${{env.build_path}}/bison-${{env.bison_version}}
         run: ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build bison
         shell: bash
-        working-directory: build/bison-${{env.bison_version}}
+        working-directory: ${{env.build_path}}/bison-${{env.bison_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install bison
         shell: bash
-        working-directory: build/bison-${{env.bison_version}}
+        working-directory: ${{env.build_path}}/bison-${{env.bison_version}}
         run: make install
 
 
       - name: Download autoconf
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/autoconf/autoconf-${{env.autoconf_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/autoconf-${{env.autoconf_version}}.tar.gz
 
       - name: Extract autoconf
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/autoconf-${{env.autoconf_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/autoconf-${{env.autoconf_version}}.tar.gz
 
       - name: Configure autoconf
         shell: bash
-        working-directory: build/autoconf-${{env.autoconf_version}}
+        working-directory: ${{env.build_path}}/autoconf-${{env.autoconf_version}}
         run: ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build autoconf
         shell: bash
-        working-directory: build/autoconf-${{env.autoconf_version}}
+        working-directory: ${{env.build_path}}/autoconf-${{env.autoconf_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install autoconf
         shell: bash
-        working-directory: build/autoconf-${{env.autoconf_version}}
+        working-directory: ${{env.build_path}}/autoconf-${{env.autoconf_version}}
         run: make install
 
 
       - name: Download automake
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/automake/automake-${{env.automake_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/automake-${{env.automake_version}}.tar.gz
 
       - name: Extract automake
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/automake-${{env.automake_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/automake-${{env.automake_version}}.tar.gz
 
       - name: Configure automake
         shell: bash
-        working-directory: build/automake-${{env.automake_version}}
+        working-directory: ${{env.build_path}}/automake-${{env.automake_version}}
         run: ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build automake
         shell: bash
-        working-directory: build/automake-${{env.automake_version}}
+        working-directory: ${{env.build_path}}/automake-${{env.automake_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install automake
         shell: bash
-        working-directory: build/automake-${{env.automake_version}}
+        working-directory: ${{env.build_path}}/automake-${{env.automake_version}}
         run: make install
 
 
       - name: Download libtool
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libtool/libtool-${{env.libtool_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libtool-${{env.libtool_version}}.tar.gz
 
       - name: Extract libtool
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libtool-${{env.libtool_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libtool-${{env.libtool_version}}.tar.gz
 
       - name: Configure libtool
         shell: bash
-        working-directory: build/libtool-${{env.libtool_version}}
+        working-directory: ${{env.build_path}}/libtool-${{env.libtool_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build libtool
         shell: bash
-        working-directory: build/libtool-${{env.libtool_version}}
+        working-directory: ${{env.build_path}}/libtool-${{env.libtool_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libtool
         shell: bash
-        working-directory: build/libtool-${{env.libtool_version}}
+        working-directory: ${{env.build_path}}/libtool-${{env.libtool_version}}
         run: |
           make install
           ln -s ${{env.prefix_path}}/bin/libtool ${{env.prefix_path}}/bin/glibtool
@@ -659,113 +677,113 @@ jobs:
 
       - name: Download proxy-libintl
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/frida/proxy-libintl/archive/refs/tags/${{env.proxy_libintl_version}}/proxy-libintl-${{env.proxy_libintl_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/proxy-libintl-${{env.proxy_libintl_version}}.tar.gz
 
       - name: Extract proxy-libintl
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/proxy-libintl-${{env.proxy_libintl_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/proxy-libintl-${{env.proxy_libintl_version}}.tar.gz
 
       - name: Configure proxy-libintl
         shell: bash
-        working-directory: build/proxy-libintl-${{env.proxy_libintl_version}}
+        working-directory: ${{env.build_path}}/proxy-libintl-${{env.proxy_libintl_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload build
 
       - name: Build proxy-libintl
         shell: bash
-        working-directory: build/proxy-libintl-${{env.proxy_libintl_version}}/build
+        working-directory: ${{env.build_path}}/proxy-libintl-${{env.proxy_libintl_version}}/build
         run: ninja
 
       - name: Install proxy-libintl
         shell: bash
-        working-directory: build/proxy-libintl-${{env.proxy_libintl_version}}/build
+        working-directory: ${{env.build_path}}/proxy-libintl-${{env.proxy_libintl_version}}/build
         run: ninja install
 
 
       - name: Download sparsehash
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/sparsehash/sparsehash/archive/refs/tags/sparsehash-${{env.sparsehash_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/sparsehash-${{env.sparsehash_version}}.tar.gz
 
       - name: Extract sparsehash
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/sparsehash-${{env.sparsehash_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/sparsehash-${{env.sparsehash_version}}.tar.gz
 
       - name: Configure sparsehash
         shell: bash
-        working-directory: build/sparsehash-sparsehash-${{env.sparsehash_version}}
+        working-directory: ${{env.build_path}}/sparsehash-sparsehash-${{env.sparsehash_version}}
         run: ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build sparsehash
         shell: bash
-        working-directory: build/sparsehash-sparsehash-${{env.sparsehash_version}}
+        working-directory: ${{env.build_path}}/sparsehash-sparsehash-${{env.sparsehash_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install sparsehash
         shell: bash
-        working-directory: build/sparsehash-sparsehash-${{env.sparsehash_version}}
+        working-directory: ${{env.build_path}}/sparsehash-sparsehash-${{env.sparsehash_version}}
         run: make install
 
 
       - name: Download cmake
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/Kitware/CMake/releases/download/v${{env.cmake_version}}/cmake-${{env.cmake_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/cmake-${{env.cmake_version}}.tar.gz
 
       - name: Extract cmake
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/cmake-${{env.cmake_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/cmake-${{env.cmake_version}}.tar.gz
 
       - name: Configure cmake
         shell: bash
-        working-directory: build/cmake-${{env.cmake_version}}
+        working-directory: ${{env.build_path}}/cmake-${{env.cmake_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --parallel=${{env.make_jobs}}
 
       - name: Build cmake
         shell: bash
-        working-directory: build/cmake-${{env.cmake_version}}
+        working-directory: ${{env.build_path}}/cmake-${{env.cmake_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install cmake
         shell: bash
-        working-directory: build/cmake-${{env.cmake_version}}
+        working-directory: ${{env.build_path}}/cmake-${{env.cmake_version}}
         run: make install
 
 
       - name: Download gmp
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://gmplib.org/download/gmp/gmp-${{env.gmp_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gmp-${{env.gmp_version}}.tar.xz
 
       - name: Extract gmp
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/gmp-${{env.gmp_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/gmp-${{env.gmp_version}}.tar.xz
 
       - name: Configure gmp
         shell: bash
-        working-directory: build/gmp-${{env.gmp_version}}
+        working-directory: ${{env.build_path}}/gmp-${{env.gmp_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared -enable-cxx --without-readline
 
       - name: Build gmp
         shell: bash
-        working-directory: build/gmp-${{env.gmp_version}}
+        working-directory: ${{env.build_path}}/gmp-${{env.gmp_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install gmp
         shell: bash
-        working-directory: build/gmp-${{env.gmp_version}}
+        working-directory: ${{env.build_path}}/gmp-${{env.gmp_version}}
         run: make install
 
       - name: Check gmp
@@ -775,95 +793,95 @@ jobs:
 
       - name: Download nasm
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://www.nasm.us/pub/nasm/releasebuilds/${{env.nasm_version}}/nasm-${{env.nasm_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/nasm-${{env.nasm_version}}.tar.xz
 
       - name: Extract nasm
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/nasm-${{env.nasm_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/nasm-${{env.nasm_version}}.tar.xz
 
       - name: Autogen nasm
         shell: bash
-        working-directory: build/nasm-${{env.nasm_version}}
+        working-directory: ${{env.build_path}}/nasm-${{env.nasm_version}}
         run: ./autogen.sh
 
       - name: Configure nasm
         shell: bash
-        working-directory: build/nasm-${{env.nasm_version}}
+        working-directory: ${{env.build_path}}/nasm-${{env.nasm_version}}
         run: ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build nasm
         shell: bash
-        working-directory: build/nasm-${{env.nasm_version}}
+        working-directory: ${{env.build_path}}/nasm-${{env.nasm_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install nasm
         shell: bash
-        working-directory: build/nasm-${{env.nasm_version}}
+        working-directory: ${{env.build_path}}/nasm-${{env.nasm_version}}
         run: make install
 
 
       - name: Download yasm
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://www.tortall.net/projects/yasm/releases/yasm-${{env.yasm_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/yasm-${{env.yasm_version}}.tar.gz
 
       - name: Extract yasm
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/yasm-${{env.yasm_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/yasm-${{env.yasm_version}}.tar.gz
 
       - name: Patch yasm
         shell: bash
-        working-directory: build/yasm-${{env.yasm_version}}
-        run: patch -p1 < ../../patches/yasm-cmake.patch
+        working-directory: ${{env.build_path}}/yasm-${{env.yasm_version}}
+        run: patch -p1 < ${GITHUB_WORKSPACE}/patches/yasm-cmake.patch
 
       - name: Configure yasm
         shell: bash
-        working-directory: build/yasm-${{env.yasm_version}}
+        working-directory: ${{env.build_path}}/yasm-${{env.yasm_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
 
       - name: Build yasm
         shell: bash
-        working-directory: build/yasm-${{env.yasm_version}}/build
+        working-directory: ${{env.build_path}}/yasm-${{env.yasm_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install yasm
         shell: bash
-        working-directory: build/yasm-${{env.yasm_version}}/build
+        working-directory: ${{env.build_path}}/yasm-${{env.yasm_version}}/build
         run: cmake --install .
 
 
       - name: Download zlib
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/madler/zlib/releases/download/v${{env.zlib_version}}/zlib-${{env.zlib_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/zlib-${{env.zlib_version}}.tar.gz
 
       - name: Extract zlib
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/zlib-${{env.zlib_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/zlib-${{env.zlib_version}}.tar.gz
 
       - name: Configure zlib
         shell: bash
-        working-directory: build/zlib-${{env.zlib_version}}
+        working-directory: ${{env.build_path}}/zlib-${{env.zlib_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
 
       - name: Build zlib
         shell: bash
-        working-directory: build/zlib-${{env.zlib_version}}/build
+        working-directory: ${{env.build_path}}/zlib-${{env.zlib_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install zlib
         shell: bash
-        working-directory: build/zlib-${{env.zlib_version}}/build
+        working-directory: ${{env.build_path}}/zlib-${{env.zlib_version}}/build
         run: cmake --install .
 
       - name: Check zlib
@@ -873,29 +891,29 @@ jobs:
 
       - name: Download openssl
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/openssl/openssl/releases/download/openssl-${{env.openssl_version}}/openssl-${{env.openssl_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/openssl-${{env.openssl_version}}.tar.gz
 
       - name: Extract openssl
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/openssl-${{env.openssl_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/openssl-${{env.openssl_version}}.tar.gz
 
       - name: Configure openssl
         shell: bash
-        working-directory: build/openssl-${{env.openssl_version}}
+        working-directory: ${{env.build_path}}/openssl-${{env.openssl_version}}
         run: perl Configure shared zlib no-capieng no-tests --prefix=${{env.prefix_path}} --libdir=lib --openssldir=${{env.prefix_path}}/ssl --${{env.buildtype}} --with-zlib-include=${{env.prefix_path}}/include
 
       - name: Build openssl
         shell: bash
-        working-directory: build/openssl-${{env.openssl_version}}
+        working-directory: ${{env.build_path}}/openssl-${{env.openssl_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install openssl
         shell: bash
-        working-directory: build/openssl-${{env.openssl_version}}
+        working-directory: ${{env.build_path}}/openssl-${{env.openssl_version}}
         run: make install_sw
 
       - name: Check openssl
@@ -908,29 +926,29 @@ jobs:
 
       - name: Download libpng
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/libpng/libpng16/${{env.libpng_version}}/libpng-${{env.libpng_version}}.tar.xz || \
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/libpng/libpng16/${{env.libpng_version}}/libpng-${{env.libpng_version}}.tar.xz
 
       - name: Extract libpng
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libpng-${{env.libpng_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libpng-${{env.libpng_version}}.tar.xz
 
       - name: Configure libpng
         shell: bash
-        working-directory: build/libpng-${{env.libpng_version}}
+        working-directory: ${{env.build_path}}/libpng-${{env.libpng_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
 
       - name: Build libpng
         shell: bash
-        working-directory: build/libpng-${{env.libpng_version}}/build
+        working-directory: ${{env.build_path}}/libpng-${{env.libpng_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install libpng
         shell: bash
-        working-directory: build/libpng-${{env.libpng_version}}/build
+        working-directory: ${{env.build_path}}/libpng-${{env.libpng_version}}/build
         run: cmake --install .
 
       - name: Link libpng library (Debug)
@@ -947,29 +965,29 @@ jobs:
 
       - name: Download libjpeg-turbo
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${{env.libjpeg_turbo_version}}/libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz
 
       - name: Extract libjpeg-turbo
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz
 
       - name: Configure libjpeg-turbo
         shell: bash
-        working-directory: build/libjpeg-turbo-${{env.libjpeg_turbo_version}}
+        working-directory: ${{env.build_path}}/libjpeg-turbo-${{env.libjpeg_turbo_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G Ninja -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DENABLE_SHARED=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build libjpeg-turbo
         shell: bash
-        working-directory: build/libjpeg-turbo-${{env.libjpeg_turbo_version}}/build
+        working-directory: ${{env.build_path}}/libjpeg-turbo-${{env.libjpeg_turbo_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install libjpeg-turbo
         shell: bash
-        working-directory: build/libjpeg-turbo-${{env.libjpeg_turbo_version}}/build
+        working-directory: ${{env.build_path}}/libjpeg-turbo-${{env.libjpeg_turbo_version}}/build
         run: cmake --install .
 
       - name: Check libjpeg
@@ -979,29 +997,29 @@ jobs:
 
       - name: Download pcre2
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/PhilipHazel/pcre2/releases/download/pcre2-${{env.pcre2_version}}/pcre2-${{env.pcre2_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/pcre2-${{env.pcre2_version}}.tar.bz2
 
       - name: Extract pcre2
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/pcre2-${{env.pcre2_version}}.tar.bz2
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/pcre2-${{env.pcre2_version}}.tar.bz2
 
       - name: Configure pcre2
         shell: bash
-        working-directory: build/pcre2-${{env.pcre2_version}}
+        working-directory: ${{env.build_path}}/pcre2-${{env.pcre2_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -DPCRE2_SUPPORT_UNICODE=ON -DPCRE2_BUILD_PCRE2_8=ON -DPCRE2_BUILD_PCRE2_16=ON -DPCRE2_BUILD_PCRE2_32=ON -DPCRE2_SUPPORT_UNICODE=ON -DPCRE2_BUILD_TESTS=OFF
 
       - name: Build pcre2
         shell: bash
-        working-directory: build/pcre2-${{env.pcre2_version}}/build
+        working-directory: ${{env.build_path}}/pcre2-${{env.pcre2_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install pcre2
         shell: bash
-        working-directory: build/pcre2-${{env.pcre2_version}}/build
+        working-directory: ${{env.build_path}}/pcre2-${{env.pcre2_version}}/build
         run: cmake --install .
 
       - name: Check pcre2
@@ -1015,34 +1033,34 @@ jobs:
 
       - name: Download bzip2
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://sourceware.org/pub/bzip2/bzip2-${{env.bzip2_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/bzip2-${{env.bzip2_version}}.tar.gz
 
       - name: Extract bzip2
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/bzip2-${{env.bzip2_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/bzip2-${{env.bzip2_version}}.tar.gz
 
       - name: Patch bzip2
         shell: bash
-        working-directory: build/bzip2-${{env.bzip2_version}}
-        run: patch -p1 < ../../patches/bzip2-cmake.patch
+        working-directory: ${{env.build_path}}/bzip2-${{env.bzip2_version}}
+        run: patch -p1 < ${GITHUB_WORKSPACE}/patches/bzip2-cmake.patch
 
       - name: Configure bzip2
         shell: bash
-        working-directory: build/bzip2-${{env.bzip2_version}}
+        working-directory: ${{env.build_path}}/bzip2-${{env.bzip2_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build bzip2
         shell: bash
-        working-directory: build/bzip2-${{env.bzip2_version}}/build
+        working-directory: ${{env.build_path}}/bzip2-${{env.bzip2_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install bzip2
         shell: bash
-        working-directory: build/bzip2-${{env.bzip2_version}}/build
+        working-directory: ${{env.build_path}}/bzip2-${{env.bzip2_version}}/build
         run: cmake --install .
 
       - name: Check bzip2
@@ -1052,29 +1070,29 @@ jobs:
 
       - name: Download xz
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/tukaani-project/xz/releases/download/v${{env.xz_version}}/xz-${{env.xz_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/xz-${{env.xz_version}}.tar.xz
 
       - name: Extract xz
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/xz-${{env.xz_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/xz-${{env.xz_version}}.tar.xz
 
       - name: Configure xz
         shell: bash
-        working-directory: build/xz-${{env.xz_version}}
+        working-directory: ${{env.build_path}}/xz-${{env.xz_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-doc --disable-nls --disable-silent-rules
 
       - name: Build xz
         shell: bash
-        working-directory: build/xz-${{env.xz_version}}
+        working-directory: ${{env.build_path}}/xz-${{env.xz_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install xz
         shell: bash
-        working-directory: build/xz-${{env.xz_version}}
+        working-directory: ${{env.build_path}}/xz-${{env.xz_version}}
         run: make install
 
       - name: Check xz
@@ -1084,29 +1102,29 @@ jobs:
 
       - name: Download brotli
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/google/brotli/archive/refs/tags/v${{env.brotli_version}}/brotli-${{env.brotli_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/brotli-${{env.brotli_version}}.tar.gz
 
       - name: Extract brotli
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/brotli-${{env.brotli_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/brotli-${{env.brotli_version}}.tar.gz
 
       - name: Configure brotli
         shell: bash
-        working-directory: build/brotli-${{env.brotli_version}}
+        working-directory: ${{env.build_path}}/brotli-${{env.brotli_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build_dir -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_TESTING=OFF
 
       - name: Build brotli
         shell: bash
-        working-directory: build/brotli-${{env.brotli_version}}/build_dir
+        working-directory: ${{env.build_path}}/brotli-${{env.brotli_version}}/build_dir
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install brotli
         shell: bash
-        working-directory: build/brotli-${{env.brotli_version}}/build_dir
+        working-directory: ${{env.build_path}}/brotli-${{env.brotli_version}}/build_dir
         run: cmake --install .
 
       - name: Check brotli
@@ -1118,29 +1136,29 @@ jobs:
 
       - name: Download zstd
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/facebook/zstd/releases/download/v${{env.zstd_version}}/zstd-${{env.zstd_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/zstd-${{env.zstd_version}}.tar.gz
 
       - name: Extract zstd
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/zstd-${{env.zstd_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/zstd-${{env.zstd_version}}.tar.gz
 
       - name: Configure zstd
         shell: bash
-        working-directory: build/zstd-${{env.zstd_version}}
+        working-directory: ${{env.build_path}}/zstd-${{env.zstd_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S build/cmake -B build_dir -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DZSTD_BUILD_STATIC=OFF -DZSTD_BUILD_SHARED=ON -DZSTD_BUILD_PROGRAMS=OFF
 
       - name: Build zstd
         shell: bash
-        working-directory: build/zstd-${{env.zstd_version}}/build_dir
+        working-directory: ${{env.build_path}}/zstd-${{env.zstd_version}}/build_dir
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install zstd
         shell: bash
-        working-directory: build/zstd-${{env.zstd_version}}/build_dir
+        working-directory: ${{env.build_path}}/zstd-${{env.zstd_version}}/build_dir
         run: cmake --install .
 
       - name: Check zstd
@@ -1150,90 +1168,90 @@ jobs:
 
       - name: Download libunistring
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libunistring/libunistring-${{env.libunistring_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libunistring-${{env.libunistring_version}}.tar.xz
 
       - name: Extract libunistring
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libunistring-${{env.libunistring_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libunistring-${{env.libunistring_version}}.tar.xz
 
       - name: Configure libunistring
         shell: bash
-        working-directory: build/libunistring-${{env.libunistring_version}}
+        working-directory: ${{env.build_path}}/libunistring-${{env.libunistring_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-relocatable
 
       - name: Build libunistring
         shell: bash
-        working-directory: build/libunistring-${{env.libunistring_version}}
+        working-directory: ${{env.build_path}}/libunistring-${{env.libunistring_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libunistring
         shell: bash
-        working-directory: build/libunistring-${{env.libunistring_version}}
+        working-directory: ${{env.build_path}}/libunistring-${{env.libunistring_version}}
         run: make install
 
 
       - name: Download flex
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/westes/flex/releases/download/v${{env.flex_version}}/flex-${{env.flex_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/flex-${{env.flex_version}}.tar.gz
 
       - name: Extract flex
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/flex-${{env.flex_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/flex-${{env.flex_version}}.tar.gz
 
       - name: Patch flex
         shell: bash
-        working-directory: build/flex-${{env.flex_version}}
-        run: patch -p1 < ../../patches/flex-configure.patch
+        working-directory: ${{env.build_path}}/flex-${{env.flex_version}}
+        run: patch -p1 < ${GITHUB_WORKSPACE}/patches/flex-configure.patch
 
       - name: Configure flex
         shell: bash
-        working-directory: build/flex-${{env.flex_version}}
+        working-directory: ${{env.build_path}}/flex-${{env.flex_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build flex
         shell: bash
-        working-directory: build/flex-${{env.flex_version}}
+        working-directory: ${{env.build_path}}/flex-${{env.flex_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install flex
         shell: bash
-        working-directory: build/flex-${{env.flex_version}}
+        working-directory: ${{env.build_path}}/flex-${{env.flex_version}}
         run: make install
 
 
       - name: Download libtasn1
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libtasn1/libtasn1-${{env.libtasn1_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libtasn1-${{env.libtasn1_version}}.tar.gz
 
       - name: Extract libtasn1
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libtasn1-${{env.libtasn1_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libtasn1-${{env.libtasn1_version}}.tar.gz
 
       - name: Configure libtasn1
         shell: bash
-        working-directory: build/libtasn1-${{env.libtasn1_version}}
+        working-directory: ${{env.build_path}}/libtasn1-${{env.libtasn1_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc
 
       - name: Build libtasn1
         shell: bash
-        working-directory: build/libtasn1-${{env.libtasn1_version}}
+        working-directory: ${{env.build_path}}/libtasn1-${{env.libtasn1_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libtasn1
         shell: bash
-        working-directory: build/libtasn1-${{env.libtasn1_version}}
+        working-directory: ${{env.build_path}}/libtasn1-${{env.libtasn1_version}}
         run: make install
 
       - name: Check libtasn1
@@ -1243,29 +1261,29 @@ jobs:
 
       - name: Download libidn2
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libidn/libidn2-${{env.libidn2_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libidn2-${{env.libidn2_version}}.tar.gz
 
       - name: Extract libidn2
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libidn2-${{env.libidn2_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libidn2-${{env.libidn2_version}}.tar.gz
 
       - name: Configure libidn2
         shell: bash
-        working-directory: build/libidn2-${{env.libidn2_version}}
+        working-directory: ${{env.build_path}}/libidn2-${{env.libidn2_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-doc
 
       - name: Build libidn2
         shell: bash
-        working-directory: build/libidn2-${{env.libidn2_version}}
+        working-directory: ${{env.build_path}}/libidn2-${{env.libidn2_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libidn2
         shell: bash
-        working-directory: build/libidn2-${{env.libidn2_version}}
+        working-directory: ${{env.build_path}}/libidn2-${{env.libidn2_version}}
         run: make install
 
       - name: Check libidn2
@@ -1275,29 +1293,29 @@ jobs:
 
       - name: Download nettle
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://www.lysator.liu.se/~nisse/archive/nettle-${{env.nettle_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/nettle-${{env.nettle_version}}.tar.gz
 
       - name: Extract nettle
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/nettle-${{env.nettle_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/nettle-${{env.nettle_version}}.tar.gz
 
       - name: Configure nettle
         shell: bash
-        working-directory: build/nettle-${{env.nettle_version}}
+        working-directory: ${{env.build_path}}/nettle-${{env.nettle_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-documentation --with-include-path="${{env.prefix_path}}/include" --with-lib-path="${{env.prefix_path}}/lib"
 
       - name: Build nettle
         shell: bash
-        working-directory: build/nettle-${{env.nettle_version}}
+        working-directory: ${{env.build_path}}/nettle-${{env.nettle_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install nettle
         shell: bash
-        working-directory: build/nettle-${{env.nettle_version}}
+        working-directory: ${{env.build_path}}/nettle-${{env.nettle_version}}
         run: make install
 
       - name: Check nettle
@@ -1309,31 +1327,31 @@ jobs:
 
       - name: Download GnuTLS
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://www.gnupg.org/ftp/gcrypt/gnutls/v${{env.gnutls_version_short}}/gnutls-${{env.gnutls_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gnutls-${{env.gnutls_version}}.tar.xz
 
       - name: Extract GnuTLS
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/gnutls-${{env.gnutls_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/gnutls-${{env.gnutls_version}}.tar.xz
 
       - name: Configure GnuTLS
         shell: bash
         env:
           CFLAGS: -I${{env.prefix_path}}/include -Wno-implicit-int
-        working-directory: build/gnutls-${{env.gnutls_version}}
+        working-directory: ${{env.build_path}}/gnutls-${{env.gnutls_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-silent-rules --disable-nls --enable-rpath --disable-doc --disable-tests --without-p11-kit
 
       - name: Build GnuTLS
         shell: bash
-        working-directory: build/gnutls-${{env.gnutls_version}}
+        working-directory: ${{env.build_path}}/gnutls-${{env.gnutls_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install GnuTLS
         shell: bash
-        working-directory: build/gnutls-${{env.gnutls_version}}
+        working-directory: ${{env.build_path}}/gnutls-${{env.gnutls_version}}
         run: make install
 
       - name: Check gnutls
@@ -1343,29 +1361,29 @@ jobs:
 
       - name: Download icu
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/unicode-org/icu/releases/download/release-${{env.icu4c_version}}/icu4c-${{env.icu4c_version}}-sources.tgz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/icu4c-${{env.icu4c_version}}-sources.tgz
 
       - name: Extract icu
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/icu4c-${{env.icu4c_version}}-sources.tgz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/icu4c-${{env.icu4c_version}}-sources.tgz
 
       - name: Configure icu
         shell: bash
-        working-directory: build/icu/source
+        working-directory: ${{env.build_path}}/icu/source
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-${{env.buildtype}} --disable-samples --disable-tests --with-library-bits=64 --enable-rpath
 
       - name: Build icu
         shell: bash
-        working-directory: build/icu/source
+        working-directory: ${{env.build_path}}/icu/source
         run: make -j ${{env.make_jobs}}
 
       - name: Install icu
         shell: bash
-        working-directory: build/icu/source
+        working-directory: ${{env.build_path}}/icu/source
         run: make install
 
       - name: Check icu
@@ -1378,29 +1396,29 @@ jobs:
 
       - name: Download pixman
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://www.cairographics.org/releases/pixman-${{env.pixman_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/pixman-${{env.pixman_version}}.tar.gz
 
       - name: Extract pixman
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/pixman-${{env.pixman_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/pixman-${{env.pixman_version}}.tar.gz
 
       - name: Configure pixman
         shell: bash
-        working-directory: build/pixman-${{env.pixman_version}}
+        working-directory: ${{env.build_path}}/pixman-${{env.pixman_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dgtk=disabled -Dlibpng=enabled -Dtests=disabled build
 
       - name: Build pixman
         shell: bash
-        working-directory: build/pixman-${{env.pixman_version}}/build
+        working-directory: ${{env.build_path}}/pixman-${{env.pixman_version}}/build
         run: ninja
 
       - name: Install pixman
         shell: bash
-        working-directory: build/pixman-${{env.pixman_version}}/build
+        working-directory: ${{env.build_path}}/pixman-${{env.pixman_version}}/build
         run: ninja install
 
       - name: Check pixman
@@ -1410,29 +1428,29 @@ jobs:
 
       - name: Download expat
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/libexpat/libexpat/releases/download/R_${{env.expat_version_underscore}}/expat-${{env.expat_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/expat-${{env.expat_version}}.tar.xz
 
       - name: Extract expat
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/expat-${{env.expat_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/expat-${{env.expat_version}}.tar.xz
 
       - name: Configure expat
         shell: bash
-        working-directory: build/expat-${{env.expat_version}}
+        working-directory: ${{env.build_path}}/expat-${{env.expat_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DEXPAT_SHARED_LIBS=ON -DEXPAT_BUILD_DOCS=OFF -DEXPAT_BUILD_EXAMPLES=OFF -DEXPAT_BUILD_FUZZERS=OFF -DEXPAT_BUILD_TESTS=OFF -DEXPAT_BUILD_TOOLS=OFF -DEXPAT_BUILD_PKGCONFIG=ON
 
       - name: Build expat
         shell: bash
-        working-directory: build/expat-${{env.expat_version}}/build
+        working-directory: ${{env.build_path}}/expat-${{env.expat_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install expat
         shell: bash
-        working-directory: build/expat-${{env.expat_version}}/build
+        working-directory: ${{env.build_path}}/expat-${{env.expat_version}}/build
         run: cmake --install .
 
       - name: Check expat
@@ -1442,64 +1460,64 @@ jobs:
 
       - name: Download Boost
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://archives.boost.io/release/${{env.boost_version}}/source/boost_${{env.boost_version_underscore}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/boost_${{env.boost_version_underscore}}.tar.gz
 
       - name: Extract Boost
         shell: bash
-        working-directory: build
-        run: tar -xf  ../downloads/boost_${{env.boost_version_underscore}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/boost_${{env.boost_version_underscore}}.tar.gz
 
       - name: Configure Boost
         shell: bash
-        working-directory: build/boost_${{env.boost_version_underscore}}
+        working-directory: ${{env.build_path}}/boost_${{env.boost_version_underscore}}
         run: ./bootstrap.sh --with-libraries=headers
 
       - name: Build Boost
         shell: bash
-        working-directory: build/boost_${{env.boost_version_underscore}}
+        working-directory: ${{env.build_path}}/boost_${{env.boost_version_underscore}}
         run: ./b2 --with-headers
 
       - name: Install Boost
         shell: bash
-        working-directory: build/boost_${{env.boost_version_underscore}}
+        working-directory: ${{env.build_path}}/boost_${{env.boost_version_underscore}}
         run: ./b2 install --prefix="${{env.prefix_path}}"
 
 
       - name: Cleanup build directory
         if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: rm -rf *
 
 
       - name: Download libxml2
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://download.gnome.org/sources/libxml2/${{env.libxml2_version_short}}/libxml2-${{env.libxml2_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libxml2-${{env.libxml2_version}}.tar.xz
 
       - name: Extract libxml2
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libxml2-${{env.libxml2_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libxml2-${{env.libxml2_version}}.tar.xz
 
       - name: Configure libxml2
         shell: bash
-        working-directory: build/libxml2-${{env.libxml2_version}}
+        working-directory: ${{env.build_path}}/libxml2-${{env.libxml2_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DLIBXML2_WITH_PYTHON=OFF -DLIBXML2_WITH_ZLIB=ON
 
       - name: Build libxml2
         shell: bash
-        working-directory: build/libxml2-${{env.libxml2_version}}/build
+        working-directory: ${{env.build_path}}/libxml2-${{env.libxml2_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install libxml2
         shell: bash
-        working-directory: build/libxml2-${{env.libxml2_version}}/build
+        working-directory: ${{env.build_path}}/libxml2-${{env.libxml2_version}}/build
         run: cmake --install .
 
       - name: Check libxml2
@@ -1509,29 +1527,29 @@ jobs:
 
       - name: Download nghttp2
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/nghttp2/nghttp2/releases/download/v${{env.nghttp2_version}}/nghttp2-${{env.nghttp2_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/nghttp2-${{env.nghttp2_version}}.tar.xz
 
       - name: Extract nghttp2
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/nghttp2-${{env.nghttp2_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/nghttp2-${{env.nghttp2_version}}.tar.xz
 
       - name: Configure nghttp2
         shell: bash
-        working-directory: build/nghttp2-${{env.nghttp2_version}}
+        working-directory: ${{env.build_path}}/nghttp2-${{env.nghttp2_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DENABLE_SHARED_LIB=ON
 
       - name: Build nghttp2
         shell: bash
-        working-directory: build/nghttp2-${{env.nghttp2_version}}/build
+        working-directory: ${{env.build_path}}/nghttp2-${{env.nghttp2_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install nghttp2
         shell: bash
-        working-directory: build/nghttp2-${{env.nghttp2_version}}/build
+        working-directory: ${{env.build_path}}/nghttp2-${{env.nghttp2_version}}/build
         run: cmake --install .
 
       - name: Check nghttp2
@@ -1541,29 +1559,29 @@ jobs:
 
       - name: Download libffi
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/libffi/libffi/releases/download/v${{env.libffi_version}}/libffi-${{env.libffi_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libffi-${{env.libffi_version}}.tar.gz
 
       - name: Extract libffi
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libffi-${{env.libffi_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libffi-${{env.libffi_version}}.tar.gz
 
       - name: Configure libffi
         shell: bash
-        working-directory: build/libffi-${{env.libffi_version}}
+        working-directory: ${{env.build_path}}/libffi-${{env.libffi_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-docs
 
       - name: Build libffi
         shell: bash
-        working-directory: build/libffi-${{env.libffi_version}}
+        working-directory: ${{env.build_path}}/libffi-${{env.libffi_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libffi
         shell: bash
-        working-directory: build/libffi-${{env.libffi_version}}
+        working-directory: ${{env.build_path}}/libffi-${{env.libffi_version}}
         run: make install
 
       - name: Check libffi
@@ -1573,29 +1591,29 @@ jobs:
 
       - name: Download libpsl
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/rockdaboot/libpsl/releases/download/${{env.libpsl_version}}/libpsl-${{env.libpsl_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libpsl-${{env.libpsl_version}}.tar.gz
 
       - name: Extract libpsl
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libpsl-${{env.libpsl_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libpsl-${{env.libpsl_version}}.tar.gz
 
       - name: Configure libpsl
         shell: bash
-        working-directory: build/libpsl-${{env.libpsl_version}}
+        working-directory: ${{env.build_path}}/libpsl-${{env.libpsl_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload build
 
       - name: Build libpsl
         shell: bash
-        working-directory: build/libpsl-${{env.libpsl_version}}/build
+        working-directory: ${{env.build_path}}/libpsl-${{env.libpsl_version}}/build
         run: ninja
 
       - name: Install libpsl
         shell: bash
-        working-directory: build/libpsl-${{env.libpsl_version}}/build
+        working-directory: ${{env.build_path}}/libpsl-${{env.libpsl_version}}/build
         run: ninja install
 
       - name: Check libpsl
@@ -1605,59 +1623,59 @@ jobs:
 
       - name: Download orc
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/orc/orc-${{env.orc_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/orc-${{env.orc_version}}.tar.xz
 
       - name: Extract orc
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/orc-${{env.orc_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/orc-${{env.orc_version}}.tar.xz
 
       - name: Configure orc
         shell: bash
-        working-directory: build/orc-${{env.orc_version}}
+        working-directory: ${{env.build_path}}/orc-${{env.orc_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload build
 
       - name: Build orc
         shell: bash
-        working-directory: build/orc-${{env.orc_version}}/build
+        working-directory: ${{env.build_path}}/orc-${{env.orc_version}}/build
         run: ninja
 
       - name: Install orc
         shell: bash
-        working-directory: build/orc-${{env.orc_version}}/build
+        working-directory: ${{env.build_path}}/orc-${{env.orc_version}}/build
         run: ninja install
 
 
       - name: Download SQLite
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://sqlite.org/2026/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz
 
       - name: Extract SQLite
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz
 
       - name: Configure SQLite
         shell: bash
         env:
           CFLAGS: -DSQLITE_ENABLE_COLUMN_METADATA
-        working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
+        working-directory: ${{env.build_path}}/sqlite-autoconf-${{env.sqlite3_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-fts5 --disable-readline --enable-threadsafe --disable-silent-rules
 
       - name: Build SQLite
         shell: bash
-        working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
+        working-directory: ${{env.build_path}}/sqlite-autoconf-${{env.sqlite3_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install SQLite
         shell: bash
-        working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
+        working-directory: ${{env.build_path}}/sqlite-autoconf-${{env.sqlite3_version}}
         run: make install
 
       - name: Change SQLite library id
@@ -1671,29 +1689,29 @@ jobs:
 
       - name: Download GLib
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://download.gnome.org/sources/glib/${{env.glib_version_short}}/glib-${{env.glib_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/glib-${{env.glib_version}}.tar.xz
 
       - name: Extract GLib
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/glib-${{env.glib_version}}.tar.xz || true
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/glib-${{env.glib_version}}.tar.xz || true
 
       - name: Configure GLib
         shell: bash
-        working-directory: build/glib-${{env.glib_version}}
+        working-directory: ${{env.build_path}}/glib-${{env.glib_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig -Ddtrace=false -Dtests=false build
 
       - name: Build GLib
         shell: bash
-        working-directory: build/glib-${{env.glib_version}}/build
+        working-directory: ${{env.build_path}}/glib-${{env.glib_version}}/build
         run: ninja
 
       - name: Install GLib
         shell: bash
-        working-directory: build/glib-${{env.glib_version}}/build
+        working-directory: ${{env.build_path}}/glib-${{env.glib_version}}/build
         run: ninja install
 
       - name: Check GLib
@@ -1706,29 +1724,29 @@ jobs:
 
       - name: Download gdk-pixbuf
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://download.gnome.org/sources/gdk-pixbuf/${{env.gdk_pixbuf_version_short}}/gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz
 
       - name: Extract gdk-pixbuf
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz
 
       - name: Configure gdk-pixbuf
         shell: bash
-        working-directory: build/gdk-pixbuf-${{env.gdk_pixbuf_version}}
+        working-directory: ${{env.build_path}}/gdk-pixbuf-${{env.gdk_pixbuf_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=false -Dinstalled_tests=false -Ddocumentation=false -Dman=false -Dintrospection=disabled -Drelocatable=true -Dpng=enabled -Djpeg=enabled -Dtiff=disabled build
 
       - name: Build gdk-pixbuf
         shell: bash
-        working-directory: build/gdk-pixbuf-${{env.gdk_pixbuf_version}}/build
+        working-directory: ${{env.build_path}}/gdk-pixbuf-${{env.gdk_pixbuf_version}}/build
         run: ninja
 
       - name: Install gdk-pixbuf
         shell: bash
-        working-directory: build/gdk-pixbuf-${{env.gdk_pixbuf_version}}/build
+        working-directory: ${{env.build_path}}/gdk-pixbuf-${{env.gdk_pixbuf_version}}/build
         run: ninja install
 
       - name: Check gdk-pixbuf
@@ -1738,29 +1756,29 @@ jobs:
 
       - name: Download libsoup
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://download.gnome.org/sources/libsoup/${{env.libsoup_version_short}}/libsoup-${{env.libsoup_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libsoup-${{env.libsoup_version}}.tar.xz
 
       - name: Extract libsoup
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libsoup-${{env.libsoup_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libsoup-${{env.libsoup_version}}.tar.xz
 
       - name: Configure libsoup
         shell: bash
-        working-directory: build/libsoup-${{env.libsoup_version}}
+        working-directory: ${{env.build_path}}/libsoup-${{env.libsoup_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=false -Dvapi=disabled -Dgssapi=disabled -Dintrospection=disabled -Dsysprof=disabled -Dtls_check=false build
 
       - name: Build libsoup
         shell: bash
-        working-directory: build/libsoup-${{env.libsoup_version}}/build
+        working-directory: ${{env.build_path}}/libsoup-${{env.libsoup_version}}/build
         run: ninja
 
       - name: Install libsoup
         shell: bash
-        working-directory: build/libsoup-${{env.libsoup_version}}/build
+        working-directory: ${{env.build_path}}/libsoup-${{env.libsoup_version}}/build
         run: ninja install
 
       - name: Check libsoup
@@ -1770,62 +1788,62 @@ jobs:
 
       - name: Download glib-networking
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://download.gnome.org/sources/glib-networking/${{env.glib_networking_version_short}}/glib-networking-${{env.glib_networking_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/glib-networking-${{env.glib_networking_version}}.tar.xz
 
       - name: Extract glib-networking
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/glib-networking-${{env.glib_networking_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/glib-networking-${{env.glib_networking_version}}.tar.xz
 
       - name: Patch glib-networking
         shell: bash
-        working-directory: build/glib-networking-${{env.glib_networking_version}}
-        run: patch -p1 < ../../patches/glib-networking-tests.patch
+        working-directory: ${{env.build_path}}/glib-networking-${{env.glib_networking_version}}
+        run: patch -p1 < ${GITHUB_WORKSPACE}/patches/glib-networking-tests.patch
 
       - name: Configure glib-networking
         shell: bash
-        working-directory: build/glib-networking-${{env.glib_networking_version}}
+        working-directory: ${{env.build_path}}/glib-networking-${{env.glib_networking_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dgnutls=enabled -Dopenssl=enabled -Dgnome_proxy=disabled -Dlibproxy=disabled build
 
       - name: Build glib-networking
         shell: bash
-        working-directory: build/glib-networking-${{env.glib_networking_version}}/build
+        working-directory: ${{env.build_path}}/glib-networking-${{env.glib_networking_version}}/build
         run: ninja
 
       - name: Install glib-networking
         shell: bash
-        working-directory: build/glib-networking-${{env.glib_networking_version}}/build
+        working-directory: ${{env.build_path}}/glib-networking-${{env.glib_networking_version}}/build
         run: ninja install || true
 
 
       - name: Download freetype
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/freetype/freetype2/${{env.freetype_version}}/freetype-${{env.freetype_version}}.tar.gz || \
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/freetype/freetype2/${{env.freetype_version}}/freetype-${{env.freetype_version}}.tar.gz
 
       - name: Extract freetype (boostrap)
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/freetype-${{env.freetype_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/freetype-${{env.freetype_version}}.tar.gz
 
       - name: Configure freetype (boostrap)
         shell: bash
-        working-directory: build/freetype-${{env.freetype_version}}
+        working-directory: ${{env.build_path}}/freetype-${{env.freetype_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
 
       - name: Build freetype (boostrap)
         shell: bash
-        working-directory: build/freetype-${{env.freetype_version}}/build
+        working-directory: ${{env.build_path}}/freetype-${{env.freetype_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install freetype (boostrap)
         shell: bash
-        working-directory: build/freetype-${{env.freetype_version}}/build
+        working-directory: ${{env.build_path}}/freetype-${{env.freetype_version}}/build
         run: cmake --install .
 
       - name: Link freetype (debug)
@@ -1840,29 +1858,29 @@ jobs:
 
       - name: Download harfbuzz
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/harfbuzz/harfbuzz/releases/download/${{env.harfbuzz_version}}/harfbuzz-${{env.harfbuzz_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/harfbuzz-${{env.harfbuzz_version}}.tar.xz
 
       - name: Extract harfbuzz
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/harfbuzz-${{env.harfbuzz_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/harfbuzz-${{env.harfbuzz_version}}.tar.xz
 
       - name: Configure harfbuzz
         shell: bash
-        working-directory: build/harfbuzz-${{env.harfbuzz_version}}
+        working-directory: ${{env.build_path}}/harfbuzz-${{env.harfbuzz_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix="${{env.prefix_path}}" --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dcpp_std=c++17 -Dtests=disabled -Ddocs=disabled -Dfreetype=enabled -Dicu=enabled -Dcairo=disabled -Dutilities=disabled build
 
       - name: Build harfbuzz
         shell: bash
-        working-directory: build/harfbuzz-${{env.harfbuzz_version}}/build
+        working-directory: ${{env.build_path}}/harfbuzz-${{env.harfbuzz_version}}/build
         run: ninja
 
       - name: Install harfbuzz
         shell: bash
-        working-directory: build/harfbuzz-${{env.harfbuzz_version}}/build
+        working-directory: ${{env.build_path}}/harfbuzz-${{env.harfbuzz_version}}/build
         run: ninja install
 
       - name: Check harfbuzz
@@ -1874,27 +1892,27 @@ jobs:
 
       - name: Delete freetype bootstrap
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: rm -rf freetype-${{env.freetype_version}}
 
       - name: Extract freetype
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/freetype-${{env.freetype_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/freetype-${{env.freetype_version}}.tar.gz
 
       - name: Configure freetype
         shell: bash
-        working-directory: build/freetype-${{env.freetype_version}}
+        working-directory: ${{env.build_path}}/freetype-${{env.freetype_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
 
       - name: Build freetype
         shell: bash
-        working-directory: build/freetype-${{env.freetype_version}}/build
+        working-directory: ${{env.build_path}}/freetype-${{env.freetype_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install freetype
         shell: bash
-        working-directory: build/freetype-${{env.freetype_version}}/build
+        working-directory: ${{env.build_path}}/freetype-${{env.freetype_version}}/build
         run: cmake --install .
 
       - name: Check freetype
@@ -1905,35 +1923,35 @@ jobs:
       - name: Cleanup build directory
         if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: rm -rf *
 
 
       - name: Download libusb
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/libusb/libusb/releases/download/v${{env.libusb_version}}/libusb-${{env.libusb_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libusb-${{env.libusb_version}}.tar.bz2
 
       - name: Extract libusb
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libusb-${{env.libusb_version}}.tar.bz2
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libusb-${{env.libusb_version}}.tar.bz2
 
       - name: Configure libusb
         shell: bash
-        working-directory: build/libusb-${{env.libusb_version}}
+        working-directory: ${{env.build_path}}/libusb-${{env.libusb_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
 
       - name: Build libusb
         shell: bash
-        working-directory: build/libusb-${{env.libusb_version}}
+        working-directory: ${{env.build_path}}/libusb-${{env.libusb_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libusb
         shell: bash
-        working-directory: build/libusb-${{env.libusb_version}}
+        working-directory: ${{env.build_path}}/libusb-${{env.libusb_version}}
         run: make install
 
       - name: Check libusb
@@ -1943,29 +1961,29 @@ jobs:
 
       - name: Download libogg
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://downloads.xiph.org/releases/ogg/libogg-${{env.libogg_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libogg-${{env.libogg_version}}.tar.xz
 
       - name: Extract libogg
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libogg-${{env.libogg_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libogg-${{env.libogg_version}}.tar.xz
 
       - name: Configure libogg
         shell: bash
-        working-directory: build/libogg-${{env.libogg_version}}
+        working-directory: ${{env.build_path}}/libogg-${{env.libogg_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-silent-rules
 
       - name: Build libogg
         shell: bash
-        working-directory: build/libogg-${{env.libogg_version}}
+        working-directory: ${{env.build_path}}/libogg-${{env.libogg_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libogg
         shell: bash
-        working-directory: build/libogg-${{env.libogg_version}}
+        working-directory: ${{env.build_path}}/libogg-${{env.libogg_version}}
         run: make install
 
       - name: Check libogg
@@ -1975,39 +1993,39 @@ jobs:
 
       - name: Download libvorbis
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://downloads.xiph.org/releases/vorbis/libvorbis-${{env.libvorbis_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libvorbis-${{env.libvorbis_version}}.tar.gz
 
       - name: Extract libvorbis
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libvorbis-${{env.libvorbis_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libvorbis-${{env.libvorbis_version}}.tar.gz
 
       - name: Patch libvorbis
         shell: bash
-        working-directory: build/libvorbis-${{env.libvorbis_version}}
-        run: patch -p1 < ../../patches/libvorbis-fixes.patch
+        working-directory: ${{env.build_path}}/libvorbis-${{env.libvorbis_version}}
+        run: patch -p1 < ${GITHUB_WORKSPACE}/patches/libvorbis-fixes.patch
 
       - name: libvorbis autogen
         shell: bash
-        working-directory: build/libvorbis-${{env.libvorbis_version}}
+        working-directory: ${{env.build_path}}/libvorbis-${{env.libvorbis_version}}
         run: ./autogen.sh
 
       - name: Configure libvorbis
         shell: bash
-        working-directory: build/libvorbis-${{env.libvorbis_version}}
+        working-directory: ${{env.build_path}}/libvorbis-${{env.libvorbis_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-silent-rules --disable-oggtest --disable-docs --disable-examples
 
       - name: Build libvorbis
         shell: bash
-        working-directory: build/libvorbis-${{env.libvorbis_version}}
+        working-directory: ${{env.build_path}}/libvorbis-${{env.libvorbis_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libvorbis
         shell: bash
-        working-directory: build/libvorbis-${{env.libvorbis_version}}
+        working-directory: ${{env.build_path}}/libvorbis-${{env.libvorbis_version}}
         run: make install
 
       - name: Check libvorbis
@@ -2017,29 +2035,29 @@ jobs:
 
       - name: Download flac
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/xiph/flac/releases/download/${{env.flac_version}}/flac-${{env.flac_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/flac-${{env.flac_version}}.tar.xz
 
       - name: Extract flac
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/flac-${{env.flac_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/flac-${{env.flac_version}}.tar.xz
 
       - name: Configure flac
         shell: bash
-        working-directory: build/flac-${{env.flac_version}}
+        working-directory: ${{env.build_path}}/flac-${{env.flac_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_DOCS=OFF -DBUILD_EXAMPLES=OFF -DINSTALL_MANPAGES=OFF -DBUILD_TESTING=OFF -DBUILD_PROGRAMS=OFF
 
       - name: Build flac
         shell: bash
-        working-directory: build/flac-${{env.flac_version}}/build
+        working-directory: ${{env.build_path}}/flac-${{env.flac_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install flac
         shell: bash
-        working-directory: build/flac-${{env.flac_version}}/build
+        working-directory: ${{env.build_path}}/flac-${{env.flac_version}}/build
         run: cmake --install .
 
       - name: Check flac
@@ -2049,29 +2067,29 @@ jobs:
 
       - name: Download wavpack
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://www.wavpack.com/wavpack-${{env.wavpack_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/wavpack-${{env.wavpack_version}}.tar.bz2
 
       - name: Extract wavpack
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/wavpack-${{env.wavpack_version}}.tar.bz2
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/wavpack-${{env.wavpack_version}}.tar.bz2
 
       - name: Configure wavpack
         shell: bash
-        working-directory: build/wavpack-${{env.wavpack_version}}
+        working-directory: ${{env.build_path}}/wavpack-${{env.wavpack_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF -DWAVPACK_BUILD_DOCS=OFF -DWAVPACK_BUILD_PROGRAMS=OFF -DWAVPACK_ENABLE_ASM=OFF -DWAVPACK_ENABLE_LEGACY=OFF -DWAVPACK_BUILD_WINAMP_PLUGIN=OFF -DWAVPACK_BUILD_COOLEDIT_PLUGIN=OFF
 
       - name: Build wavpack
         shell: bash
-        working-directory: build/wavpack-${{env.wavpack_version}}/build
+        working-directory: ${{env.build_path}}/wavpack-${{env.wavpack_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install wavpack
         shell: bash
-        working-directory: build/wavpack-${{env.wavpack_version}}/build
+        working-directory: ${{env.build_path}}/wavpack-${{env.wavpack_version}}/build
         run: cmake --install .
 
       - name: Check wavpack
@@ -2081,34 +2099,34 @@ jobs:
 
       - name: Download opus
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://downloads.xiph.org/releases/opus/opus-${{env.opus_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/opus-${{env.opus_version}}.tar.gz
 
       - name: Extract opus
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/opus-${{env.opus_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/opus-${{env.opus_version}}.tar.gz
 
       - name: Patch opus
         shell: bash
-        working-directory: build/opus-${{env.opus_version}}
+        working-directory: ${{env.build_path}}/opus-${{env.opus_version}}
         run: sed -i .bak '/include(opus_buildtype.cmake)/d' CMakeLists.txt
 
       - name: Configure opus
         shell: bash
-        working-directory: build/opus-${{env.opus_version}}
+        working-directory: ${{env.build_path}}/opus-${{env.opus_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
 
       - name: Build opus
         shell: bash
-        working-directory: build/opus-${{env.opus_version}}/build
+        working-directory: ${{env.build_path}}/opus-${{env.opus_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install opus
         shell: bash
-        working-directory: build/opus-${{env.opus_version}}/build
+        working-directory: ${{env.build_path}}/opus-${{env.opus_version}}/build
         run: cmake --install .
 
       - name: Check opus
@@ -2118,29 +2136,29 @@ jobs:
 
       - name: Download opusfile
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://downloads.xiph.org/releases/opus/opusfile-${{env.opusfile_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/opusfile-${{env.opusfile_version}}.tar.gz
 
       - name: Extract opusfile
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/opusfile-${{env.opusfile_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/opusfile-${{env.opusfile_version}}.tar.gz
 
       - name: Configure opusfile
         shell: bash
-        working-directory: build/opusfile-${{env.opusfile_version}}
+        working-directory: ${{env.build_path}}/opusfile-${{env.opusfile_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc --disable-examples --disable-http || true
 
       - name: Build opusfile
         shell: bash
-        working-directory: build/opusfile-${{env.opusfile_version}}
+        working-directory: ${{env.build_path}}/opusfile-${{env.opusfile_version}}
         run: make -j ${{env.make_jobs}} || true
 
       - name: Install opusfile
         shell: bash
-        working-directory: build/opusfile-${{env.opusfile_version}}
+        working-directory: ${{env.build_path}}/opusfile-${{env.opusfile_version}}
         run: make install || true
 
       - name: Check opusfile
@@ -2150,34 +2168,34 @@ jobs:
 
       - name: Download speex
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://gitlab.xiph.org/xiph/speex/-/archive/Speex-${{env.speex_version}}/speex-Speex-${{env.speex_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/speex-Speex-${{env.speex_version}}.tar.gz
 
       - name: Extract speex
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/speex-Speex-${{env.speex_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/speex-Speex-${{env.speex_version}}.tar.gz
 
       - name: Autogen speex
         shell: bash
-        working-directory: build/speex-Speex-${{env.speex_version}}
+        working-directory: ${{env.build_path}}/speex-Speex-${{env.speex_version}}
         run: ./autogen.sh
 
       - name: Configure speex
         shell: bash
-        working-directory: build/speex-Speex-${{env.speex_version}}
+        working-directory: ${{env.build_path}}/speex-Speex-${{env.speex_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build speex
         shell: bash
-        working-directory: build/speex-Speex-${{env.speex_version}}
+        working-directory: ${{env.build_path}}/speex-Speex-${{env.speex_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install speex
         shell: bash
-        working-directory: build/speex-Speex-${{env.speex_version}}
+        working-directory: ${{env.build_path}}/speex-Speex-${{env.speex_version}}
         run: make install
 
       - name: Check speex
@@ -2187,30 +2205,30 @@ jobs:
 
       - name: Download mpg123
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://www.mpg123.de/download/mpg123-${{env.mpg123_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/mpg123-${{env.mpg123_version}}.tar.bz2
 
       - name: Extract mpg123
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/mpg123-${{env.mpg123_version}}.tar.bz2
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/mpg123-${{env.mpg123_version}}.tar.bz2
 
       - name: Configure mpg123
         shell: bash
-        working-directory: build/mpg123-${{env.mpg123_version}}
+        working-directory: ${{env.build_path}}/mpg123-${{env.mpg123_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S ports/cmake -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_PROGRAMS=OFF -DBUILD_LIBOUT123=OFF
         #run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking
 
       - name: Build mpg123
         shell: bash
-        working-directory: build/mpg123-${{env.mpg123_version}}/build
+        working-directory: ${{env.build_path}}/mpg123-${{env.mpg123_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install mpg123
         shell: bash
-        working-directory: build/mpg123-${{env.mpg123_version}}/build
+        working-directory: ${{env.build_path}}/mpg123-${{env.mpg123_version}}/build
         run: cmake --install .
 
       - name: Check mpg123
@@ -2220,67 +2238,67 @@ jobs:
 
       - name: Download lame
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/lame/lame/${{env.lame_version}}/lame-${{env.lame_version}}.tar.gz || \
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/lame/lame/${{env.lame_version}}/lame-${{env.lame_version}}.tar.gz
 
       - name: Extract lame
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/lame-${{env.lame_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/lame-${{env.lame_version}}.tar.gz
 
       - name: Patch lame
         shell: bash
-        working-directory: build/lame-${{env.lame_version}}
-        run: patch -p1 < ../../patches/lame.patch
+        working-directory: ${{env.build_path}}/lame-${{env.lame_version}}
+        run: patch -p1 < ${GITHUB_WORKSPACE}/patches/lame.patch
 
       - name: Configure lame
         shell: bash
-        working-directory: build/lame-${{env.lame_version}}
+        working-directory: ${{env.build_path}}/lame-${{env.lame_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-dependency-tracking --disable-frontend --disable-gtktest
 
       - name: Build lame
         shell: bash
-        working-directory: build/lame-${{env.lame_version}}
+        working-directory: ${{env.build_path}}/lame-${{env.lame_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install lame
         shell: bash
-        working-directory: build/lame-${{env.lame_version}}
+        working-directory: ${{env.build_path}}/lame-${{env.lame_version}}
         run: make install
 
 
       - name: Download twolame
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/twolame/twolame/${{env.twolame_version}}/twolame-${{env.twolame_version}}.tar.gz || \
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/twolame/twolame/${{env.twolame_version}}/twolame-${{env.twolame_version}}.tar.gz
 
       - name: Extract twolame
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/twolame-${{env.twolame_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/twolame-${{env.twolame_version}}.tar.gz
 
       - name: Patch twolame source
         shell: bash
-        working-directory: build/twolame-${{env.twolame_version}}
-        run: patch -p1 < ../../patches/twolame.patch
+        working-directory: ${{env.build_path}}/twolame-${{env.twolame_version}}
+        run: patch -p1 < ${GITHUB_WORKSPACE}/patches/twolame.patch
 
       - name: Configure twolame
         shell: bash
-        working-directory: build/twolame-${{env.twolame_version}}
+        working-directory: ${{env.build_path}}/twolame-${{env.twolame_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build twolame
         shell: bash
-        working-directory: build/twolame-${{env.twolame_version}}
+        working-directory: ${{env.build_path}}/twolame-${{env.twolame_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install twolame
         shell: bash
-        working-directory: build/twolame-${{env.twolame_version}}
+        working-directory: ${{env.build_path}}/twolame-${{env.twolame_version}}
         run: make install
 
       - name: Check twolame
@@ -2290,72 +2308,72 @@ jobs:
 
       - name: Download musepack
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://files.musepack.net/source/musepack_src_r${{env.musepack_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/musepack_src_r${{env.musepack_version}}.tar.gz
 
       - name: Extract musepack
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/musepack_src_r${{env.musepack_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/musepack_src_r${{env.musepack_version}}.tar.gz
 
       - name: Patch musepack
         shell: bash
-        working-directory: build/musepack_src_r${{env.musepack_version}}
-        run: patch -p1 < ../../patches/musepack-fixes.patch
+        working-directory: ${{env.build_path}}/musepack_src_r${{env.musepack_version}}
+        run: patch -p1 < ${GITHUB_WORKSPACE}/patches/musepack-fixes.patch
 
       - name: Configure musepack
         shell: bash
-        working-directory: build/musepack_src_r${{env.musepack_version}}
+        working-directory: ${{env.build_path}}/musepack_src_r${{env.musepack_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="Debug" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DSHARED=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build musepack
         shell: bash
-        working-directory: build/musepack_src_r${{env.musepack_version}}/build
+        working-directory: ${{env.build_path}}/musepack_src_r${{env.musepack_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install musepack
         shell: bash
-        working-directory: build/musepack_src_r${{env.musepack_version}}/build
+        working-directory: ${{env.build_path}}/musepack_src_r${{env.musepack_version}}/build
         run: cmake --install .
 
       - name: Copy musepack library
         shell: bash
-        working-directory: build/musepack_src_r${{env.musepack_version}}/build
+        working-directory: ${{env.build_path}}/musepack_src_r${{env.musepack_version}}/build
         run: cp libmpcdec/libmpcdec.dylib ${{env.prefix_path}}/lib/
 
       - name: Change musepack library id
         shell: bash
-        working-directory: build/musepack_src_r${{env.musepack_version}}/build
+        working-directory: ${{env.build_path}}/musepack_src_r${{env.musepack_version}}/build
         run: install_name_tool -id ${{env.prefix_path}}/lib/libmpcdec.dylib ${{env.prefix_path}}/lib/libmpcdec.dylib
 
 
       - name: Download libopenmpt
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz
 
       - name: Extract libopenmpt
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz
 
       - name: Configure libopenmpt
         shell: bash
-        working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
+        working-directory: ${{env.build_path}}/libopenmpt-${{env.libopenmpt_version}}+release.autotools
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doxygen-doc --disable-doxygen-html --disable-examples --disable-tests --disable-openmpt123 --without-mpg123 --disable-dependency-tracking --disable-silent-rules
 
       - name: Build libopenmpt
         shell: bash
-        working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
+        working-directory: ${{env.build_path}}/libopenmpt-${{env.libopenmpt_version}}+release.autotools
         run: make -j ${{env.make_jobs}}
 
       - name: Install libopenmpt
         shell: bash
-        working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
+        working-directory: ${{env.build_path}}/libopenmpt-${{env.libopenmpt_version}}+release.autotools
         run: make install
 
       - name: Check libopenmpt
@@ -2365,29 +2383,29 @@ jobs:
 
       - name: Download libgme
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/libgme/game-music-emu/releases/download/${{env.libgme_version}}/libgme-${{env.libgme_version}}-src.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libgme-${{env.libgme_version}}-src.tar.gz
 
       - name: Extract libgme
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libgme-${{env.libgme_version}}-src.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libgme-${{env.libgme_version}}-src.tar.gz
 
       - name: Configure libgme
         shell: bash
-        working-directory: build/libgme-${{env.libgme_version}}
+        working-directory: ${{env.build_path}}/libgme-${{env.libgme_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build libgme
         shell: bash
-        working-directory: build/libgme-${{env.libgme_version}}/build
+        working-directory: ${{env.build_path}}/libgme-${{env.libgme_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install libgme
         shell: bash
-        working-directory: build/libgme-${{env.libgme_version}}/build
+        working-directory: ${{env.build_path}}/libgme-${{env.libgme_version}}/build
         run: cmake --install .
 
       - name: Check libgme
@@ -2397,31 +2415,31 @@ jobs:
 
       - name: Download faad2
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/knik0/faad2/tarball/${{env.faad2_version}}/faad2-${{env.faad2_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/faad2-${{env.faad2_version}}.tar.gz
 
       - name: Extract faad2
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: |
           mkdir faad2-${{env.faad2_version}}
-          tar -xvf ../downloads/faad2-${{env.faad2_version}}.tar.gz --strip-components=1 -C faad2-${{env.faad2_version}}
+          tar -xf ${{env.downloads_path}}/faad2-${{env.faad2_version}}.tar.gz --strip-components=1 -C faad2-${{env.faad2_version}}
 
       - name: Configure faad2
         shell: bash
-        working-directory: build/faad2-${{env.faad2_version}}
+        working-directory: ${{env.build_path}}/faad2-${{env.faad2_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
 
       - name: Build faad2
         shell: bash
-        working-directory: build/faad2-${{env.faad2_version}}/build
+        working-directory: ${{env.build_path}}/faad2-${{env.faad2_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install faad2
         shell: bash
-        working-directory: build/faad2-${{env.faad2_version}}/build
+        working-directory: ${{env.build_path}}/faad2-${{env.faad2_version}}/build
         run: cmake --install .
 
       - name: Check faad2
@@ -2431,29 +2449,29 @@ jobs:
 
       - name: Download faac
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/knik0/faac/archive/refs/tags/faac-${{env.faac_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/faac-${{env.faac_version}}.tar.gz
 
       - name: Extract faac
         shell: bash
-        working-directory: build
-        run: tar -xvf ../downloads/faac-${{env.faac_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/faac-${{env.faac_version}}.tar.gz
 
       - name: Configure faac
         shell: bash
-        working-directory: build/faac-faac-${{env.faac_version}}
+        working-directory: ${{env.build_path}}/faac-faac-${{env.faac_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dfrontend=false build
 
       - name: Build faac
         shell: bash
-        working-directory: build/faac-faac-${{env.faac_version}}/build
+        working-directory: ${{env.build_path}}/faac-faac-${{env.faac_version}}/build
         run: ninja
 
       - name: Install faac
         shell: bash
-        working-directory: build/faac-faac-${{env.faac_version}}/build
+        working-directory: ${{env.build_path}}/faac-faac-${{env.faac_version}}/build
         run: ninja install
 
       - name: Check faac
@@ -2463,29 +2481,29 @@ jobs:
 
       - name: Download fdk-aac
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/opencore-amr/fdk-aac/fdk-aac-${{env.fdk_aac_version}}.tar.gz || \
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/opencore-amr/fdk-aac/fdk-aac-${{env.fdk_aac_version}}.tar.gz
 
       - name: Extract fdk-aac
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/fdk-aac-${{env.fdk_aac_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/fdk-aac-${{env.fdk_aac_version}}.tar.gz
 
       - name: Configure fdk-aac
         shell: bash
-        working-directory: build/fdk-aac-${{env.fdk_aac_version}}
+        working-directory: ${{env.build_path}}/fdk-aac-${{env.fdk_aac_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DBUILD_PROGRAMS=OFF
 
       - name: Build fdk-aac
         shell: bash
-        working-directory: build/fdk-aac-${{env.fdk_aac_version}}/build
+        working-directory: ${{env.build_path}}/fdk-aac-${{env.fdk_aac_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install fdk-aac
         shell: bash
-        working-directory: build/fdk-aac-${{env.fdk_aac_version}}/build
+        working-directory: ${{env.build_path}}/fdk-aac-${{env.fdk_aac_version}}/build
         run: cmake --install .
 
       - name: Check fdk-aac
@@ -2495,57 +2513,57 @@ jobs:
 
       - name: Download utfcpp
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/nemtrif/utfcpp/archive/refs/tags/v${{env.utfcpp_version}}/utfcpp-${{env.utfcpp_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/utfcpp-${{env.utfcpp_version}}.tar.gz
 
       - name: Extract utfcpp
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/utfcpp-${{env.utfcpp_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/utfcpp-${{env.utfcpp_version}}.tar.gz
 
       - name: Configure utfcpp
         shell: bash
-        working-directory: build/utfcpp-${{env.utfcpp_version}}
+        working-directory: ${{env.build_path}}/utfcpp-${{env.utfcpp_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
 
       - name: Build utfcpp
         shell: bash
-        working-directory: build/utfcpp-${{env.utfcpp_version}}/build
+        working-directory: ${{env.build_path}}/utfcpp-${{env.utfcpp_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install utfcpp
         shell: bash
-        working-directory: build/utfcpp-${{env.utfcpp_version}}/build
+        working-directory: ${{env.build_path}}/utfcpp-${{env.utfcpp_version}}/build
         run: cmake --install .
 
 
       - name: Download TagLib
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://taglib.org/releases/taglib-${{env.taglib_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/taglib-${{env.taglib_version}}.tar.gz
 
       - name: Extract TagLib
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/taglib-${{env.taglib_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/taglib-${{env.taglib_version}}.tar.gz
 
       - name: Configure TagLib
         shell: bash
-        working-directory: build/taglib-${{env.taglib_version}}
+        working-directory: ${{env.build_path}}/taglib-${{env.taglib_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON
 
       - name: Build TagLib
         shell: bash
-        working-directory: build/taglib-${{env.taglib_version}}/build
+        working-directory: ${{env.build_path}}/taglib-${{env.taglib_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install TagLib
         shell: bash
-        working-directory: build/taglib-${{env.taglib_version}}/build
+        working-directory: ${{env.build_path}}/taglib-${{env.taglib_version}}/build
         run: cmake --install .
 
       - name: Check TagLib
@@ -2555,44 +2573,44 @@ jobs:
 
       - name: Download libbs2b
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/bs2b/libbs2b/${{env.libbs2b_version}}/libbs2b-${{env.libbs2b_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/bs2b/libbs2b/${{env.libbs2b_version}}/libbs2b-${{env.libbs2b_version}}.tar.bz2
 
       - name: Extract libbs2b
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libbs2b-${{env.libbs2b_version}}.tar.bz2
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libbs2b-${{env.libbs2b_version}}.tar.bz2
 
       - name: Patch libbs2b configure
         shell: bash
-        working-directory: build/libbs2b-${{env.libbs2b_version}}
-        run: patch -p1 < ../../patches/libbs2b-configure.patch
+        working-directory: ${{env.build_path}}/libbs2b-${{env.libbs2b_version}}
+        run: patch -p1 < ${GITHUB_WORKSPACE}/patches/libbs2b-configure.patch
 
       - name: Patch libbs2b clipping
         shell: bash
-        working-directory: build/libbs2b-${{env.libbs2b_version}}
-        run: patch -p1 < ../../patches/libbs2b-clipping.patch
+        working-directory: ${{env.build_path}}/libbs2b-${{env.libbs2b_version}}
+        run: patch -p1 < ${GITHUB_WORKSPACE}/patches/libbs2b-clipping.patch
 
       - name: Autoreconf libbs2b
         shell: bash
-        working-directory: build/libbs2b-${{env.libbs2b_version}}
+        working-directory: ${{env.build_path}}/libbs2b-${{env.libbs2b_version}}
         run: autoreconf -fi
 
       - name: Configure libbs2b
         shell: bash
-        working-directory: build/libbs2b-${{env.libbs2b_version}}
+        working-directory: ${{env.build_path}}/libbs2b-${{env.libbs2b_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build libbs2b
         shell: bash
-        working-directory: build/libbs2b-${{env.libbs2b_version}}
+        working-directory: ${{env.build_path}}/libbs2b-${{env.libbs2b_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libbs2b
         shell: bash
-        working-directory: build/libbs2b-${{env.libbs2b_version}}
+        working-directory: ${{env.build_path}}/libbs2b-${{env.libbs2b_version}}
         run: make install
 
       - name: Check libbs2b
@@ -2602,29 +2620,29 @@ jobs:
 
       - name: Download libebur128
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/jiixyj/libebur128/archive/refs/tags/v${{env.libebur128_version}}/libebur128-${{env.libebur128_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libebur128-${{env.libebur128_version}}.tar.gz
 
       - name: Extract libebur128
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libebur128-${{env.libebur128_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libebur128-${{env.libebur128_version}}.tar.gz
 
       - name: Configure libebur128
         shell: bash
-        working-directory: build/libebur128-${{env.libebur128_version}}
+        working-directory: ${{env.build_path}}/libebur128-${{env.libebur128_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build libebur128
         shell: bash
-        working-directory: build/libebur128-${{env.libebur128_version}}/build
+        working-directory: ${{env.build_path}}/libebur128-${{env.libebur128_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install libebur128
         shell: bash
-        working-directory: build/libebur128-${{env.libebur128_version}}/build
+        working-directory: ${{env.build_path}}/libebur128-${{env.libebur128_version}}/build
         run: cmake --install .
 
       - name: Change id for libebur128
@@ -2637,36 +2655,36 @@ jobs:
 
       - name: Download fftw
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://www.fftw.org/fftw-${{env.fftw_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/fftw-${{env.fftw_version}}.tar.gz
 
       - name: Extract fftw
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/fftw-${{env.fftw_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/fftw-${{env.fftw_version}}.tar.gz
 
       - name: Configure fftw
         if: env.arch == 'x86_64'
         shell: bash
-        working-directory: build/fftw-${{env.fftw_version}}
+        working-directory: ${{env.build_path}}/fftw-${{env.fftw_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --enable-sse2 --enable-avx --enable-avx2 --enable-avx512 --enable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
 
       - name: Configure fftw
         if: env.arch != 'x86_64'
         shell: bash
-        working-directory: build/fftw-${{env.fftw_version}}
+        working-directory: ${{env.build_path}}/fftw-${{env.fftw_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --disable-sse2 --disable-avx --disable-avx2 --disable-avx512 --disable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
 
       - name: Build fftw
         shell: bash
-        working-directory: build/fftw-${{env.fftw_version}}
+        working-directory: ${{env.build_path}}/fftw-${{env.fftw_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install fftw
         shell: bash
-        working-directory: build/fftw-${{env.fftw_version}}
+        working-directory: ${{env.build_path}}/fftw-${{env.fftw_version}}
         run: make install
 
       - name: Check fftw
@@ -2676,29 +2694,29 @@ jobs:
 
       - name: Download ffmpeg
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://ffmpeg.org/releases/ffmpeg-${{env.ffmpeg_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
 
       - name: Extract ffmpeg
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
 
       - name: Configure ffmpeg
         shell: bash
-        working-directory: build/ffmpeg-${{env.ffmpeg_version}}
+        working-directory: ${{env.build_path}}/ffmpeg-${{env.ffmpeg_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-debug --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-libcdio --enable-gpl --enable-version3 --enable-gnutls --enable-libvorbis --enable-libopus --disable-libspeex --enable-libmp3lame
 
       - name: Build ffmpeg
         shell: bash
-        working-directory: build/ffmpeg-${{env.ffmpeg_version}}
+        working-directory: ${{env.build_path}}/ffmpeg-${{env.ffmpeg_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install ffmpeg
         shell: bash
-        working-directory: build/ffmpeg-${{env.ffmpeg_version}}
+        working-directory: ${{env.build_path}}/ffmpeg-${{env.ffmpeg_version}}
         run: make install
 
       - name: Check ffmpeg
@@ -2712,29 +2730,29 @@ jobs:
 
       - name: Download Chromaprint
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/acoustid/chromaprint/releases/download/v${{env.chromaprint_version}}/chromaprint-${{env.chromaprint_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/chromaprint-${{env.chromaprint_version}}.tar.gz
 
       - name: Extract Chromaprint
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/chromaprint-${{env.chromaprint_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/chromaprint-${{env.chromaprint_version}}.tar.gz
 
       - name: Configure Chromaprint
         shell: bash
-        working-directory: build/chromaprint-${{env.chromaprint_version}}
+        working-directory: ${{env.build_path}}/chromaprint-${{env.chromaprint_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DBUILD_SHARED_LIBS=ON -DFFTW3_DIR=${{env.prefix_path}} -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build Chromaprint
         shell: bash
-        working-directory: build/chromaprint-${{env.chromaprint_version}}/build
+        working-directory: ${{env.build_path}}/chromaprint-${{env.chromaprint_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install Chromaprint
         shell: bash
-        working-directory: build/chromaprint-${{env.chromaprint_version}}/build
+        working-directory: ${{env.build_path}}/chromaprint-${{env.chromaprint_version}}/build
         run: cmake --install .
 
       - name: Check Chromaprint
@@ -2744,29 +2762,29 @@ jobs:
 
       - name: Download libcdio
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/libcdio/libcdio/releases/download/${{env.libcdio_version}}/libcdio-${{env.libcdio_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libcdio-${{env.libcdio_version}}.tar.bz2
 
       - name: Extract libcdio
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libcdio-${{env.libcdio_version}}.tar.bz2
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libcdio-${{env.libcdio_version}}.tar.bz2
 
       - name: Configure libcdio
         shell: bash
-        working-directory: build/libcdio-${{env.libcdio_version}}
+        working-directory: ${{env.build_path}}/libcdio-${{env.libcdio_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-silent-rules --without-cd-drive --without-cd-info --without-cd-read --without-cdda-player --without-iso-info --without-iso-read --enable-rock
 
       - name: Build libcdio
         shell: bash
-        working-directory: build/libcdio-${{env.libcdio_version}}
+        working-directory: ${{env.build_path}}/libcdio-${{env.libcdio_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libcdio
         shell: bash
-        working-directory: build/libcdio-${{env.libcdio_version}}
+        working-directory: ${{env.build_path}}/libcdio-${{env.libcdio_version}}
         run: make install
 
       - name: Check libcdio
@@ -2777,26 +2795,26 @@ jobs:
       - name: Cleanup build directory
         if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: rm -rf *
 
 
 
       - name: Download GStreamer
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gstreamer-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract GStreamer
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/gstreamer-${{env.gstreamer_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/gstreamer-${{env.gstreamer_version}}.tar.xz
 
       - name: Configure GStreamer
         shell: bash
-        working-directory: build/gstreamer-${{env.gstreamer_version}}
+        working-directory: ${{env.build_path}}/gstreamer-${{env.gstreamer_version}}
         run: >
           meson setup
           --buildtype=${{env.meson_buildtype}}
@@ -2818,12 +2836,12 @@ jobs:
 
       - name: Build GStreamer
         shell: bash
-        working-directory: build/gstreamer-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gstreamer-${{env.gstreamer_version}}/build
         run: ninja
 
       - name: Install GStreamer
         shell: bash
-        working-directory: build/gstreamer-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gstreamer-${{env.gstreamer_version}}/build
         run: ninja install
 
       - name: Check GStreamer
@@ -2835,19 +2853,19 @@ jobs:
 
       - name: Download gst-plugins-base
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-base-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract gst-plugins-base
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/gst-plugins-base-${{env.gstreamer_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/gst-plugins-base-${{env.gstreamer_version}}.tar.xz
 
       - name: Configure gst-plugins-base
         shell: bash
-        working-directory: build/gst-plugins-base-${{env.gstreamer_version}}
+        working-directory: ${{env.build_path}}/gst-plugins-base-${{env.gstreamer_version}}
         run: >
           meson setup
           --buildtype=${{env.meson_buildtype}}
@@ -2886,30 +2904,30 @@ jobs:
 
       - name: Build gst-plugins-base
         shell: bash
-        working-directory: build/gst-plugins-base-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gst-plugins-base-${{env.gstreamer_version}}/build
         run: ninja
 
       - name: Install gst-plugins-base
         shell: bash
-        working-directory: build/gst-plugins-base-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gst-plugins-base-${{env.gstreamer_version}}/build
         run: ninja install
 
 
       - name: Download gst-plugins-good
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-good-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract gst-plugins-good
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/gst-plugins-good-${{env.gstreamer_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/gst-plugins-good-${{env.gstreamer_version}}.tar.xz
 
       - name: Configure gst-plugins-good
         shell: bash
-        working-directory: build/gst-plugins-good-${{env.gstreamer_version}}
+        working-directory: ${{env.build_path}}/gst-plugins-good-${{env.gstreamer_version}}
         run: >
           meson setup
           --buildtype=${{env.meson_buildtype}}
@@ -2957,30 +2975,30 @@ jobs:
 
       - name: Build gst-plugins-good
         shell: bash
-        working-directory: build/gst-plugins-good-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gst-plugins-good-${{env.gstreamer_version}}/build
         run: ninja
 
       - name: Install gst-plugins-good
         shell: bash
-        working-directory: build/gst-plugins-good-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gst-plugins-good-${{env.gstreamer_version}}/build
         run: ninja install
 
 
       - name: Download gst-plugins-bad
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract gst-plugins-bad
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz
 
       - name: Configure gst-plugins-bad
         shell: bash
-        working-directory: build/gst-plugins-bad-${{env.gstreamer_version}}
+        working-directory: ${{env.build_path}}/gst-plugins-bad-${{env.gstreamer_version}}
         run: >
           meson setup
           --buildtype=${{env.meson_buildtype}}
@@ -3020,30 +3038,30 @@ jobs:
 
       - name: Build gst-plugins-bad
         shell: bash
-        working-directory: build/gst-plugins-bad-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gst-plugins-bad-${{env.gstreamer_version}}/build
         run: ninja
 
       - name: Install gst-plugins-bad
         shell: bash
-        working-directory: build/gst-plugins-bad-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gst-plugins-bad-${{env.gstreamer_version}}/build
         run: ninja install
 
 
       - name: Download gst-plugins-ugly
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract gst-plugins-ugly
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz
 
       - name: Configure gst-plugins-ugly
         shell: bash
-        working-directory: build/gst-plugins-ugly-${{env.gstreamer_version}}
+        working-directory: ${{env.build_path}}/gst-plugins-ugly-${{env.gstreamer_version}}
         run: >
           meson setup
           --buildtype=${{env.meson_buildtype}}
@@ -3063,40 +3081,40 @@ jobs:
 
       - name: Build gst-plugins-ugly
         shell: bash
-        working-directory: build/gst-plugins-ugly-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gst-plugins-ugly-${{env.gstreamer_version}}/build
         run: ninja
 
       - name: Install gst-plugins-ugly
         shell: bash
-        working-directory: build/gst-plugins-ugly-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gst-plugins-ugly-${{env.gstreamer_version}}/build
         run: ninja install
 
 
       - name: Download gst-libav
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-libav/gst-libav-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-libav-${{env.gstreamer_version}}.tar.xz
 
       - name: Extract gst-libav
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/gst-libav-${{env.gstreamer_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/gst-libav-${{env.gstreamer_version}}.tar.xz
 
       - name: Configure gst-libav
         shell: bash
-        working-directory: build/gst-libav-${{env.gstreamer_version}}
+        working-directory: ${{env.build_path}}/gst-libav-${{env.gstreamer_version}}
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload -Dtests=disabled -Ddoc=disabled build
 
       - name: Build gst-libav
         shell: bash
-        working-directory: build/gst-libav-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gst-libav-${{env.gstreamer_version}}/build
         run: ninja
 
       - name: Install gst-libav
         shell: bash
-        working-directory: build/gst-libav-${{env.gstreamer_version}}/build
+        working-directory: ${{env.build_path}}/gst-libav-${{env.gstreamer_version}}/build
         run: ninja install
 
 
@@ -3108,50 +3126,50 @@ jobs:
 
       - name: Download gst-plugins-rs
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: git clone --depth 1 --recurse-submodules -b "${{env.gstreamer_plugins_rs_version}}" "https://gitlab.freedesktop.org/gstreamer/gst-plugins-rs.git"
 
       - name: Configure gst-plugins-rs
         shell: bash
-        working-directory: build/gst-plugins-rs
+        working-directory: ${{env.build_path}}/gst-plugins-rs
         run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --pkg-config-path=${{env.prefix_path}}/lib/pkgconfig --wrap-mode=nodownload --auto-features=disabled -Dspotify=enabled build
 
       - name: Build gst-plugins-rs
         shell: bash
-        working-directory: build/gst-plugins-rs/build
+        working-directory: ${{env.build_path}}/gst-plugins-rs/build
         run: ninja
 
       - name: Install gst-plugins-rs
         shell: bash
-        working-directory: build/gst-plugins-rs/build
+        working-directory: ${{env.build_path}}/gst-plugins-rs/build
         run: ninja install
 
 
       - name: Download libplist
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/libimobiledevice/libplist/releases/download/${{env.libplist_version}}/libplist-${{env.libplist_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libplist-${{env.libplist_version}}.tar.bz2
 
       - name: Extract libplist
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libplist-${{env.libplist_version}}.tar.bz2
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libplist-${{env.libplist_version}}.tar.bz2
 
       - name: Configure libplist
         shell: bash
-        working-directory: build/libplist-${{env.libplist_version}}
+        working-directory: ${{env.build_path}}/libplist-${{env.libplist_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
 
       - name: Build libplist
         shell: bash
-        working-directory: build/libplist-${{env.libplist_version}}
+        working-directory: ${{env.build_path}}/libplist-${{env.libplist_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libplist
         shell: bash
-        working-directory: build/libplist-${{env.libplist_version}}
+        working-directory: ${{env.build_path}}/libplist-${{env.libplist_version}}
         run: make install
 
       - name: Check libplist
@@ -3161,29 +3179,29 @@ jobs:
 
       - name: Download libmtp
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/libmtp/libmtp/releases/download/v${{env.libmtp_version}}/libmtp-${{env.libmtp_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libmtp-${{env.libmtp_version}}.tar.gz
 
       - name: Extract libmtp
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/libmtp-${{env.libmtp_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/libmtp-${{env.libmtp_version}}.tar.gz
 
       - name: Configure libmtp
         shell: bash
-        working-directory: build/libmtp-${{env.libmtp_version}}
+        working-directory: ${{env.build_path}}/libmtp-${{env.libmtp_version}}
         run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-silent-rules
 
       - name: Build libmtp
         shell: bash
-        working-directory: build/libmtp-${{env.libmtp_version}}
+        working-directory: ${{env.build_path}}/libmtp-${{env.libmtp_version}}
         run: make -j ${{env.make_jobs}}
 
       - name: Install libmtp
         shell: bash
-        working-directory: build/libmtp-${{env.libmtp_version}}
+        working-directory: ${{env.build_path}}/libmtp-${{env.libmtp_version}}
         run: make install
 
       - name: Check libmtp
@@ -3193,22 +3211,22 @@ jobs:
 
       - name: Clone libgpod
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: git clone https://github.com/strawberrymusicplayer/strawberry-libgpod
 
       - name: Configure libgpod
         shell: bash
-        working-directory: build/strawberry-libgpod
+        working-directory: ${{env.build_path}}/strawberry-libgpod
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DENABLE_GDKPIXBUF=ON -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
       - name: Build libgpod
         shell: bash
-        working-directory: build/strawberry-libgpod/build
+        working-directory: ${{env.build_path}}/strawberry-libgpod/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install libgpod
         shell: bash
-        working-directory: build/strawberry-libgpod/build
+        working-directory: ${{env.build_path}}/strawberry-libgpod/build
         run: cmake --install .
 
       - name: Check libgpod
@@ -3219,30 +3237,30 @@ jobs:
       - name: Cleanup build directory
         if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: rm -rf *
 
 
       - name: Download qtbase
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz || \
           curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
 
       - name: Extract qtbase
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
 
       - name: Patch qtbase
         shell: bash
-        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
-        run: patch -p1 < ../../patches/qtbase-openssl4.patch
+        working-directory: ${{env.build_path}}/qtbase-everywhere-src-${{env.qt_version}}
+        run: patch -p1 < ${GITHUB_WORKSPACE}/patches/qtbase-openssl4.patch
 
       - name: Configure qtbase
         shell: bash
-        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
+        working-directory: ${{env.build_path}}/qtbase-everywhere-src-${{env.qt_version}}
         run: >
           cmake -S . -B build
           -G Ninja
@@ -3296,30 +3314,30 @@ jobs:
 
       - name: Build qtbase
         shell: bash
-        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}/build
+        working-directory: ${{env.build_path}}/qtbase-everywhere-src-${{env.qt_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install qtbase
         shell: bash
-        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}/build
+        working-directory: ${{env.build_path}}/qtbase-everywhere-src-${{env.qt_version}}/build
         run: cmake --install .
 
 
       - name: Download qttools
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz || \
           curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz
 
       - name: Extract qttools
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/qttools-everywhere-src-${{env.qt_version}}.tar.xz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/qttools-everywhere-src-${{env.qt_version}}.tar.xz
 
       - name: Configure qttools
         shell: bash
-        working-directory: build/qttools-everywhere-src-${{env.qt_version}}
+        working-directory: ${{env.build_path}}/qttools-everywhere-src-${{env.qt_version}}
         run: >
           cmake -S . -B build
           -G Ninja
@@ -3342,112 +3360,112 @@ jobs:
 
       - name: Build qttools
         shell: bash
-        working-directory: build/qttools-everywhere-src-${{env.qt_version}}/build
+        working-directory: ${{env.build_path}}/qttools-everywhere-src-${{env.qt_version}}/build
         run: cmake --build . --parallel ${{env.make_jobs}}
 
       - name: Install qttools
         shell: bash
-        working-directory: build/qttools-everywhere-src-${{env.qt_version}}/build
+        working-directory: ${{env.build_path}}/qttools-everywhere-src-${{env.qt_version}}/build
         run: cmake --install .
 
 
       - name: Download KDSingleApplication
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/KDAB/KDSingleApplication/releases/download/v${{env.kdsingleapplication_version}}/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz
 
       - name: Extract KDSingleApplication
         shell: bash
-        working-directory: build
-        run: tar -xf ../downloads/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz
+        working-directory: ${{env.build_path}}
+        run: tar -xf ${{env.downloads_path}}/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz
 
       - name: Configure KDSingleApplication
         shell: bash
-        working-directory: build/kdsingleapplication-${{env.kdsingleapplication_version}}
+        working-directory: ${{env.build_path}}/kdsingleapplication-${{env.kdsingleapplication_version}}
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DKDSingleApplication_QT6=ON
 
       - name: Build KDSingleApplication
         shell: bash
-        working-directory: build/kdsingleapplication-${{env.kdsingleapplication_version}}/build
+        working-directory: ${{env.build_path}}/kdsingleapplication-${{env.kdsingleapplication_version}}/build
         run: cmake --build .
 
       - name: Install KDSingleApplication
         shell: bash
-        working-directory: build/kdsingleapplication-${{env.kdsingleapplication_version}}/build
+        working-directory: ${{env.build_path}}/kdsingleapplication-${{env.kdsingleapplication_version}}/build
         run: cmake --install .
 
 
       - name: Download macdeploycheck
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: git clone https://github.com/strawberrymusicplayer/macdeploycheck.git
 
       - name: Configure macdeploycheck
         shell: bash
-        working-directory: build/macdeploycheck
+        working-directory: ${{env.build_path}}/macdeploycheck
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
 
       - name: Build macdeploycheck
         shell: bash
-        working-directory: build/macdeploycheck/build
+        working-directory: ${{env.build_path}}/macdeploycheck/build
         run: cmake --build .
 
       - name: Install macdeploycheck
         shell: bash
-        working-directory: build/macdeploycheck/build
+        working-directory: ${{env.build_path}}/macdeploycheck/build
         run: cmake --install .
 
 
       - name: Cleanup build directory
         if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: rm -rf *
 
 
       - name: Clone create-dmg
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: git clone https://github.com/create-dmg/create-dmg.git
 
       - name: Change create-dmg prefix
         shell: bash
-        working-directory: build/create-dmg
+        working-directory: ${{env.build_path}}/create-dmg
         run: sed -i .bak "s,^prefix = .*,prefix = ${{env.prefix_path}},g" Makefile
 
       - name: Install create-dmg
         shell: bash
-        working-directory: build/create-dmg
+        working-directory: ${{env.build_path}}/create-dmg
         run: make install
 
 
       - name: Download sparkle
         shell: bash
-        working-directory: downloads
+        working-directory: ${{env.downloads_path}}
         run: |
           curl ${{env.curl_options}} https://github.com/sparkle-project/Sparkle/releases/download/${{env.sparkle_version}}/Sparkle-${{env.sparkle_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/Sparkle-${{env.sparkle_version}}.tar.xz
 
       - name: Extract sparkle
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: |
           mkdir sparkle
           cd sparkle
-          tar -xf ../../downloads/Sparkle-${{env.sparkle_version}}.tar.xz
+          tar -xf ${{env.downloads_path}}/Sparkle-${{env.sparkle_version}}.tar.xz
 
       - name: Install sparkle
         shell: bash
-        working-directory: build/sparkle
+        working-directory: ${{env.build_path}}/sparkle
         run: cp -R Sparkle.framework ${{env.prefix_path}}/lib/
 
 
       - name: Cleanup build directory
         if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
-        working-directory: build
+        working-directory: ${{env.build_path}}
         run: rm -rf *
 
 
