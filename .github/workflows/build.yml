@@ -134,7 +134,7 @@ env:
 
   fftw_version: '3.3.11'
 
-  ffmpeg_version: '8.1'
+  ffmpeg_version: '8.1.1'
 
   chromaprint_version: '1.6.0'
 
