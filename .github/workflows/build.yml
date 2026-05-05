@@ -188,7 +188,14 @@ jobs:
       - name: Set runners
         id: set_runner
         shell: bash
-        run: echo "runners=$(test "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" && echo "[\"macos-arm64\"]" || echo "[ \"macos-15-intel\", \"macos-15\" ]")" >> $GITHUB_OUTPUT
+        run: |
+          if [ "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-private" ]; then
+            echo "runners=[\"macos-arm64\"]" >> $GITHUB_OUTPUT
+          elif [ "${{github.repository}}" = "strawberrymusicplayer/strawberry-macos-dependencies-legacy" ]; then
+            echo "runners=[\"macos-15-intel\"]" >> $GITHUB_OUTPUT
+          else
+            echo "runners=[\"macos-15\"]" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set release tag
         id: set_release_tag
