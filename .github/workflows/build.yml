@@ -200,7 +200,7 @@ jobs:
       - name: Set release tag
         id: set_release_tag
         shell: bash
-        run: echo "release_tag=release-$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+        run: echo "release_tag=${{github.run_number}}" >> $GITHUB_OUTPUT
 
 
   build:
