@@ -3477,7 +3477,7 @@ jobs:
 
       - name: Create release notes
         run: |
-          echo "Strawberry macOS Dependencies Release $GITHUB_RUN_ID" > "${{env.release_notes_file}}"
+          echo "Strawberry macOS Dependencies Release ${{needs.setup.outputs.release_tag}}" > "${{env.release_notes_file}}"
           echo "" >> "${{env.release_notes_file}}"
           echo "Libraries:" >> "${{env.release_notes_file}}"
           echo "" >> "${{env.release_notes_file}}"
@@ -3542,7 +3542,7 @@ jobs:
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release') && env.have_release != '1'
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: gh release create -d -F "${{env.release_notes_file}}" -t "Strawberry macOS Dependencies Release $GITHUB_RUN_ID" "${{needs.setup.outputs.release_tag}}" "strawberry-macos-${{env.arch}}-${{env.buildtype}}.tar.xz"
+        run: gh release create -d -F "${{env.release_notes_file}}" -t "Strawberry macOS Dependencies Release ${{needs.setup.outputs.release_tag}}" "${{needs.setup.outputs.release_tag}}" "strawberry-macos-${{env.arch}}-${{env.buildtype}}.tar.xz"
 
       - name: Update existing release
         if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release') && env.have_release == '1'
