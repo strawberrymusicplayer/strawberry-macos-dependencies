@@ -90,7 +90,7 @@ env:
 
   harfbuzz_version: '14.2.0'
 
-  libusb_version: '1.0.29'
+  libusb_version: '1.0.30'
 
   libogg_version: '1.3.6'
 
