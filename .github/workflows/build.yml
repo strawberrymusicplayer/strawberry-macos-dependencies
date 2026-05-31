@@ -2207,18 +2207,17 @@ jobs:
       - name: Configure mpg123
         shell: bash
         working-directory: build/mpg123-${{env.mpg123_version}}
-        run: cmake --log-level="${{env.cmake_loglevel}}" -S ports/cmake -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_PROGRAMS=OFF -DBUILD_LIBOUT123=OFF
-        #run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking
+        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-programs --disable-libout123 --disable-libsyn123
 
       - name: Build mpg123
         shell: bash
-        working-directory: build/mpg123-${{env.mpg123_version}}/build
-        run: cmake --build . --parallel ${{env.make_jobs}}
+        working-directory: build/mpg123-${{env.mpg123_version}}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install mpg123
         shell: bash
-        working-directory: build/mpg123-${{env.mpg123_version}}/build
-        run: cmake --install .
+        working-directory: build/mpg123-${{env.mpg123_version}}
+        run: make install
 
       - name: Check mpg123
         shell: bash
