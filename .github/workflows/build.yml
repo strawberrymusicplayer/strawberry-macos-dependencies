@@ -2207,7 +2207,14 @@ jobs:
       - name: Configure mpg123
         shell: bash
         working-directory: build/mpg123-${{env.mpg123_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-programs --disable-libout123 --disable-libsyn123
+        run: |
+          extra_args=""
+          if [ "${{env.arch}}" = "arm64" ]; then
+            # Build a fixed NEON64 decoder so libmpg123 skips its setjmp-based runtime CPU detection (INT123_getcpuflags),
+            # which traps under Apple Silicon pointer authentication when mpg123_new() runs on a GStreamer streaming thread (e.g. audio device change)
+            extra_args="--with-cpu=neon64"
+          fi
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-programs --disable-libout123 --disable-libsyn123 $extra_args
 
       - name: Build mpg123
         shell: bash
