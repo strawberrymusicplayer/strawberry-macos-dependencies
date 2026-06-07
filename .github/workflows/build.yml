@@ -2196,8 +2196,9 @@ jobs:
         shell: bash
         working-directory: downloads
         run: |
-          curl ${{env.curl_options}} https://www.mpg123.de/download/mpg123-${{env.mpg123_version}}.tar.bz2 || \
-          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/mpg123-${{env.mpg123_version}}.tar.bz2
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/mpg123/mpg123/${{env.mpg123_version}}/mpg123-${{env.mpg123_version}}.tar.bz2 || \
+          curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/mpg123/mpg123/${{env.mpg123_version}}/mpg123-${{env.mpg123_version}}.tar.bz2 || \
+          curl ${{env.curl_options}} https://www.mpg123.de/download/mpg123-${{env.mpg123_version}}.tar.bz2
 
       - name: Extract mpg123
         shell: bash
