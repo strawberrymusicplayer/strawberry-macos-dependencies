@@ -3122,7 +3122,9 @@ jobs:
       - name: Install cargo-c
         if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
         shell: bash
-        run: cargo install cargo-c
+        run: |
+          source "$HOME/.cargo/env" || true
+          cargo install --locked cargo-c --version 0.10.15+cargo-0.90.0
 
 
       - name: Download gst-plugins-rs
