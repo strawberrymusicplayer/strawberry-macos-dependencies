@@ -3124,7 +3124,7 @@ jobs:
         shell: bash
         run: |
           source "$HOME/.cargo/env" || true
-          cargo install --locked cargo-c --version 0.10.15+cargo-0.90.0 --features vendored-openssl
+          cargo install --locked cargo-c --version 0.10.22+cargo-0.96.0
 
 
       - name: Download gst-plugins-rs
