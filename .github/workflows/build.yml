@@ -174,7 +174,7 @@ env:
 
   PKG_CONFIG_ALLOW_SYSTEM_LIBS: '1'
 
-  rust_toolchain_version: '1.86.0'
+  rust_toolchain_version: '1.96.0'
 
 jobs:
 
