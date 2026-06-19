@@ -319,7 +319,7 @@ jobs:
         run: sudo rm -rf "${{env.prefix_path}}"
 
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Create prefix path
         shell: bash
@@ -3574,7 +3574,7 @@ jobs:
       - build
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
