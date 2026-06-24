@@ -4,7 +4,7 @@ on: push
 env:
   ghcli_version: '2.95.0'
 
-  pkgconf_version: '2.5.1'
+  pkgconf_version: '2.9.90'
 
   m4_version: '1.4.21'
 
@@ -505,7 +505,7 @@ jobs:
       - name: Configure pkgconf
         shell: bash
         working-directory: build/pkgconf-pkgconf-${{env.pkgconf_version}}
-        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --wrap-mode=nodownload -Dtests=disabled build
+        run: meson setup --buildtype=${{env.meson_buildtype}} --default-library=shared --prefix=${{env.prefix_path}} --wrap-mode=nodownload build
 
       - name: Build pkgconf
         shell: bash
