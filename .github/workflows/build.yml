@@ -4,7 +4,7 @@ on: push
 env:
   ghcli_version: '2.95.0'
 
-  pkgconf_version: '2.9.90'
+  pkgconf_version: '2.9.91'
 
   m4_version: '1.4.21'
 
