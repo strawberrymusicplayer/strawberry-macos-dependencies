@@ -108,7 +108,7 @@ env:
 
   mpg123_version: '1.33.6'
 
-  lame_version: '3.100'
+  lame_version: '3.101'
 
   twolame_version: '0.4.0'
 
@@ -2248,11 +2248,6 @@ jobs:
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/lame-${{env.lame_version}}.tar.gz
-
-      - name: Patch lame
-        shell: bash
-        working-directory: build/lame-${{env.lame_version}}
-        run: patch -p1 < ../../patches/lame.patch
 
       - name: Configure lame
         shell: bash
