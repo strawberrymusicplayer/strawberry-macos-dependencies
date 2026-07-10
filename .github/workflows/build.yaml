@@ -70,7 +70,7 @@ env:
 
   nghttp2_version: '1.69.0'
 
-  libffi_version: '3.7.0'
+  libffi_version: '3.7.1'
 
   libpsl_version: '0.22.0'
 
