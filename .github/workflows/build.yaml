@@ -14,7 +14,7 @@ env:
 
   automake_version: '1.18.1'
 
-  libtool_version: '2.5.4'
+  libtool_version: '2.6.2'
 
   cmake_version: '4.3.3'
 
