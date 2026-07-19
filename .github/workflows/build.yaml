@@ -546,7 +546,7 @@ jobs:
       - name: Build m4
         shell: bash
         working-directory: build/m4-${{env.m4_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install m4
         shell: bash
@@ -576,7 +576,7 @@ jobs:
       - name: Build bison
         shell: bash
         working-directory: build/bison-${{env.bison_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install bison
         shell: bash
@@ -606,7 +606,7 @@ jobs:
       - name: Build autoconf
         shell: bash
         working-directory: build/autoconf-${{env.autoconf_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install autoconf
         shell: bash
@@ -636,7 +636,7 @@ jobs:
       - name: Build automake
         shell: bash
         working-directory: build/automake-${{env.automake_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install automake
         shell: bash
@@ -666,7 +666,7 @@ jobs:
       - name: Build libtool
         shell: bash
         working-directory: build/libtool-${{env.libtool_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libtool
         shell: bash
@@ -727,7 +727,7 @@ jobs:
       - name: Build sparsehash
         shell: bash
         working-directory: build/sparsehash-sparsehash-${{env.sparsehash_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install sparsehash
         shell: bash
@@ -778,7 +778,7 @@ jobs:
       - name: Build gmp
         shell: bash
         working-directory: build/gmp-${{env.gmp_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install gmp
         shell: bash
@@ -817,7 +817,7 @@ jobs:
       - name: Build nasm
         shell: bash
         working-directory: build/nasm-${{env.nasm_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install nasm
         shell: bash
@@ -1091,7 +1091,7 @@ jobs:
       - name: Build xz
         shell: bash
         working-directory: build/xz-${{env.xz_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install xz
         shell: bash
@@ -1191,7 +1191,7 @@ jobs:
       - name: Build libunistring
         shell: bash
         working-directory: build/libunistring-${{env.libunistring_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libunistring
         shell: bash
@@ -1226,7 +1226,7 @@ jobs:
       - name: Build flex
         shell: bash
         working-directory: build/flex-${{env.flex_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install flex
         shell: bash
@@ -1256,7 +1256,7 @@ jobs:
       - name: Build libtasn1
         shell: bash
         working-directory: build/libtasn1-${{env.libtasn1_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libtasn1
         shell: bash
@@ -1290,7 +1290,7 @@ jobs:
       - name: Build libidn2
         shell: bash
         working-directory: build/libidn2-${{env.libidn2_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libidn2
         shell: bash
@@ -1324,7 +1324,7 @@ jobs:
       - name: Build nettle
         shell: bash
         working-directory: build/nettle-${{env.nettle_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install nettle
         shell: bash
@@ -1362,7 +1362,7 @@ jobs:
       - name: Build GnuTLS
         shell: bash
         working-directory: build/gnutls-${{env.gnutls_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install GnuTLS
         shell: bash
@@ -1396,7 +1396,7 @@ jobs:
       - name: Build icu
         shell: bash
         working-directory: build/icu/source
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install icu
         shell: bash
@@ -1588,7 +1588,7 @@ jobs:
       - name: Build libffi
         shell: bash
         working-directory: build/libffi-${{env.libffi_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libffi
         shell: bash
@@ -1684,7 +1684,7 @@ jobs:
       - name: Build SQLite
         shell: bash
         working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install SQLite
         shell: bash
@@ -1962,7 +1962,7 @@ jobs:
       - name: Build libusb
         shell: bash
         working-directory: build/libusb-${{env.libusb_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libusb
         shell: bash
@@ -1996,7 +1996,7 @@ jobs:
       - name: Build libogg
         shell: bash
         working-directory: build/libogg-${{env.libogg_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libogg
         shell: bash
@@ -2040,7 +2040,7 @@ jobs:
       - name: Build libvorbis
         shell: bash
         working-directory: build/libvorbis-${{env.libvorbis_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libvorbis
         shell: bash
@@ -2175,7 +2175,7 @@ jobs:
       - name: Build opusfile
         shell: bash
         working-directory: build/opusfile-${{env.opusfile_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"} || true
+        run: make -j ${{env.make_jobs}} || true
 
       - name: Install opusfile
         shell: bash
@@ -2214,7 +2214,7 @@ jobs:
       - name: Build speex
         shell: bash
         working-directory: build/speex-Speex-${{env.speex_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install speex
         shell: bash
@@ -2255,7 +2255,7 @@ jobs:
       - name: Build mpg123
         shell: bash
         working-directory: build/mpg123-${{env.mpg123_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install mpg123
         shell: bash
@@ -2289,7 +2289,7 @@ jobs:
       - name: Build lame
         shell: bash
         working-directory: build/lame-${{env.lame_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install lame
         shell: bash
@@ -2362,7 +2362,7 @@ jobs:
       - name: Build libopenmpt
         shell: bash
         working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libopenmpt
         shell: bash
@@ -2601,7 +2601,7 @@ jobs:
       - name: Build libbs2b
         shell: bash
         working-directory: build/libbs2b-${{env.libbs2b_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libbs2b
         shell: bash
@@ -2679,7 +2679,7 @@ jobs:
       - name: Build fftw
         shell: bash
         working-directory: build/fftw-${{env.fftw_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install fftw
         shell: bash
@@ -2713,7 +2713,7 @@ jobs:
       - name: Build ffmpeg
         shell: bash
         working-directory: build/ffmpeg-${{env.ffmpeg_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install ffmpeg
         shell: bash
@@ -2783,7 +2783,7 @@ jobs:
       - name: Build libcdio
         shell: bash
         working-directory: build/libcdio-${{env.libcdio_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libcdio
         shell: bash
@@ -3162,7 +3162,7 @@ jobs:
       - name: Build libplist
         shell: bash
         working-directory: build/libplist-${{env.libplist_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libplist
         shell: bash
@@ -3196,7 +3196,7 @@ jobs:
       - name: Build libmtp
         shell: bash
         working-directory: build/libmtp-${{env.libmtp_version}}
-        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
+        run: make -j ${{env.make_jobs}}
 
       - name: Install libmtp
         shell: bash
