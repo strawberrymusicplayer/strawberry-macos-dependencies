@@ -1460,22 +1460,14 @@ jobs:
       - name: Extract Boost
         shell: bash
         working-directory: build
-        run: tar -xf  ../downloads/boost_${{env.boost_version_underscore}}.tar.gz
-
-      - name: Configure Boost
-        shell: bash
-        working-directory: build/boost_${{env.boost_version_underscore}}
-        run: ./bootstrap.sh --with-libraries=headers
-
-      - name: Build Boost
-        shell: bash
-        working-directory: build/boost_${{env.boost_version_underscore}}
-        run: ./b2 --with-headers
+        run: tar -xf ../downloads/boost_${{env.boost_version_underscore}}.tar.gz boost_${{env.boost_version_underscore}}/boost
 
       - name: Install Boost
         shell: bash
-        working-directory: build/boost_${{env.boost_version_underscore}}
-        run: ./b2 install --prefix="${{env.prefix_path}}"
+        working-directory: build
+        run: |
+          mkdir -p "${{env.prefix_path}}/include"
+          cp -r boost_${{env.boost_version_underscore}}/boost "${{env.prefix_path}}/include/"
 
 
       - name: Cleanup build directory
