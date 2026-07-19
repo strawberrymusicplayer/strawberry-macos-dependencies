@@ -727,28 +727,21 @@ jobs:
         shell: bash
         working-directory: downloads
         run: |
-          curl ${{env.curl_options}} https://github.com/Kitware/CMake/releases/download/v${{env.cmake_version}}/cmake-${{env.cmake_version}}.tar.gz || \
-          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/cmake-${{env.cmake_version}}.tar.gz
+          curl ${{env.curl_options}} https://github.com/Kitware/CMake/releases/download/v${{env.cmake_version}}/cmake-${{env.cmake_version}}-macos-universal.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/cmake-${{env.cmake_version}}-macos-universal.tar.gz
 
       - name: Extract cmake
         shell: bash
         working-directory: build
-        run: tar -xf ../downloads/cmake-${{env.cmake_version}}.tar.gz
-
-      - name: Configure cmake
-        shell: bash
-        working-directory: build/cmake-${{env.cmake_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --parallel=${{env.make_jobs}}
-
-      - name: Build cmake
-        shell: bash
-        working-directory: build/cmake-${{env.cmake_version}}
-        run: make -j ${{env.make_jobs}}
+        run: tar -xf ../downloads/cmake-${{env.cmake_version}}-macos-universal.tar.gz
 
       - name: Install cmake
         shell: bash
-        working-directory: build/cmake-${{env.cmake_version}}
-        run: make install
+        working-directory: build
+        run: |
+          mkdir -p "${{env.prefix_path}}/bin" "${{env.prefix_path}}/share"
+          cp -r cmake-${{env.cmake_version}}-macos-universal/CMake.app/Contents/bin/. "${{env.prefix_path}}/bin/"
+          cp -r cmake-${{env.cmake_version}}-macos-universal/CMake.app/Contents/share/. "${{env.prefix_path}}/share/"
 
 
       - name: Download gmp
