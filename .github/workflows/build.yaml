@@ -1173,12 +1173,19 @@ jobs:
       - name: Configure libunistring
         shell: bash
         working-directory: build/libunistring-${{env.libunistring_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-relocatable
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-relocatable
 
       - name: Build libunistring
         shell: bash
         working-directory: build/libunistring-${{env.libunistring_version}}
-        run: make -j ${{env.make_jobs}}
+        run: |
+          if [ -n "$CC" ]; then
+            make -j ${{env.make_jobs}} CC="$CC" CXX="$CXX"
+          else
+            make -j ${{env.make_jobs}}
+          fi
 
       - name: Install libunistring
         shell: bash
