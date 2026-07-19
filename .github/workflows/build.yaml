@@ -539,12 +539,14 @@ jobs:
       - name: Configure m4
         shell: bash
         working-directory: build/m4-${{env.m4_version}}
-        run: ./configure --prefix="${{env.prefix_path}}"
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build m4
         shell: bash
         working-directory: build/m4-${{env.m4_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install m4
         shell: bash
@@ -567,12 +569,14 @@ jobs:
       - name: Configure bison
         shell: bash
         working-directory: build/bison-${{env.bison_version}}
-        run: ./configure --prefix="${{env.prefix_path}}"
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build bison
         shell: bash
         working-directory: build/bison-${{env.bison_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install bison
         shell: bash
@@ -595,12 +599,14 @@ jobs:
       - name: Configure autoconf
         shell: bash
         working-directory: build/autoconf-${{env.autoconf_version}}
-        run: ./configure --prefix="${{env.prefix_path}}"
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build autoconf
         shell: bash
         working-directory: build/autoconf-${{env.autoconf_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install autoconf
         shell: bash
@@ -623,12 +629,14 @@ jobs:
       - name: Configure automake
         shell: bash
         working-directory: build/automake-${{env.automake_version}}
-        run: ./configure --prefix="${{env.prefix_path}}"
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build automake
         shell: bash
         working-directory: build/automake-${{env.automake_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install automake
         shell: bash
@@ -651,12 +659,14 @@ jobs:
       - name: Configure libtool
         shell: bash
         working-directory: build/libtool-${{env.libtool_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build libtool
         shell: bash
         working-directory: build/libtool-${{env.libtool_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libtool
         shell: bash
@@ -710,12 +720,14 @@ jobs:
       - name: Configure sparsehash
         shell: bash
         working-directory: build/sparsehash-sparsehash-${{env.sparsehash_version}}
-        run: ./configure --prefix="${{env.prefix_path}}"
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build sparsehash
         shell: bash
         working-directory: build/sparsehash-sparsehash-${{env.sparsehash_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install sparsehash
         shell: bash
@@ -759,12 +771,14 @@ jobs:
       - name: Configure gmp
         shell: bash
         working-directory: build/gmp-${{env.gmp_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared -enable-cxx --without-readline
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-cxx --without-readline
 
       - name: Build gmp
         shell: bash
         working-directory: build/gmp-${{env.gmp_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install gmp
         shell: bash
@@ -796,12 +810,14 @@ jobs:
       - name: Configure nasm
         shell: bash
         working-directory: build/nasm-${{env.nasm_version}}
-        run: ./configure --prefix="${{env.prefix_path}}"
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build nasm
         shell: bash
         working-directory: build/nasm-${{env.nasm_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install nasm
         shell: bash
@@ -1068,12 +1084,14 @@ jobs:
       - name: Configure xz
         shell: bash
         working-directory: build/xz-${{env.xz_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-doc --disable-nls --disable-silent-rules
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-doc --disable-nls --disable-silent-rules
 
       - name: Build xz
         shell: bash
         working-directory: build/xz-${{env.xz_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install xz
         shell: bash
@@ -1166,12 +1184,14 @@ jobs:
       - name: Configure libunistring
         shell: bash
         working-directory: build/libunistring-${{env.libunistring_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-relocatable
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-relocatable
 
       - name: Build libunistring
         shell: bash
         working-directory: build/libunistring-${{env.libunistring_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libunistring
         shell: bash
@@ -1199,12 +1219,14 @@ jobs:
       - name: Configure flex
         shell: bash
         working-directory: build/flex-${{env.flex_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build flex
         shell: bash
         working-directory: build/flex-${{env.flex_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install flex
         shell: bash
@@ -1227,12 +1249,14 @@ jobs:
       - name: Configure libtasn1
         shell: bash
         working-directory: build/libtasn1-${{env.libtasn1_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc
 
       - name: Build libtasn1
         shell: bash
         working-directory: build/libtasn1-${{env.libtasn1_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libtasn1
         shell: bash
@@ -1259,12 +1283,14 @@ jobs:
       - name: Configure libidn2
         shell: bash
         working-directory: build/libidn2-${{env.libidn2_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-doc
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-doc
 
       - name: Build libidn2
         shell: bash
         working-directory: build/libidn2-${{env.libidn2_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libidn2
         shell: bash
@@ -1291,12 +1317,14 @@ jobs:
       - name: Configure nettle
         shell: bash
         working-directory: build/nettle-${{env.nettle_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-documentation --with-include-path="${{env.prefix_path}}/include" --with-lib-path="${{env.prefix_path}}/lib"
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-documentation --with-include-path="${{env.prefix_path}}/include" --with-lib-path="${{env.prefix_path}}/lib"
 
       - name: Build nettle
         shell: bash
         working-directory: build/nettle-${{env.nettle_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install nettle
         shell: bash
@@ -1327,12 +1355,14 @@ jobs:
         env:
           CFLAGS: -I${{env.prefix_path}}/include -Wno-implicit-int
         working-directory: build/gnutls-${{env.gnutls_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-silent-rules --disable-nls --enable-rpath --disable-doc --disable-tests --without-p11-kit --disable-hardware-accelerators
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-silent-rules --disable-nls --enable-rpath --disable-doc --disable-tests --without-p11-kit --disable-hardware-accelerators
 
       - name: Build GnuTLS
         shell: bash
         working-directory: build/gnutls-${{env.gnutls_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install GnuTLS
         shell: bash
@@ -1359,12 +1389,14 @@ jobs:
       - name: Configure icu
         shell: bash
         working-directory: build/icu/source
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-${{env.buildtype}} --disable-samples --disable-tests --with-library-bits=64 --enable-rpath
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-${{env.buildtype}} --disable-samples --disable-tests --with-library-bits=64 --enable-rpath
 
       - name: Build icu
         shell: bash
         working-directory: build/icu/source
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install icu
         shell: bash
@@ -1549,12 +1581,14 @@ jobs:
       - name: Configure libffi
         shell: bash
         working-directory: build/libffi-${{env.libffi_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-docs
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-docs
 
       - name: Build libffi
         shell: bash
         working-directory: build/libffi-${{env.libffi_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libffi
         shell: bash
@@ -1643,12 +1677,14 @@ jobs:
         env:
           CFLAGS: -DSQLITE_ENABLE_COLUMN_METADATA
         working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-fts5 --disable-readline --enable-threadsafe --disable-silent-rules
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-fts5 --disable-readline --enable-threadsafe --disable-silent-rules
 
       - name: Build SQLite
         shell: bash
         working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install SQLite
         shell: bash
@@ -1919,12 +1955,14 @@ jobs:
       - name: Configure libusb
         shell: bash
         working-directory: build/libusb-${{env.libusb_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
 
       - name: Build libusb
         shell: bash
         working-directory: build/libusb-${{env.libusb_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libusb
         shell: bash
@@ -1951,12 +1989,14 @@ jobs:
       - name: Configure libogg
         shell: bash
         working-directory: build/libogg-${{env.libogg_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-silent-rules
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-silent-rules
 
       - name: Build libogg
         shell: bash
         working-directory: build/libogg-${{env.libogg_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libogg
         shell: bash
@@ -1993,12 +2033,14 @@ jobs:
       - name: Configure libvorbis
         shell: bash
         working-directory: build/libvorbis-${{env.libvorbis_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-silent-rules --disable-oggtest --disable-docs --disable-examples
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-silent-rules --disable-oggtest --disable-docs --disable-examples
 
       - name: Build libvorbis
         shell: bash
         working-directory: build/libvorbis-${{env.libvorbis_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libvorbis
         shell: bash
@@ -2126,12 +2168,14 @@ jobs:
       - name: Configure opusfile
         shell: bash
         working-directory: build/opusfile-${{env.opusfile_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc --disable-examples --disable-http || true
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc --disable-examples --disable-http || true
 
       - name: Build opusfile
         shell: bash
         working-directory: build/opusfile-${{env.opusfile_version}}
-        run: make -j ${{env.make_jobs}} || true
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"} || true
 
       - name: Install opusfile
         shell: bash
@@ -2163,12 +2207,14 @@ jobs:
       - name: Configure speex
         shell: bash
         working-directory: build/speex-Speex-${{env.speex_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build speex
         shell: bash
         working-directory: build/speex-Speex-${{env.speex_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install speex
         shell: bash
@@ -2197,6 +2243,7 @@ jobs:
         shell: bash
         working-directory: build/mpg123-${{env.mpg123_version}}
         run: |
+          unset CC CXX
           extra_args=""
           if [ "${{env.arch}}" = "arm64" ]; then
             # Build a fixed NEON64 decoder so libmpg123 skips its setjmp-based runtime CPU detection (INT123_getcpuflags),
@@ -2208,7 +2255,7 @@ jobs:
       - name: Build mpg123
         shell: bash
         working-directory: build/mpg123-${{env.mpg123_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install mpg123
         shell: bash
@@ -2235,12 +2282,14 @@ jobs:
       - name: Configure lame
         shell: bash
         working-directory: build/lame-${{env.lame_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-dependency-tracking --disable-frontend --disable-gtktest
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-dependency-tracking --disable-frontend --disable-gtktest
 
       - name: Build lame
         shell: bash
         working-directory: build/lame-${{env.lame_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install lame
         shell: bash
@@ -2306,12 +2355,14 @@ jobs:
       - name: Configure libopenmpt
         shell: bash
         working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doxygen-doc --disable-doxygen-html --disable-examples --disable-tests --disable-openmpt123 --without-mpg123 --disable-dependency-tracking --disable-silent-rules
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doxygen-doc --disable-doxygen-html --disable-examples --disable-tests --disable-openmpt123 --without-mpg123 --disable-dependency-tracking --disable-silent-rules
 
       - name: Build libopenmpt
         shell: bash
         working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libopenmpt
         shell: bash
@@ -2543,12 +2594,14 @@ jobs:
       - name: Configure libbs2b
         shell: bash
         working-directory: build/libbs2b-${{env.libbs2b_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build libbs2b
         shell: bash
         working-directory: build/libbs2b-${{env.libbs2b_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libbs2b
         shell: bash
@@ -2611,18 +2664,22 @@ jobs:
         if: env.arch == 'x86_64'
         shell: bash
         working-directory: build/fftw-${{env.fftw_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --enable-sse2 --enable-avx --enable-avx2 --enable-avx512 --enable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --enable-sse2 --enable-avx --enable-avx2 --enable-avx512 --enable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
 
       - name: Configure fftw
         if: env.arch != 'x86_64'
         shell: bash
         working-directory: build/fftw-${{env.fftw_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --disable-sse2 --disable-avx --disable-avx2 --disable-avx512 --disable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --disable-sse2 --disable-avx --disable-avx2 --disable-avx512 --disable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
 
       - name: Build fftw
         shell: bash
         working-directory: build/fftw-${{env.fftw_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install fftw
         shell: bash
@@ -2649,12 +2706,14 @@ jobs:
       - name: Configure ffmpeg
         shell: bash
         working-directory: build/ffmpeg-${{env.ffmpeg_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-debug --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-libcdio --enable-gpl --enable-version3 --enable-gnutls --enable-libvorbis --enable-libopus --disable-libspeex --enable-libmp3lame
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-debug --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-libcdio --enable-gpl --enable-version3 --enable-gnutls --enable-libvorbis --enable-libopus --disable-libspeex --enable-libmp3lame
 
       - name: Build ffmpeg
         shell: bash
         working-directory: build/ffmpeg-${{env.ffmpeg_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install ffmpeg
         shell: bash
@@ -2717,12 +2776,14 @@ jobs:
       - name: Configure libcdio
         shell: bash
         working-directory: build/libcdio-${{env.libcdio_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-silent-rules --without-cd-drive --without-cd-info --without-cd-read --without-cdda-player --without-iso-info --without-iso-read --enable-rock
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-silent-rules --without-cd-drive --without-cd-info --without-cd-read --without-cdda-player --without-iso-info --without-iso-read --enable-rock
 
       - name: Build libcdio
         shell: bash
         working-directory: build/libcdio-${{env.libcdio_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libcdio
         shell: bash
@@ -3094,12 +3155,14 @@ jobs:
       - name: Configure libplist
         shell: bash
         working-directory: build/libplist-${{env.libplist_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
 
       - name: Build libplist
         shell: bash
         working-directory: build/libplist-${{env.libplist_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libplist
         shell: bash
@@ -3126,12 +3189,14 @@ jobs:
       - name: Configure libmtp
         shell: bash
         working-directory: build/libmtp-${{env.libmtp_version}}
-        run: ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-silent-rules
+        run: |
+          unset CC CXX
+          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-silent-rules
 
       - name: Build libmtp
         shell: bash
         working-directory: build/libmtp-${{env.libmtp_version}}
-        run: make -j ${{env.make_jobs}}
+        run: make -j ${{env.make_jobs}} ${CC:+CC="$CC"} ${CXX:+CXX="$CXX"}
 
       - name: Install libmtp
         shell: bash
