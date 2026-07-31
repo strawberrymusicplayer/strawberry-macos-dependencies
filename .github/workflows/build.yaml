@@ -16,7 +16,7 @@ env:
 
   libtool_version: '2.6.2'
 
-  cmake_version: '4.4.1'
+  cmake_version: '4.4.2'
 
   ccache_version: '4.13.6'
 
