@@ -271,7 +271,7 @@ index ecbccdef..46121833 100644
          stripAppBinary(appBundlePath);
  
 diff --git a/src/tools/macdeployqt/shared/shared.cpp b/src/tools/macdeployqt/shared/shared.cpp
-index 9061fc5b..8822b566 100644
+index 9061fc5b..26e179ed 100644
 --- a/src/tools/macdeployqt/shared/shared.cpp
 +++ b/src/tools/macdeployqt/shared/shared.cpp
 @@ -14,6 +14,7 @@
@@ -384,47 +384,34 @@ index 9061fc5b..8822b566 100644
     allLibraryPaths.removeDuplicates();
  
     QList<FrameworkInfo> frameworks = getQtFrameworksForPaths(allBinaryPaths, appBundlePath, allLibraryPaths, useDebugLibs);
-@@ -1248,44 +1270,233 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
+@@ -1248,44 +1270,283 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
      }
  }
  
 -void createQtConf(const QString &appBundlePath)
 +void deployPlugins(const QString &appBundlePath, DeploymentInfo deploymentInfo, bool useDebugLibs)
-+{
-+    ApplicationBundleInfo applicationBundle;
-+    applicationBundle.path = appBundlePath;
-+    applicationBundle.binaryPath = findAppBinary(appBundlePath);
-+
-+    const QString pluginDestinationPath = appBundlePath + "/" + "Contents/PlugIns";
-+    deployPlugins(applicationBundle, deploymentInfo.pluginPath, pluginDestinationPath, deploymentInfo, useDebugLibs);
-+}
-+
-+static QString pkgConfigVariable(const QString &package, const QString &variable)
  {
 -    // Set Plugins and imports paths. These are relative to App.app/Contents.
 -    QByteArray contents = "[Paths]\n"
 -                          "Plugins = PlugIns\n"
 -                          "Imports = Resources/qml\n"
 -                          "QmlImports = Resources/qml\n";
-+    const QString executable = qEnvironmentVariable("PKG_CONFIG_EXECUTABLE", u"pkg-config"_s);
-+    if (QStandardPaths::findExecutable(executable).isEmpty())
-+        return QString();
++    ApplicationBundleInfo applicationBundle;
++    applicationBundle.path = appBundlePath;
++    applicationBundle.binaryPath = findAppBinary(appBundlePath);
  
 -    QString filePath = appBundlePath + "/Contents/Resources/";
 -    QString fileName = filePath + "qt.conf";
-+    QProcess pkgConfig;
-+    pkgConfig.start(executable, QStringList() << u"--variable=%1"_s.arg(variable) << package);
-+    if (!pkgConfig.waitForFinished(5000) || pkgConfig.exitCode() != 0)
-+        return QString();
-+    return QString::fromUtf8(pkgConfig.readAllStandardOutput()).trimmed();
++    const QString pluginDestinationPath = appBundlePath + "/" + "Contents/PlugIns";
++    deployPlugins(applicationBundle, deploymentInfo.pluginPath, pluginDestinationPath, deploymentInfo, useDebugLibs);
 +}
  
 -    QDir().mkpath(filePath);
-+static QString findGioModulesDir(const QString &gioModulesDirectory)
++static QString pkgConfigVariable(const QString &package, const QString &variable)
 +{
-+    const QString fromEnv = qEnvironmentVariable("GIO_EXTRA_MODULES");
-+    if (!fromEnv.isEmpty() && QDir(fromEnv).exists())
-+        return fromEnv;
++    const QString executable = qEnvironmentVariable("PKG_CONFIG_EXECUTABLE", u"pkg-config"_s);
++    if (QStandardPaths::findExecutable(executable).isEmpty())
++        return QString();
  
 -    if (QFile::exists(fileName) && !alwaysOwerwriteEnabled) {
 -        LogWarning();
@@ -433,6 +420,19 @@ index 9061fc5b..8822b566 100644
 -        LogWarning() << "please make sure qt.conf contains the following lines:";
 -        LogWarning() << "[Paths]";
 -        LogWarning() << "  Plugins = PlugIns";
++    QProcess pkgConfig;
++    pkgConfig.start(executable, QStringList() << u"--variable=%1"_s.arg(variable) << package);
++    if (!pkgConfig.waitForFinished(5000) || pkgConfig.exitCode() != 0)
++        return QString();
++    return QString::fromUtf8(pkgConfig.readAllStandardOutput()).trimmed();
++}
++
++static QString findGioModulesDir(const QString &gioModulesDirectory)
++{
++    const QString fromEnv = qEnvironmentVariable("GIO_EXTRA_MODULES");
++    if (!fromEnv.isEmpty() && QDir(fromEnv).exists())
++        return fromEnv;
++
 +    const QString fromPkgConfig = pkgConfigVariable(u"gio-2.0"_s, u"libdir"_s);
 +    if (!fromPkgConfig.isEmpty()) {
 +        const QString candidate = fromPkgConfig + "/gio/modules"_L1;
@@ -477,6 +477,7 @@ index 9061fc5b..8822b566 100644
 +        const QString destinationPath = destinationDir + u'/' + moduleFile;
 +        if (copyFilePrintStatus(sourcePath, destinationPath)) {
 +            runStrip(destinationPath);
++            changeIdentification(u"@rpath/"_s + QFileInfo(destinationPath).fileName(), destinationPath);
 +            const QList<FrameworkInfo> frameworks = getQtFrameworks(destinationPath, appBundlePath, deploymentInfo.rpathsUsed, useDebugLibs);
 +            deployQtFrameworks(frameworks, appBundlePath, QStringList() << destinationPath, useDebugLibs, deploymentInfo.useLoaderPath);
 +        }
@@ -582,8 +583,42 @@ index 9061fc5b..8822b566 100644
 +        return;
 +
 +    runStrip(destinationPath);
-+    const QList<FrameworkInfo> frameworks = getQtFrameworks(destinationPath, appBundlePath, deploymentInfo.rpathsUsed, useDebugLibs);
++    changeIdentification(u"@rpath/"_s + QFileInfo(destinationPath).fileName(), destinationPath);
++
++    QList<QString> rpathsUsed = deploymentInfo.rpathsUsed;
++    const QStringList binary_rpaths = getBinaryRPaths(sourcePath, true);
++    for (const QString &sourceRPath : binary_rpaths) {
++        if (QDir(sourceRPath).exists() && !rpathsUsed.contains(sourceRPath))
++            rpathsUsed.append(sourceRPath);
++    }
++    deployRPaths(appBundlePath, rpathsUsed, destinationPath, deploymentInfo.useLoaderPath);
++
++    const QList<FrameworkInfo> frameworks = getQtFrameworks(destinationPath, appBundlePath, rpathsUsed, useDebugLibs);
 +    deployQtFrameworks(frameworks, appBundlePath, QStringList() << destinationPath, useDebugLibs, deploymentInfo.useLoaderPath);
++}
++
++static QString findLibsoupLibrary()
++{
++    const QString fromEnv = qEnvironmentVariable("LIBSOUP_LIBRARY_PATH");
++    if (!fromEnv.isEmpty()) {
++        if (QFile::exists(fromEnv))
++            return fromEnv;
++        LogWarning() << "LIBSOUP_LIBRARY_PATH is set to" << fromEnv << "but that file does not exist";
++    }
++
++    static const struct { const char *pkgConfigName; const char *soname; } candidates[] = {
++        { "libsoup-3.0", "libsoup-3.0.0.dylib" },
++        { "libsoup-2.4", "libsoup-2.4.1.dylib" },
++    };
++    for (const auto &candidate : candidates) {
++        const QString libdir = pkgConfigVariable(QString::fromLatin1(candidate.pkgConfigName), u"libdir"_s);
++        if (libdir.isEmpty())
++            continue;
++        const QString path = libdir + u'/' + QString::fromLatin1(candidate.soname);
++        if (QFile::exists(path))
++            return path;
++    }
++    return QString();
 +}
 +
 +bool deployGStreamerPlugins(const QString &appBundlePath, const DeploymentInfo &deploymentInfo, GStreamerPluginSet pluginSet, const QStringList &pluginNames, bool useDebugLibs)
@@ -630,8 +665,23 @@ index 9061fc5b..8822b566 100644
 +    QDir().mkpath(destinationDir);
 +
 +    LogNormal() << "Bundling" << pluginFiles.size() << "GStreamer plugin(s)...";
-+    for (const QString &pluginFile : pluginFiles)
++    bool needsLibsoup = false;
++    for (const QString &pluginFile : pluginFiles) {
 +        deployBinaryAndItsDependencies(appBundlePath, deploymentInfo, useDebugLibs, pluginFile, destinationDir);
++        if (QFileInfo(pluginFile).fileName().startsWith("libgstsoup"_L1))
++            needsLibsoup = true;
++    }
++
++    if (needsLibsoup) {
++        const QString libsoup = findLibsoupLibrary();
++        if (libsoup.isEmpty()) {
++            LogWarning() << "libgstsoup is bundled but libsoup could not be located to deploy alongside it;"
++                         << "GStreamer's soup elements will fail to load at runtime";
++        } else {
++            LogNormal() << "Deploying" << libsoup << "for libgstsoup (dlopen'd at runtime, not a link-time dependency)";
++            deployBinaryAndItsDependencies(appBundlePath, deploymentInfo, useDebugLibs, libsoup, appBundlePath + "/Contents/Frameworks"_L1);
++        }
++    }
 +
 +    LogNormal() << "Determining gst-plugin-scanner...";
 +    const QString scanner = findGstPluginScanner(pluginsDir);
@@ -644,7 +694,7 @@ index 9061fc5b..8822b566 100644
  }
  
  void deployQmlImport(const QString &appBundlePath, const QList<QString> &rpaths, const QString &importSourcePath, const QString &importName)
-@@ -1318,12 +1529,18 @@ bool deployQmlImports(const QString &appBundlePath, DeploymentInfo deploymentInf
+@@ -1318,12 +1579,18 @@ bool deployQmlImports(const QString &appBundlePath, DeploymentInfo deploymentInf
      LogNormal() << "QML module search path(s) is" << qmlImportPaths;
  
      // Use qmlimportscanner from QLibraryInfo::LibraryExecutablesPath
@@ -667,7 +717,7 @@ index 9061fc5b..8822b566 100644
          qmlImportScannerPath = QCoreApplication::applicationDirPath() + "/qmlimportscanner";
  
      // Verify that we found a qmlimportscanner binary
-@@ -1342,9 +1559,8 @@ bool deployQmlImports(const QString &appBundlePath, DeploymentInfo deploymentInf
+@@ -1342,9 +1609,8 @@ bool deployQmlImports(const QString &appBundlePath, DeploymentInfo deploymentInf
      }
      for (const QString &importPath : qmlImportPaths)
          argumentList << "-importPath" << importPath;
@@ -679,7 +729,29 @@ index 9061fc5b..8822b566 100644
  
      // run qmlimportscanner
      QProcess qmlImportScanner;
-@@ -1541,7 +1757,8 @@ QSet<QString> codesignBundle(const QString &identity,
+@@ -1496,12 +1762,20 @@ QSet<QString> codesignBundle(const QString &identity,
+     }
+ 
+     bool getAbsoltuePath = true;
+-    QStringList foundPluginBinaries = findAppBundleFiles(appBundlePath + "/Contents/PlugIns/", getAbsoltuePath);
++    const QStringList foundPluginBinaries = findAppBundleFiles(appBundlePath + "/Contents/PlugIns/"_L1, getAbsoltuePath);
+     for (const QString &binary : foundPluginBinaries) {
+          pendingBinaries.push(binary);
+          pendingBinariesSet.insert(binary);
+     }
+ 
++    const QString frameworksPath = appBundleAbsolutePath + "/Contents/Frameworks/";
++    const QStringList foundFrameworksDylibs = QDir(frameworksPath).entryList(QStringList() << u"*.dylib"_s, QDir::Files);
++    for (const QString &dylib : foundFrameworksDylibs) {
++        QString dylibPath = frameworksPath + dylib;
++        pendingBinaries.push(dylibPath);
++        pendingBinariesSet.insert(dylibPath);
++    }
++
+     // Add frameworks for processing.
+     QStringList frameworkPaths = findAppFrameworkPaths(appBundlePath);
+     for (const QString &frameworkPath : frameworkPaths) {
+@@ -1541,7 +1815,8 @@ QSet<QString> codesignBundle(const QString &identity,
  
          // Check if there are unsigned dependencies, sign these first.
          QStringList dependencies = getBinaryDependencies(rootBinariesPath, binary,
