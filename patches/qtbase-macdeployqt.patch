@@ -271,7 +271,7 @@ index ecbccdef..46121833 100644
          stripAppBinary(appBundlePath);
  
 diff --git a/src/tools/macdeployqt/shared/shared.cpp b/src/tools/macdeployqt/shared/shared.cpp
-index 9061fc5b..5aec1f99 100644
+index 9061fc5b..8822b566 100644
 --- a/src/tools/macdeployqt/shared/shared.cpp
 +++ b/src/tools/macdeployqt/shared/shared.cpp
 @@ -14,6 +14,7 @@
@@ -300,7 +300,48 @@ index 9061fc5b..5aec1f99 100644
          if (path.startsWith(QStringLiteral("@executable_path/"))) {
              // path relative to bundle executable dir
              if (QDir::isAbsolutePath(executablePath)) {
-@@ -1002,13 +1003,23 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
+@@ -591,7 +592,8 @@ QList<FrameworkInfo> getQtFrameworksForPaths(const QStringList &paths, const QSt
+ 
+ QStringList getBinaryDependencies(const QString executablePath,
+                                   const QString &path,
+-                                  const QList<QString> &additionalBinariesContainingRpaths)
++                                  const QList<QString> &additionalBinariesContainingRpaths,
++                                  const QString &appBundlePath)
+ {
+     QStringList binaries;
+ 
+@@ -619,17 +621,25 @@ QStringList getBinaryDependencies(const QString executablePath,
+                 rpaths.removeDuplicates();
+                 rpathsLoaded = true;
+             }
+-            bool resolved = false;
++            QString resolvedBinary;
++            QString resolvedOutsideBinary;
+             for (const QString &rpath : std::as_const(rpaths)) {
+                 QString binary = QDir::cleanPath(rpath + "/" + trimmedLine.mid(QStringLiteral("@rpath/").length()));
+                 LogDebug() << "Checking for" << binary;
+                 if (QFile::exists(binary)) {
+-                    binaries.append(binary);
+-                    resolved = true;
+-                    break;
++                    if (!appBundlePath.isEmpty() && binary.startsWith(appBundlePath)) {
++                        resolvedBinary = binary;
++                        break;
++                    } else if (resolvedOutsideBinary.isEmpty()) {
++                        resolvedOutsideBinary = binary;
++                    }
+                 }
+             }
+-            if (!resolved && !rpaths.isEmpty()) {
++            if (resolvedBinary.isEmpty())
++                resolvedBinary = resolvedOutsideBinary;
++            if (!resolvedBinary.isEmpty()) {
++                binaries.append(resolvedBinary);
++            } else if (!rpaths.isEmpty()) {
+                 LogError() << "Cannot resolve rpath" << trimmedLine;
+                 LogError() << " using" << rpaths;
+             }
+@@ -1002,13 +1012,23 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
              deploymentInfo.isDebug = true;
  
          if (deploymentInfo.qtPath.isNull())
@@ -325,7 +366,16 @@ index 9061fc5b..5aec1f99 100644
          if (!framework.rpathUsed.isEmpty() && !rpathsUsed.contains(framework.rpathUsed)) {
              rpathsUsed.append(framework.rpathUsed);
          }
-@@ -1089,7 +1100,7 @@ DeploymentInfo deployQtFrameworks(const QString &appBundlePath, const QStringLis
+@@ -1056,6 +1076,8 @@ DeploymentInfo deployQtFrameworks(QList<FrameworkInfo> frameworks,
+             changeIdentification(framework.deployedInstallName, deployedBinaryPath);
+         }
+ 
++        deployRPaths(bundlePath, rpathsUsed, deployedBinaryPath, useLoaderPath);
++
+         // Check for framework dependencies
+         QList<FrameworkInfo> dependencies = getQtFrameworks(deployedBinaryPath, bundlePath, rpathsUsed, useDebugLibs);
+ 
+@@ -1089,7 +1111,7 @@ DeploymentInfo deployQtFrameworks(const QString &appBundlePath, const QStringLis
                                                   << additionalExecutables;
  
     QList<QString> allLibraryPaths = getBinaryRPaths(applicationBundle.binaryPath, true);
@@ -334,34 +384,47 @@ index 9061fc5b..5aec1f99 100644
     allLibraryPaths.removeDuplicates();
  
     QList<FrameworkInfo> frameworks = getQtFrameworksForPaths(allBinaryPaths, appBundlePath, allLibraryPaths, useDebugLibs);
-@@ -1248,44 +1259,233 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
+@@ -1248,44 +1270,233 @@ void deployPlugins(const ApplicationBundleInfo &appBundleInfo, const QString &pl
      }
  }
  
 -void createQtConf(const QString &appBundlePath)
 +void deployPlugins(const QString &appBundlePath, DeploymentInfo deploymentInfo, bool useDebugLibs)
++{
++    ApplicationBundleInfo applicationBundle;
++    applicationBundle.path = appBundlePath;
++    applicationBundle.binaryPath = findAppBinary(appBundlePath);
++
++    const QString pluginDestinationPath = appBundlePath + "/" + "Contents/PlugIns";
++    deployPlugins(applicationBundle, deploymentInfo.pluginPath, pluginDestinationPath, deploymentInfo, useDebugLibs);
++}
++
++static QString pkgConfigVariable(const QString &package, const QString &variable)
  {
 -    // Set Plugins and imports paths. These are relative to App.app/Contents.
 -    QByteArray contents = "[Paths]\n"
 -                          "Plugins = PlugIns\n"
 -                          "Imports = Resources/qml\n"
 -                          "QmlImports = Resources/qml\n";
-+    ApplicationBundleInfo applicationBundle;
-+    applicationBundle.path = appBundlePath;
-+    applicationBundle.binaryPath = findAppBinary(appBundlePath);
- 
--    QString filePath = appBundlePath + "/Contents/Resources/";
--    QString fileName = filePath + "qt.conf";
-+    const QString pluginDestinationPath = appBundlePath + "/" + "Contents/PlugIns";
-+    deployPlugins(applicationBundle, deploymentInfo.pluginPath, pluginDestinationPath, deploymentInfo, useDebugLibs);
-+}
- 
--    QDir().mkpath(filePath);
-+static QString pkgConfigVariable(const QString &package, const QString &variable)
-+{
 +    const QString executable = qEnvironmentVariable("PKG_CONFIG_EXECUTABLE", u"pkg-config"_s);
 +    if (QStandardPaths::findExecutable(executable).isEmpty())
 +        return QString();
+ 
+-    QString filePath = appBundlePath + "/Contents/Resources/";
+-    QString fileName = filePath + "qt.conf";
++    QProcess pkgConfig;
++    pkgConfig.start(executable, QStringList() << u"--variable=%1"_s.arg(variable) << package);
++    if (!pkgConfig.waitForFinished(5000) || pkgConfig.exitCode() != 0)
++        return QString();
++    return QString::fromUtf8(pkgConfig.readAllStandardOutput()).trimmed();
++}
+ 
+-    QDir().mkpath(filePath);
++static QString findGioModulesDir(const QString &gioModulesDirectory)
++{
++    const QString fromEnv = qEnvironmentVariable("GIO_EXTRA_MODULES");
++    if (!fromEnv.isEmpty() && QDir(fromEnv).exists())
++        return fromEnv;
  
 -    if (QFile::exists(fileName) && !alwaysOwerwriteEnabled) {
 -        LogWarning();
@@ -370,19 +433,6 @@ index 9061fc5b..5aec1f99 100644
 -        LogWarning() << "please make sure qt.conf contains the following lines:";
 -        LogWarning() << "[Paths]";
 -        LogWarning() << "  Plugins = PlugIns";
-+    QProcess pkgConfig;
-+    pkgConfig.start(executable, QStringList() << u"--variable=%1"_s.arg(variable) << package);
-+    if (!pkgConfig.waitForFinished(5000) || pkgConfig.exitCode() != 0)
-+        return QString();
-+    return QString::fromUtf8(pkgConfig.readAllStandardOutput()).trimmed();
-+}
-+
-+static QString findGioModulesDir(const QString &gioModulesDirectory)
-+{
-+    const QString fromEnv = qEnvironmentVariable("GIO_EXTRA_MODULES");
-+    if (!fromEnv.isEmpty() && QDir(fromEnv).exists())
-+        return fromEnv;
-+
 +    const QString fromPkgConfig = pkgConfigVariable(u"gio-2.0"_s, u"libdir"_s);
 +    if (!fromPkgConfig.isEmpty()) {
 +        const QString candidate = fromPkgConfig + "/gio/modules"_L1;
@@ -594,7 +644,7 @@ index 9061fc5b..5aec1f99 100644
  }
  
  void deployQmlImport(const QString &appBundlePath, const QList<QString> &rpaths, const QString &importSourcePath, const QString &importName)
-@@ -1318,12 +1518,18 @@ bool deployQmlImports(const QString &appBundlePath, DeploymentInfo deploymentInf
+@@ -1318,12 +1529,18 @@ bool deployQmlImports(const QString &appBundlePath, DeploymentInfo deploymentInf
      LogNormal() << "QML module search path(s) is" << qmlImportPaths;
  
      // Use qmlimportscanner from QLibraryInfo::LibraryExecutablesPath
@@ -617,7 +667,7 @@ index 9061fc5b..5aec1f99 100644
          qmlImportScannerPath = QCoreApplication::applicationDirPath() + "/qmlimportscanner";
  
      // Verify that we found a qmlimportscanner binary
-@@ -1342,9 +1548,8 @@ bool deployQmlImports(const QString &appBundlePath, DeploymentInfo deploymentInf
+@@ -1342,9 +1559,8 @@ bool deployQmlImports(const QString &appBundlePath, DeploymentInfo deploymentInf
      }
      for (const QString &importPath : qmlImportPaths)
          argumentList << "-importPath" << importPath;
@@ -629,6 +679,16 @@ index 9061fc5b..5aec1f99 100644
  
      // run qmlimportscanner
      QProcess qmlImportScanner;
+@@ -1541,7 +1757,8 @@ QSet<QString> codesignBundle(const QString &identity,
+ 
+         // Check if there are unsigned dependencies, sign these first.
+         QStringList dependencies = getBinaryDependencies(rootBinariesPath, binary,
+-                                                         additionalBinariesContainingRpaths);
++                                                         additionalBinariesContainingRpaths,
++                                                         appBundleAbsolutePath);
+         dependencies = QSet<QString>(dependencies.begin(), dependencies.end())
+             .subtract(signedBinaries)
+             .subtract(pendingBinariesSet)
 diff --git a/src/tools/macdeployqt/shared/shared.h b/src/tools/macdeployqt/shared/shared.h
 index 33384e86..6cc3b495 100644
 --- a/src/tools/macdeployqt/shared/shared.h
