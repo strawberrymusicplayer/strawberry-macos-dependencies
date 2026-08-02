@@ -3280,7 +3280,7 @@ jobs:
           -DQT_BUILD_TESTS=OFF
           -DBUILD_WITH_PCH=OFF
           -DFEATURE_rpath=ON
-          -DFEATURE_relocatable=OFF
+          -DFEATURE_relocatable=ON
           -DFEATURE_pkg_config=ON
           -DFEATURE_accessibility=ON
           -DFEATURE_fontconfig=OFF
