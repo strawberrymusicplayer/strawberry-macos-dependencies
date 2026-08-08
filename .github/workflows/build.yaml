@@ -3312,6 +3312,11 @@ jobs:
           -DFEATURE_system_freetype=ON
           -DFEATURE_system_harfbuzz=ON
           -DFEATURE_system_sqlite=ON
+          -DFEATURE_androiddeployqt=OFF
+          -DFEATURE_harmonydeployqt=OFF
+          -DFEATURE_macdeployqt=OFF
+          -DFEATURE_wasmdeployqt=OFF
+          -DFEATURE_windeployqt=OFF
           -DICU_ROOT="${{env.prefix_path}}"
           -DSQLite3_INCLUDE_DIR="${{env.prefix_path}}/include"
           -DSQLite3_INCLUDE_DIRS="${{env.prefix_path}}/include"
@@ -3403,24 +3408,24 @@ jobs:
         run: cmake --install .
 
 
-      - name: Download macdeploycheck
+      - name: Download macdeploytool
         shell: bash
         working-directory: build
-        run: git clone https://github.com/strawberrymusicplayer/macdeploycheck.git
+        run: git clone https://github.com/jonaski/macdeploytool
 
-      - name: Configure macdeploycheck
+      - name: Configure macdeploytool
         shell: bash
-        working-directory: build/macdeploycheck
+        working-directory: build/macdeploytool
         run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
 
-      - name: Build macdeploycheck
+      - name: Build macdeploytool
         shell: bash
-        working-directory: build/macdeploycheck/build
+        working-directory: build/macdeploytool/build
         run: cmake --build .
 
-      - name: Install macdeploycheck
+      - name: Install macdeploytool
         shell: bash
-        working-directory: build/macdeploycheck/build
+        working-directory: build/macdeploytool/build
         run: cmake --install .
 
 
