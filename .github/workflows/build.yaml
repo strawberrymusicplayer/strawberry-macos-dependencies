@@ -150,6 +150,8 @@ env:
 
   kdsingleapplication_version: '1.2.1'
 
+  macdeploytool_version: 'f1419c9a45b30ed07953c815c7f0c7010e855f18'
+
   sparkle_version: '2.9.5'
 
   sparsehash_version: '2.0.4'
@@ -3411,7 +3413,10 @@ jobs:
       - name: Download macdeploytool
         shell: bash
         working-directory: build
-        run: git clone https://github.com/jonaski/macdeploytool
+        run: |
+          git clone https://github.com/jonaski/macdeploytool
+          cd macdeploytool
+          git checkout ${{env.macdeploytool_version}}
 
       - name: Configure macdeploytool
         shell: bash
