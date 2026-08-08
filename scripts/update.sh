@@ -371,6 +371,9 @@ function update_package() {
     "sparsehash")
       package_version_latest=$(latest_github_release "sparsehash" "sparsehash")
       ;;
+    "macdeploytool")
+      package_version_latest=$(git ls-remote https://github.com/jonaski/macdeploytool.git HEAD | cut -f 1)
+      ;;
     *)
       package_version_latest=
       error "No update rule for package: ${package}"
@@ -383,7 +386,12 @@ function update_package() {
     return
   fi
 
-  package_version_highest=$(echo "${package_version_current} ${package_version_latest}" | tr ' ' '\n' | sort -V | tail -1)
+  if [ "${package_name}" = "macdeploytool" ]; then
+    # Git commit SHAs are not orderable like version numbers, so just use whatever is latest.
+    package_version_highest="${package_version_latest}"
+  else
+    package_version_highest=$(echo "${package_version_current} ${package_version_latest}" | tr ' ' '\n' | sort -V | tail -1)
+  fi
 
   if [ "${package_version_highest}" = "" ]; then
     error "Could not get highest version for ${package}."
