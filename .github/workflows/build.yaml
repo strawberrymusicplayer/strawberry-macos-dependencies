@@ -152,7 +152,7 @@ env:
 
   macdeploytool_version: 'f1419c9a45b30ed07953c815c7f0c7010e855f18'
 
-  sparkle_version: '2.9.5'
+  sparkle_version: '2.9.6'
 
   sparsehash_version: '2.0.4'
 
