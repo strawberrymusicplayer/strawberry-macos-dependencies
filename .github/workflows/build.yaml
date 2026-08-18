@@ -146,7 +146,7 @@ env:
 
   libcdio_version: '2.4.0'
 
-  qt_version: '6.11.1'
+  qt_version: '6.11.2'
 
   kdsingleapplication_version: '1.2.1'
 
@@ -3258,11 +3258,6 @@ jobs:
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
-
-      - name: Patch qtbase
-        shell: bash
-        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
-        run: patch -p1 < ../../patches/qtbase-openssl4.patch
 
       - name: Configure qtbase
         shell: bash
