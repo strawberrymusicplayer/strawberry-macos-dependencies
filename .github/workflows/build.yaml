@@ -452,6 +452,8 @@ jobs:
         working-directory: downloads
         shell: bash
         run: |
+          rm -rf "$HOME/.rustup" "$HOME/.cargo"
+          mkdir -p "$HOME/.cargo/bin"
           curl --proto '=https' --tlsv1.2 -fsS -o rustup.sh https://sh.rustup.rs
           chmod u+x rustup.sh
           ./rustup.sh -y --default-toolchain "${{env.rust_toolchain_version}}"
