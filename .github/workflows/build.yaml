@@ -138,7 +138,7 @@ env:
 
   gstreamer_version: '1.28.7'
 
-  gstreamer_plugins_rs_version: '0.15.3'
+  gstreamer_plugins_rs_version: '0.15.4'
 
   libplist_version: '2.7.0'
 
