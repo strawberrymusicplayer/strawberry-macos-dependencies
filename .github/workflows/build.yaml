@@ -150,7 +150,7 @@ env:
 
   kdsingleapplication_version: '1.2.1'
 
-  macdeploytool_version: 'f1419c9a45b30ed07953c815c7f0c7010e855f18'
+  macdeploytool_version: '3294d49a54dc2163b38f66d4c197ae3cc68891df'
 
   sparkle_version: '2.10.0'
 
