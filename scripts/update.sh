@@ -220,6 +220,9 @@ function update_package() {
     "gnutls")
       package_version_latest=$(curl ${curl_options} 'https://gnupg.org/ftp/gcrypt/gnutls/v3.8/' | sed -n 's,.*gnutls-\([1-9]\+\(\.[0-9]\+\)\+\)\..*,\1,p' | sort -V | tail -1)
       ;;
+    "uchardet")
+      package_version_latest=$(curl ${curl_options} 'https://www.freedesktop.org/software/uchardet/releases/' | sed -n 's,.*uchardet-\([0-9][^"]*\)\.tar\.xz.*,\1,p' | sort -V | tail -1)
+      ;;
     "icu4c")
       package_version_latest=$(latest_github_release "unicode-org" "icu" | sed 's/release\-//g' | tr '\-' '\.')
       ;;

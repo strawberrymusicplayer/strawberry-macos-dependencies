@@ -58,6 +58,8 @@ env:
 
   gnutls_version: '3.8.13'
 
+  uchardet_version: '0.0.8'
+
   icu4c_version: '78.3'
 
   pixman_version: '0.46.4'
@@ -1376,6 +1378,38 @@ jobs:
       - name: Check gnutls
         shell: bash
         run: pkg-config gnutls --libs --cflags
+
+
+      - name: Download uchardet
+        shell: bash
+        working-directory: downloads
+        run: |
+          curl ${{env.curl_options}} https://www.freedesktop.org/software/uchardet/releases/uchardet-${{env.uchardet_version}}.tar.xz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/uchardet-${{env.uchardet_version}}.tar.xz
+
+      - name: Extract uchardet
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/uchardet-${{env.uchardet_version}}.tar.xz
+
+      - name: Configure uchardet
+        shell: bash
+        working-directory: build/uchardet-${{env.uchardet_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX=${{env.prefix_path}} -DCMAKE_INSTALL_NAME_DIR=${{env.prefix_path}}/lib -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC=OFF -DBUILD_BINARY=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+      - name: Build uchardet
+        shell: bash
+        working-directory: build/uchardet-${{env.uchardet_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install uchardet
+        shell: bash
+        working-directory: build/uchardet-${{env.uchardet_version}}/build
+        run: cmake --install .
+
+      - name: Check uchardet
+        shell: bash
+        run: pkg-config uchardet --libs --cflags
 
 
       - name: Download icu
@@ -3516,6 +3550,7 @@ jobs:
           echo "* libidn2 ${{env.libidn2_version}}" >> "${{env.release_notes_file}}"
           echo "* Nettle ${{env.nettle_version}}" >> "${{env.release_notes_file}}"
           echo "* GnuTLS ${{env.gnutls_version}}" >> "${{env.release_notes_file}}"
+          echo "* uchardet ${{env.uchardet_version}}" >> "${{env.release_notes_file}}"
           echo "* ICU4C ${{env.icu4c_version}}" >> "${{env.release_notes_file}}"
           echo "* pixman ${{env.pixman_version}}" >> "${{env.release_notes_file}}"
           echo "* Expat ${{env.expat_version}}" >> "${{env.release_notes_file}}"
