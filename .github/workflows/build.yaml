@@ -18,7 +18,7 @@ env:
 
   cmake_version: '4.4.3'
 
-  ccache_version: '4.14'
+  ccache_version: '4.14.1'
 
   gmp_version: '6.3.0'
 
