@@ -92,7 +92,7 @@ env:
 
   harfbuzz_version: '14.5.0'
 
-  jasper_version: '4.2.9'
+  jasper_version: 'ersion-4.2.9'
 
   tiff_version: '4.7.2'
 
