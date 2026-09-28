@@ -271,6 +271,15 @@ function update_package() {
     "harfbuzz")
       package_version_latest=$(latest_github_release "harfbuzz" "harfbuzz")
       ;;
+    "jasper")
+      package_version_latest=$(latest_github_release "jasper-software" "jasper")
+      ;;
+    "tiff")
+      package_version_latest=$(curl ${curl_options} 'http://www.simplesystems.org/libtiff/' | sed -n 's,.*>v\([0-9][^<]*\)<.*,\1,p' | tail -1)
+      ;;
+    "libwebp")
+      package_version_latest=$(curl ${curl_options} 'https://storage.googleapis.com/downloads.webmproject.org/releases/webp/index.html' | sed -n 's,.*libwebp-\([0-9]\+\.[0-9]\+\.[0-9]\+\)\.tar.gz.*,\1,p' | tail -1)
+      ;;
     "libusb")
       package_version_latest=$(latest_github_release "libusb" "libusb")
       ;;
