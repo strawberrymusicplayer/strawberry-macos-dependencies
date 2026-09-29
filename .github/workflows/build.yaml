@@ -184,6 +184,8 @@ env:
 
   rust_toolchain_version: '1.96.0'
 
+  cargo_c_version: '0.10.22+cargo-0.96.0'
+
 jobs:
 
   setup:
@@ -226,6 +228,9 @@ jobs:
        buildtype: [ release, debug ]
 
     runs-on: ${{matrix.runner}}
+
+    # Stay below the 6 hour hard limit so the ccache is still saved if the build times out.
+    timeout-minutes: ${{ matrix.runner == 'macos-15-intel' && 340 || 360 }}
 
     steps:
 
@@ -359,83 +364,47 @@ jobs:
           ccache --version
           echo "CCACHE_DIR=$(ccache --show-config | grep '.* cache_dir' | tr -d '[:blank:]' | cut -d '=' -f 2)" >> $GITHUB_ENV
 
-      - name: Setup ccache
+      - name: Restore ccache
         if: env.runner == 'macos-15-intel'
-        uses: actions/cache@v6
+        uses: actions/cache/restore@v6
         with:
           path: ${{env.CCACHE_DIR}}
-          key: ccache-macos-${{env.arch}}-${{env.buildtype}}
+          key: ccache-macos-${{env.arch}}-${{env.buildtype}}-${{github.run_id}}-${{github.run_attempt}}
           restore-keys: |
-            ccache-macos-${{env.arch}}-${{env.buildtype}}
+            ccache-macos-${{env.arch}}-${{env.buildtype}}-
 
       - name: Configure ccache
         if: env.runner == 'macos-15-intel'
         shell: bash
         run: |
-          ccache --set-config=max_size=6G
+          ccache --set-config=max_size=4G
           ccache --set-config=compression=true
           ccache --set-config=compression_level=6
+          ccache --set-config=compiler_type=clang
+          ccache --zero-stats
           ccache --show-stats
 
-      - name: Setup compiler wrappers for ccache
+      - name: Setup ccache compiler masquerading
         if: env.runner == 'macos-15-intel'
         shell: bash
         run: |
-          # Create wrapper scripts to handle preprocessor-only mode
-          mkdir -p ${{env.prefix_path}}/bin
-          
-          # Create CC wrapper
-          cat > ${{env.prefix_path}}/bin/cc_wrapper.sh << 'EOF'
-          #!/bin/bash
-          # Check if this is a preprocessor-only invocation
-          # Preprocessor-only mode uses -E flag without -c flag
-          has_E=false
-          has_c=false
-          for arg in "$@"; do
-            if [[ "$arg" == "-E" ]]; then
-              has_E=true
-            elif [[ "$arg" == "-c" ]]; then
-              has_c=true
-            fi
+          # Symlinks named after the compilers that point to ccache, placed first in PATH.
+          # This makes every build system use ccache without changing the compiler name seen by configure or libtool.
+          mkdir -p "${RUNNER_TEMP}/ccache-bin"
+          for compiler in cc c++ gcc g++ clang clang++; do
+            ln -sf "$(command -v ccache)" "${RUNNER_TEMP}/ccache-bin/${compiler}"
           done
-          
-          if [[ "$has_E" == "true" ]] && [[ "$has_c" == "false" ]]; then
-            # Run clang directly for preprocessor-only mode
-            exec clang "$@"
-          else
-            # Use ccache for compilation
-            exec ccache clang "$@"
-          fi
-          EOF
-          chmod +x ${{env.prefix_path}}/bin/cc_wrapper.sh
-          
-          # Create CXX wrapper
-          cat > ${{env.prefix_path}}/bin/cxx_wrapper.sh << 'EOF'
-          #!/bin/bash
-          # Check if this is a preprocessor-only invocation
-          # Preprocessor-only mode uses -E flag without -c flag
-          has_E=false
-          has_c=false
-          for arg in "$@"; do
-            if [[ "$arg" == "-E" ]]; then
-              has_E=true
-            elif [[ "$arg" == "-c" ]]; then
-              has_c=true
-            fi
-          done
-          
-          if [[ "$has_E" == "true" ]] && [[ "$has_c" == "false" ]]; then
-            # Run clang++ directly for preprocessor-only mode
-            exec clang++ "$@"
-          else
-            # Use ccache for compilation
-            exec ccache clang++ "$@"
-          fi
-          EOF
-          chmod +x ${{env.prefix_path}}/bin/cxx_wrapper.sh
-          
-          echo "CC=${{env.prefix_path}}/bin/cc_wrapper.sh" >> $GITHUB_ENV
-          echo "CXX=${{env.prefix_path}}/bin/cxx_wrapper.sh" >> $GITHUB_ENV
+          echo "${RUNNER_TEMP}/ccache-bin" >> $GITHUB_PATH
+          echo "CC=clang" >> $GITHUB_ENV
+          echo "CXX=clang++" >> $GITHUB_ENV
+
+      - name: Verify ccache compiler masquerading
+        if: env.runner == 'macos-15-intel'
+        shell: bash
+        run: |
+          which -a clang gcc
+          test "$(command -v clang)" = "${RUNNER_TEMP}/ccache-bin/clang"
+          test "$(command -v gcc)" = "${RUNNER_TEMP}/ccache-bin/gcc"
 
 
       - name: Install python dependencies
@@ -552,8 +521,7 @@ jobs:
         shell: bash
         working-directory: build/m4-${{env.m4_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}"
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking
 
       - name: Build m4
         shell: bash
@@ -582,8 +550,7 @@ jobs:
         shell: bash
         working-directory: build/bison-${{env.bison_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}"
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking
 
       - name: Build bison
         shell: bash
@@ -612,7 +579,6 @@ jobs:
         shell: bash
         working-directory: build/autoconf-${{env.autoconf_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build autoconf
@@ -642,7 +608,6 @@ jobs:
         shell: bash
         working-directory: build/automake-${{env.automake_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build automake
@@ -672,7 +637,6 @@ jobs:
         shell: bash
         working-directory: build/libtool-${{env.libtool_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build libtool
@@ -733,7 +697,6 @@ jobs:
         shell: bash
         working-directory: build/sparsehash-sparsehash-${{env.sparsehash_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build sparsehash
@@ -784,7 +747,6 @@ jobs:
         shell: bash
         working-directory: build/gmp-${{env.gmp_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-cxx --without-readline
 
       - name: Build gmp
@@ -823,7 +785,6 @@ jobs:
         shell: bash
         working-directory: build/nasm-${{env.nasm_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}"
 
       - name: Build nasm
@@ -1097,8 +1058,7 @@ jobs:
         shell: bash
         working-directory: build/xz-${{env.xz_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-doc --disable-nls --disable-silent-rules
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --enable-rpath --disable-doc --disable-nls --disable-silent-rules
 
       - name: Build xz
         shell: bash
@@ -1197,8 +1157,7 @@ jobs:
         shell: bash
         working-directory: build/libunistring-${{env.libunistring_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-relocatable
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --enable-rpath --disable-relocatable
 
       - name: Build libunistring
         shell: bash
@@ -1232,8 +1191,7 @@ jobs:
         shell: bash
         working-directory: build/flex-${{env.flex_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared
 
       - name: Build flex
         shell: bash
@@ -1262,8 +1220,7 @@ jobs:
         shell: bash
         working-directory: build/libtasn1-${{env.libtasn1_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --disable-doc
 
       - name: Build libtasn1
         shell: bash
@@ -1296,8 +1253,7 @@ jobs:
         shell: bash
         working-directory: build/libidn2-${{env.libidn2_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-doc
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --enable-rpath --disable-doc
 
       - name: Build libidn2
         shell: bash
@@ -1330,7 +1286,6 @@ jobs:
         shell: bash
         working-directory: build/nettle-${{env.nettle_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-documentation --with-include-path="${{env.prefix_path}}/include" --with-lib-path="${{env.prefix_path}}/lib"
 
       - name: Build nettle
@@ -1368,7 +1323,6 @@ jobs:
           CFLAGS: -I${{env.prefix_path}}/include -Wno-implicit-int
         working-directory: build/gnutls-${{env.gnutls_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-dependency-tracking --disable-silent-rules --disable-nls --enable-rpath --disable-doc --disable-tests --without-p11-kit --disable-hardware-accelerators
 
       - name: Build GnuTLS
@@ -1434,7 +1388,6 @@ jobs:
         shell: bash
         working-directory: build/icu/source
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-${{env.buildtype}} --disable-samples --disable-tests --with-library-bits=64 --enable-rpath
 
       - name: Build icu
@@ -1626,8 +1579,7 @@ jobs:
         shell: bash
         working-directory: build/libffi-${{env.libffi_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-docs
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --disable-docs
 
       - name: Build libffi
         shell: bash
@@ -1722,7 +1674,6 @@ jobs:
           CFLAGS: -DSQLITE_ENABLE_COLUMN_METADATA
         working-directory: build/sqlite-autoconf-${{env.sqlite3_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-fts5 --disable-readline --enable-threadsafe --disable-silent-rules
 
       - name: Build SQLite
@@ -2091,8 +2042,7 @@ jobs:
         shell: bash
         working-directory: build/libusb-${{env.libusb_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --without-cython
 
       - name: Build libusb
         shell: bash
@@ -2125,8 +2075,7 @@ jobs:
         shell: bash
         working-directory: build/libogg-${{env.libogg_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-silent-rules
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --disable-silent-rules
 
       - name: Build libogg
         shell: bash
@@ -2169,8 +2118,7 @@ jobs:
         shell: bash
         working-directory: build/libvorbis-${{env.libvorbis_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-silent-rules --disable-oggtest --disable-docs --disable-examples
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --disable-silent-rules --disable-oggtest --disable-docs --disable-examples
 
       - name: Build libvorbis
         shell: bash
@@ -2304,8 +2252,7 @@ jobs:
         shell: bash
         working-directory: build/opusfile-${{env.opusfile_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doc --disable-examples --disable-http || true
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --disable-doc --disable-examples --disable-http || true
 
       - name: Build opusfile
         shell: bash
@@ -2343,8 +2290,7 @@ jobs:
         shell: bash
         working-directory: build/speex-Speex-${{env.speex_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared
 
       - name: Build speex
         shell: bash
@@ -2378,7 +2324,6 @@ jobs:
         shell: bash
         working-directory: build/mpg123-${{env.mpg123_version}}
         run: |
-          unset CC CXX
           extra_args=""
           if [ "${{env.arch}}" = "arm64" ]; then
             # Build a fixed NEON64 decoder so libmpg123 skips its setjmp-based runtime CPU detection (INT123_getcpuflags),
@@ -2418,7 +2363,6 @@ jobs:
         shell: bash
         working-directory: build/lame-${{env.lame_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-dependency-tracking --disable-frontend --disable-gtktest
 
       - name: Build lame
@@ -2491,7 +2435,6 @@ jobs:
         shell: bash
         working-directory: build/libopenmpt-${{env.libopenmpt_version}}+release.autotools
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --disable-doxygen-doc --disable-doxygen-html --disable-examples --disable-tests --disable-openmpt123 --without-mpg123 --disable-dependency-tracking --disable-silent-rules
 
       - name: Build libopenmpt
@@ -2730,7 +2673,6 @@ jobs:
         shell: bash
         working-directory: build/libbs2b-${{env.libbs2b_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared
 
       - name: Build libbs2b
@@ -2800,16 +2742,14 @@ jobs:
         shell: bash
         working-directory: build/fftw-${{env.fftw_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --enable-sse2 --enable-avx --enable-avx2 --enable-avx512 --enable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --enable-sse2 --enable-avx --enable-avx2 --enable-avx512 --disable-avx-128-fma --disable-generic-simd128 --disable-generic-simd256
 
       - name: Configure fftw
         if: env.arch != 'x86_64'
         shell: bash
         working-directory: build/fftw-${{env.fftw_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --disable-sse2 --disable-avx --disable-avx2 --disable-avx512 --disable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --enable-threads --with-combined-threads --disable-doc --with-our-malloc --disable-sse2 --disable-avx --disable-avx2 --disable-avx512 --disable-avx-128-fma --enable-generic-simd128 --enable-generic-simd256
 
       - name: Build fftw
         shell: bash
@@ -2842,7 +2782,6 @@ jobs:
         shell: bash
         working-directory: build/ffmpeg-${{env.ffmpeg_version}}
         run: |
-          unset CC CXX
           ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-debug --disable-doc --disable-htmlpages --disable-manpages --disable-podpages --disable-txtpages --disable-libcdio --enable-gpl --enable-version3 --enable-gnutls --enable-libvorbis --enable-libopus --disable-libspeex --enable-libmp3lame
 
       - name: Build ffmpeg
@@ -2912,8 +2851,7 @@ jobs:
         shell: bash
         working-directory: build/libcdio-${{env.libcdio_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-silent-rules --without-cd-drive --without-cd-info --without-cd-read --without-cdda-player --without-iso-info --without-iso-read --enable-rock
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --enable-rpath --disable-silent-rules --without-cd-drive --without-cd-info --without-cd-read --without-cdda-player --without-iso-info --without-iso-read --enable-rock
 
       - name: Build libcdio
         shell: bash
@@ -3251,12 +3189,24 @@ jobs:
         run: ninja install
 
 
-      - name: Install cargo-c
+      - name: Cache cargo-c
+        id: cache_cargo_c
         if: env.runner == 'macos-15-intel' || env.runner == 'macos-15'
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.cargo/bin/cargo-capi
+            ~/.cargo/bin/cargo-cbuild
+            ~/.cargo/bin/cargo-cinstall
+            ~/.cargo/bin/cargo-ctest
+          key: cargo-c-macos-${{env.arch}}-${{env.cargo_c_version}}-rust-${{env.rust_toolchain_version}}
+
+      - name: Install cargo-c
+        if: (env.runner == 'macos-15-intel' || env.runner == 'macos-15') && steps.cache_cargo_c.outputs.cache-hit != 'true'
         shell: bash
         run: |
           source "$HOME/.cargo/env" || true
-          cargo install --locked cargo-c --version 0.10.22+cargo-0.96.0
+          cargo install --locked cargo-c --version ${{env.cargo_c_version}}
 
 
       - name: Download gst-plugins-rs
@@ -3296,8 +3246,7 @@ jobs:
         shell: bash
         working-directory: build/libplist-${{env.libplist_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --without-cython
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --without-cython
 
       - name: Build libplist
         shell: bash
@@ -3330,8 +3279,7 @@ jobs:
         shell: bash
         working-directory: build/libmtp-${{env.libmtp_version}}
         run: |
-          unset CC CXX
-          ./configure --prefix="${{env.prefix_path}}" --disable-static --enable-shared --enable-rpath --disable-silent-rules
+          ./configure --prefix="${{env.prefix_path}}" --disable-dependency-tracking --disable-static --enable-shared --enable-rpath --disable-silent-rules
 
       - name: Build libmtp
         shell: bash
@@ -3652,9 +3600,16 @@ jobs:
 
 
       - name: Show ccache statistics
-        if: env.runner == 'macos-15-intel'
+        if: always() && env.runner == 'macos-15-intel'
         shell: bash
         run: ccache --show-stats
+
+      - name: Save ccache
+        if: always() && env.runner == 'macos-15-intel'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{env.CCACHE_DIR}}
+          key: ccache-macos-${{env.arch}}-${{env.buildtype}}-${{github.run_id}}-${{github.run_attempt}}
 
       - name: Create archive
         shell: bash
