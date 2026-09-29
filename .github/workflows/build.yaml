@@ -3723,7 +3723,9 @@ jobs:
         run: |
           while [ "$(git tag | wc -l)" -ge "${{env.max_releases}}" ]; do
             oldest_tag=$(git tag | sort -V | head -1)
-            gh release delete "${oldest_tag}"
+            if gh release view "${oldest_tag}" >/dev/null 2>&1; then
+              gh release delete --yes "${oldest_tag}"
+            fi
             git tag -d "${oldest_tag}"
             git push --delete origin "${oldest_tag}"
           done
