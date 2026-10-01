@@ -154,6 +154,8 @@ env:
 
   libcdio_version: '2.4.0'
 
+  libgpod_version: '98a0c3a108b0777919eee549155826ccc35b4a62'
+
   qt_version: '6.12.0'
 
   kdsingleapplication_version: '1.2.1'
@@ -3299,7 +3301,10 @@ jobs:
       - name: Clone libgpod
         shell: bash
         working-directory: build
-        run: git clone https://github.com/strawberrymusicplayer/strawberry-libgpod
+        run: |
+          git clone https://github.com/strawberrymusicplayer/strawberry-libgpod
+          cd strawberry-libgpod
+          git checkout ${{env.libgpod_version}}
 
       - name: Configure libgpod
         shell: bash
@@ -3697,6 +3702,7 @@ jobs:
           echo "* gst-plugins-rs ${{env.gstreamer_plugins_rs_version}}" >> "${{env.release_notes_file}}"
           echo "* libplist ${{env.libplist_version}}" >> "${{env.release_notes_file}}"
           echo "* libmtp ${{env.libmtp_version}}" >> "${{env.release_notes_file}}"
+          echo "* libgpod ${{env.libgpod_version}}" >> "${{env.release_notes_file}}"
           echo "* Qt ${{env.qt_version}}" >> "${{env.release_notes_file}}"
           echo "* KDSingleApplication ${{env.kdsingleapplication_version}}" >> "${{env.release_notes_file}}"
           echo "* Sparkle ${{env.sparkle_version}}" >> "${{env.release_notes_file}}"

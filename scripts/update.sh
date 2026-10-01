@@ -126,8 +126,10 @@ function update_package() {
   local package_name
   local package_version_current
   local package_version_latest
+  local package_git
 
   package_name="${1}"
+  package_git=0
   package_version_current=$(cat "${ci_file}" | sed -n "s,^  ${package_name}_version: \(.*\)\$,\1,p" | tr -d "\'")
 
   if [ "${package_version_current}" = "" ]; then
@@ -383,8 +385,13 @@ function update_package() {
     "sparsehash")
       package_version_latest=$(latest_github_release "sparsehash" "sparsehash")
       ;;
+    "libgpod")
+      package_version_latest=$(git ls-remote https://github.com/strawberrymusicplayer/strawberry-libgpod.git HEAD | cut -f 1)
+      package_git=1
+      ;;
     "macdeploytool")
       package_version_latest=$(git ls-remote https://github.com/jonaski/macdeploytool.git HEAD | cut -f 1)
+      package_git=1
       ;;
     *)
       package_version_latest=
@@ -398,7 +405,7 @@ function update_package() {
     return
   fi
 
-  if [ "${package_name}" = "macdeploytool" ]; then
+  if [ "${package_git}" = "1" ]; then
     # Git commit SHAs are not orderable like version numbers, so just use whatever is latest.
     package_version_highest="${package_version_latest}"
   else
