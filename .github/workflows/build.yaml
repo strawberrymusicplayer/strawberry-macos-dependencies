@@ -152,7 +152,7 @@ env:
 
   libcdio_version: '2.4.0'
 
-  libgpod_version: '98a0c3a108b0777919eee549155826ccc35b4a62'
+  libgpod_version: '2d0043c7cc44c06ddd50d5478851061acb81308d'
 
   qt_version: '6.12.0'
 
