@@ -1,0 +1,18 @@
+--- a/lib/crau/crau.h	2026-10-08 22:09:13.993458039 +0200
++++ b/lib/crau/crau.h	2026-10-08 22:09:14.007865492 +0200
+@@ -255,8 +255,13 @@
+ #    if __has_c_attribute (__maybe_unused__)
+ #     define CRAU_MAYBE_UNUSED [[__maybe_unused__]]
+ #    endif
+-#   elif defined(__GNUC__)
+-#    define CRAU_MAYBE_UNUSED __attribute__((__unused__))
++#   endif
++#   ifndef CRAU_MAYBE_UNUSED
++#    if defined(__GNUC__)
++#     define CRAU_MAYBE_UNUSED __attribute__((__unused__))
++#    else
++#     define CRAU_MAYBE_UNUSED
++#    endif
+ #   endif
+ #  endif /* CRAU_MAYBE_UNUSED */
+ 
