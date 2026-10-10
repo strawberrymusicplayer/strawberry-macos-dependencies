@@ -4,7 +4,7 @@ on: push
 env:
   ghcli_version: '2.102.0'
 
-  pkgconf_version: '3.0.7'
+  pkgconf_version: '3.0.8'
 
   m4_version: '1.4.21'
 
@@ -76,7 +76,7 @@ env:
 
   orc_version: '0.4.44'
 
-  sqlite3_version: '3530400'
+  sqlite3_version: '3540000'
 
   glib_version: '2.90.1'
 
@@ -142,7 +142,7 @@ env:
 
   chromaprint_version: '1.6.1'
 
-  gstreamer_version: '1.28.7'
+  gstreamer_version: '1.28.8'
 
   gstreamer_plugins_rs_version: '0.15.4'
 
