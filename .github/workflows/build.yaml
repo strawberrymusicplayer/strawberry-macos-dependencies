@@ -224,10 +224,6 @@ jobs:
         shell: bash
         run: echo "arch=$(uname -m)" >> $GITHUB_ENV
 
-      - name: Set arch2
-        shell: bash
-        run: echo "arch2=$(test "${{env.arch}}" = "arm64" && echo "aarch64" || echo "${{env.arch}}")" >> $GITHUB_ENV
-
       - name: Set buildtype
         shell: bash
         run: echo "buildtype=$(echo ${{matrix.buildtype}} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
@@ -447,24 +443,18 @@ jobs:
 
 
       - name: Install github cli tool
-        if: env.runner == 'macos-15-intel'
         shell: bash
         working-directory: build
         run: |
-          curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v${{env.ghcli_version}}/gh_${{env.ghcli_version}}_macOS_amd64.zip || \
-          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gh_${{env.ghcli_version}}_macOS_amd64.zip
-          unzip gh_${{env.ghcli_version}}_macOS_amd64.zip
-          sudo cp gh_${{env.ghcli_version}}_macOS_amd64/bin/gh /usr/local/bin/
-
-      - name: Install github cli tool
-        if: env.runner != 'macos-15-intel'
-        shell: bash
-        working-directory: build
-        run: |
-          curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v${{env.ghcli_version}}/gh_${{env.ghcli_version}}_macOS_arm64.zip || \
-          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gh_${{env.ghcli_version}}_macOS_arm64.zip
-          unzip gh_${{env.ghcli_version}}_macOS_arm64.zip
-          sudo cp gh_${{env.ghcli_version}}_macOS_arm64/bin/gh /usr/local/bin/
+          case "${{env.arch}}" in
+            x86_64) ghcli_arch=amd64 ;;
+            arm64) ghcli_arch=arm64 ;;
+            *) echo "Unsupported arch: ${{env.arch}}"; exit 1 ;;
+          esac
+          curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v${{env.ghcli_version}}/gh_${{env.ghcli_version}}_macOS_${ghcli_arch}.zip || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gh_${{env.ghcli_version}}_macOS_${ghcli_arch}.zip
+          unzip -o gh_${{env.ghcli_version}}_macOS_${ghcli_arch}.zip
+          sudo cp gh_${{env.ghcli_version}}_macOS_${ghcli_arch}/bin/gh /usr/local/bin/
 
       - name: which gh
         shell: bash
