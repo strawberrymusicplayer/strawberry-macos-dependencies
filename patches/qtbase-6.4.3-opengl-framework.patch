@@ -1,0 +1,15 @@
+--- a/cmake/FindWrapOpenGL.cmake
++++ b/cmake/FindWrapOpenGL.cmake
+@@ -20,8 +20,11 @@
+         # Extract the framework path instead, and use that in INTERFACE_LINK_LIBRARIES,
+         # which CMake ends up transforming into a reloctable -framework flag.
+         # See https://gitlab.kitware.com/cmake/cmake/-/issues/20871 for details.
++        #
++        # CMake 3.28 and above:
++        # IMPORTED_LOCATION is the absolute path the the OpenGL.framework folder.
+         get_target_property(__opengl_fw_lib_path OpenGL::GL IMPORTED_LOCATION)
+-        if(__opengl_fw_lib_path)
++        if(__opengl_fw_lib_path AND NOT __opengl_fw_lib_path MATCHES "/([^/]+)\\.framework$")
+             get_filename_component(__opengl_fw_path "${__opengl_fw_lib_path}" DIRECTORY)
+         endif()
+ 

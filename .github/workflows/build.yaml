@@ -160,7 +160,7 @@ env:
 
   kdsingleapplication_version: '1.2.1'
 
-  macdeploytool_version: '3294d49a54dc2163b38f66d4c197ae3cc68891df'
+  macdeploytool_version: 'ce0f075298d580eb0e92d0ccdcb5300365dde732'
 
   sparkle_version: '2.10.0'
 
@@ -6000,9 +6000,12 @@ jobs:
         shell: bash
         working-directory: downloads
         run: |
-          curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz || \
-          curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz || \
-          curl ${{env.curl_options}} https://download.qt.io/archive/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
+          if [ "${{env.qt_version}}" = "${{env.qt_version_compat}}" ]; then
+            curl ${{env.curl_options}} https://download.qt.io/archive/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
+          else
+            curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz || \
+            curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
+          fi
 
       - name: Extract qtbase
         if: env.skip_lib != 'true'
@@ -6014,7 +6017,11 @@ jobs:
         if: env.skip_lib != 'true' && (env.runner == 'macos-intel')
         shell: bash
         working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
-        run: patch -p1 < ../../patches/qtbase-${{env.qt_version}}-openssl4.patch
+        run: |
+          for patch in ../../patches/qtbase-${{env.qt_version}}-*.patch; do
+            echo "Applying ${patch}"
+            patch -p1 < "${patch}"
+          done
 
       - name: Configure qtbase
         if: env.skip_lib != 'true'
@@ -6023,6 +6030,7 @@ jobs:
         run: >
           cmake -S . -B build
           -G Ninja
+          ${{env.runner == 'macos-intel' && '-DCMAKE_FIND_PACKAGE_TARGETS_GLOBAL=ON' || ''}}
           -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}"
           -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
           -DBUILD_SHARED_LIBS=ON
@@ -6122,9 +6130,12 @@ jobs:
         shell: bash
         working-directory: downloads
         run: |
-          curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz || \
-          curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz || \
-          curl ${{env.curl_options}} https://download.qt.io/archive/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz
+          if [ "${{env.qt_version}}" = "${{env.qt_version_compat}}" ]; then
+            curl ${{env.curl_options}} https://download.qt.io/archive/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz
+          else
+            curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz || \
+            curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz
+          fi
 
       - name: Extract qttools
         if: env.skip_lib != 'true'
@@ -6139,6 +6150,7 @@ jobs:
         run: >
           cmake -S . -B build
           -G Ninja
+          ${{env.runner == 'macos-intel' && '-DCMAKE_FIND_PACKAGE_TARGETS_GLOBAL=ON' || ''}}
           -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}"
           -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
           -DCMAKE_PREFIX_PATH="${{env.prefix_path}}/lib/cmake"
@@ -6202,9 +6214,12 @@ jobs:
         shell: bash
         working-directory: downloads
         run: |
-          curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtimageformats-everywhere-src-${{env.qt_version}}.tar.xz || \
-          curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtimageformats-everywhere-src-${{env.qt_version}}.tar.xz || \
-          curl ${{env.curl_options}} https://download.qt.io/archive/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtimageformats-everywhere-src-${{env.qt_version}}.tar.xz
+          if [ "${{env.qt_version}}" = "${{env.qt_version_compat}}" ]; then
+            curl ${{env.curl_options}} https://download.qt.io/archive/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtimageformats-everywhere-src-${{env.qt_version}}.tar.xz
+          else
+            curl ${{env.curl_options}} https://${{env.qt_mirror}}/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtimageformats-everywhere-src-${{env.qt_version}}.tar.xz || \
+            curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtimageformats-everywhere-src-${{env.qt_version}}.tar.xz
+          fi
 
       - name: Extract qtimageformats
         if: env.skip_lib != 'true'
@@ -6219,6 +6234,7 @@ jobs:
         run: >
           cmake -S . -B build
           -G Ninja
+          ${{env.runner == 'macos-intel' && '-DCMAKE_FIND_PACKAGE_TARGETS_GLOBAL=ON' || ''}}
           -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}"
           -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}"
           -DCMAKE_PREFIX_PATH="${{env.prefix_path}}/lib/cmake"
