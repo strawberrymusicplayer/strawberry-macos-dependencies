@@ -6604,34 +6604,35 @@ jobs:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: gh release upload --clobber "${{steps.set_release_tag.outputs.release_tag}}" "strawberry-macos-${{env.arch}}-${{env.buildtype}}.tar.xz"
 
-
-  publish-release:
-    name: Publish Release
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release'
-    needs:
-      - build
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - name: Publish Release
-        env:
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        run: gh release edit --draft=false --latest "${{needs.build.outputs.release_tag}}"
-
-      - name: Delete old releases
+      - name: Check if all release assets are uploaded
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release'
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
         run: |
+          assets=$(gh release view "${{steps.set_release_tag.outputs.release_tag}}" --json assets --jq '.assets[].name')
+          if echo "${assets}" | grep -qx "strawberry-macos-${{env.arch}}-release.tar.xz" && echo "${assets}" | grep -qx "strawberry-macos-${{env.arch}}-debug.tar.xz"; then
+            echo "publish_release=1" >> $GITHUB_ENV
+          else
+            echo "publish_release=0" >> $GITHUB_ENV
+          fi
+
+      - name: Publish Release
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release') && env.publish_release == '1'
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: gh release edit --draft=false --latest "${{steps.set_release_tag.outputs.release_tag}}"
+
+      - name: Delete old releases
+        if: (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/release') && env.publish_release == '1'
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        run: |
+          git fetch --tags --force origin
           while [ "$(git tag | wc -l)" -ge "${{env.max_releases}}" ]; do
             oldest_tag=$(git tag | sort -V | head -1)
             if gh release view "${oldest_tag}" >/dev/null 2>&1; then
-              gh release delete --yes "${oldest_tag}"
+              gh release delete --yes "${oldest_tag}" || true
             fi
             git tag -d "${oldest_tag}"
-            git push --delete origin "${oldest_tag}"
+            git push --delete origin "${oldest_tag}" || true
           done
-
