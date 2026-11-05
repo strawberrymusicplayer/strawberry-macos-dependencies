@@ -1,0 +1,32 @@
+From df7caf792f1c23e8f803ab97e430a264a1daae0c Mon Sep 17 00:00:00 2001
+From: Andrew Tribick <ajtribick@googlemail.com>
+Date: Thu, 29 Oct 2026 23:28:14 +0100
+Subject: [PATCH] Fix declaration-after-statement warning-as-error on OSX
+
+Part-of: <https://gitlab.gnome.org/GNOME/glib-networking/-/merge_requests/293>
+---
+ tls/openssl/gtlsdatabase-openssl.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/tls/openssl/gtlsdatabase-openssl.c b/tls/openssl/gtlsdatabase-openssl.c
+index 1b599fd5..08ffcddd 100644
+--- a/tls/openssl/gtlsdatabase-openssl.c
++++ b/tls/openssl/gtlsdatabase-openssl.c
+@@ -190,12 +190,12 @@ is_certificate_trusted (SecCertificateRef       *cert,
+ 
+   for (i = 0; i < CFArrayGetCount (cert_trust_settings); i++)
+     {
+-      has_any_trust_entry = TRUE;
+-
+       CFDictionaryRef trust_settings;
+       CFNumberRef trust_setting_number;
+       CFStringRef policy_name;
+ 
++      has_any_trust_entry = TRUE;
++
+       /* Ignore trust settings which are not SSL policies. */
+       trust_settings = (CFDictionaryRef)CFArrayGetValueAtIndex (cert_trust_settings, i);
+       if (CFDictionaryGetValueIfPresent (trust_settings, kSecTrustSettingsPolicyString, 
+-- 
+GitLab
+

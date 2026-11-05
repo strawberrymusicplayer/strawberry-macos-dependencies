@@ -3111,6 +3111,12 @@ jobs:
         working-directory: build
         run: tar -xf ../downloads/glib-networking-${{env.glib_networking_version}}.tar.xz
 
+      - name: Patch glib-networking
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: build/glib-networking-${{env.glib_networking_version}}
+        run: patch -p1 < ../../patches/glib-networking-declaration-after-statement.patch
+
       - name: Configure glib-networking
         if: env.skip_lib != 'true'
         shell: bash
