@@ -3,168 +3,259 @@ on: push
 
 env:
   ghcli_version: '2.103.3'
+  ghcli_amd64_sha256sum: 'a2f86418f4350ae6e9ec60d5000bdf7665728436946a97fc27fe50e6ae752682'
+  ghcli_arm64_sha256sum: 'd700207eae9ae98fe2b89535c2c087c07823d4628c56364695a5a07ef311c062'
 
   pkgconf_version: '3.0.10'
+  pkgconf_sha256sum: '11818a25f2730132f3b258ac8be4e82f83b9db03a1a99a6c29cd01b94fc9d310'
 
   m4_version: '1.4.21'
+  m4_sha256sum: '38ae59f7a30bf9c108193cc5c25fbb06014f21e230c7ede2eff614f7b7c37ed8'
 
   bison_version: '3.8.2'
+  bison_sha256sum: '06c9e13bdf7eb24d4ceb6b59205a4f67c2c7e7213119644430fe82fbd14a0abb'
 
   autoconf_version: '2.73'
+  autoconf_sha256sum: '259ddfa3bddc799cfb81489cc0f17dfdf1bd6d1505dda53c0f45ff60d6a4f9a7'
 
   automake_version: '1.20'
+  automake_sha256sum: '00c0e397a3c0096b1b9167eb4a5ecb87a66fe50888d939c4e02111e603936570'
 
   libtool_version: '2.6.2'
+  libtool_sha256sum: '24adb3aa9ae035c70faba344af57d73215eb89281045af6c7ccd307751f8b0bf'
 
   cmake_version: '4.4.5'
+  cmake_sha256sum: '679e77a96b9ef9484cc6c1445255fc4f84206b48a65420efbedf16bdab55fbff'
 
   ccache_version: '4.14.2'
+  ccache_sha256sum: 'cf240009630b605b775c7c5c7b7105a3b196c79f31af322c1557969aa28003fc'
 
   gmp_version: '6.3.0'
+  gmp_sha256sum: 'a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898'
 
   nasm_version: '3.02'
+  nasm_sha256sum: '87336eba53b4acfe917424ab5d500d2b0054d9f5148d35c2273ccf2cfb712f0d'
 
   yasm_version: '1.3.0'
+  yasm_sha256sum: '3dce6601b495f5b3d45b59f7d2492a340ee7e84b5beca17e48f862502bd5603f'
 
   zlib_version: '1.4'
+  zlib_sha256sum: '02dd159783677a749c04adbdd02b55b8a2bcc7e054f51b76b549199a916ad584'
 
   openssl_version: '4.1.0'
+  openssl_sha256sum: '50c17baf54cb008f6ce42d50deb4b28050a1aad711636cabd4b241c7e90cc2fd'
 
   libpng_version: '1.6.59'
+  libpng_sha256sum: 'd80dd2a38a37f803cb9b6ac7b14bd6e74ddc3b654780a8380bdf93523fdb4389'
 
   libjpeg_turbo_version: '3.2.1'
+  libjpeg_turbo_sha256sum: 'c27ad72a68da151177929aa969ae773a2da5ac2af9ce946079314fdac8cece7f'
 
   pcre2_version: '10.49'
+  pcre2_sha256sum: '53c156e1ba416a20da8e65395daa132da0d80e76910424caca3fcdae7831d384'
 
   bzip2_version: '1.0.8'
+  bzip2_sha256sum: 'ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269'
 
   xz_version: '5.8.4'
+  xz_sha256sum: '4ce24038fd4221e0d13bc1a2de7a4db56e90b92b3bf75321f6c14be73f65de4b'
 
   brotli_version: '1.2.1'
+  brotli_sha256sum: '98d35d11a78dc453aebb7d10c3748f3f73ff78c8267c0dc697b8631f67bf7e8f'
 
   zstd_version: '1.5.7'
+  zstd_sha256sum: 'eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3'
 
   libunistring_version: '1.5'
+  libunistring_sha256sum: 'fe89007a8a414ae4790b816b86859e877d3ab135db3c37f06541ff7e85ac344b'
 
   proxy_libintl_version: '0.5'
+  proxy_libintl_sha256sum: 'f7a1cbd7579baaf575c66f9d99fb6295e9b0684a28b095967cfda17857595303'
 
   flex_version: '2.6.4'
+  flex_sha256sum: 'e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995'
 
   libtasn1_version: '4.21.0'
+  libtasn1_sha256sum: '1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87'
 
   libidn2_version: '2.3.0'
+  libidn2_sha256sum: 'e1cb1db3d2e249a6a3eb6f0946777c2e892d5c5dc7bd91c74394fc3a01cab8b5'
 
   nettle_version: '4.0'
+  nettle_sha256sum: '3addbc00da01846b232fb3bc453538ea5468da43033f21bb345cb1e9073f5094'
 
   gnutls_version: '3.8.13'
+  gnutls_sha256sum: 'ffed8ec1bf09c2426d4f14aae377de4753b53e537d685e604e99a8b16ca9c97e'
 
   uchardet_version: '0.0.8'
+  uchardet_sha256sum: 'e97a60cfc00a1c147a674b097bb1422abd9fa78a2d9ce3f3fdcc2e78a34ac5f0'
 
   icu4c_version: '79.1'
+  icu4c_sha256sum: '06fa63ecb521048f8082f12ad988f6b678d90cbd88aafce24cbc94902b191d99'
 
   pixman_version: '0.46.4'
+  pixman_sha256sum: 'd09c44ebc3bd5bee7021c79f922fe8fb2fb57f7320f55e97ff9914d2346a591c'
 
   expat_version: '2.10.0'
+  expat_sha256sum: 'c624ba2998fc65df1163a49641ff3f9ab73138b11641d92c86bee0fb01b1bc7f'
 
   libxml2_version: '2.15.4'
+  libxml2_sha256sum: '98087fd181d9070724f3fbc65c7377db03038eb92bd882374daff44940138821'
 
   nghttp2_version: '1.71.0'
+  nghttp2_sha256sum: 'c0f55121d88650e4b9227aec28cebaf664d2417ca60fe70be0f8d38829f52116'
 
   libffi_version: '3.8.0'
+  libffi_sha256sum: '7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4'
 
   libpsl_version: '0.23.3'
+  libpsl_sha256sum: '93941f85a1e7bd593fa94f299233cb5dfc91cd144fd9a78a6ceb75001c5b03be'
 
   orc_version: '0.4.44'
+  orc_sha256sum: '4aeb97aea2b58224029dc2b23d7d064cfa990cb4fb8c4da440bcbe9c95bc5d2d'
 
   sqlite3_version: '3540100'
+  sqlite3_sha256sum: '926ef8d3eab93fbf6e06011901273eec076b25594a4e1cdadd50c987f4f6d64e'
+
+  sqlite3_year: '2026'
 
   glib_version: '2.90.1'
+  glib_sha256sum: '93c941aa17d5eb1d53fe838365f29a8b4e539c222a256d974ec8f30fc413e396'
 
   gdk_pixbuf_version: '2.44.8'
+  gdk_pixbuf_sha256sum: '919f529512961a12e81cd4b4b466a48c3933469e7f9a310c6513cd4fb252ba3c'
 
   libsoup_version: '3.8.1'
+  libsoup_sha256sum: '5013dcef9136f6f861e6529fca578af50c1f52a39219027fb5aff652d1371a04'
 
   glib_networking_version: '2.90.1'
+  glib_networking_sha256sum: 'ea95636590098355a05e3027579dba1a9a950b05e456b2488ea03d82e4b6c18a'
 
   freetype_version: '2.15.0'
+  freetype_sha256sum: '9186627467a616d9a9e3e574748ac0c45fa77398e6364edef3041a8ba8d92f64'
 
   harfbuzz_version: '15.1.0'
+  harfbuzz_sha256sum: '0fc7c565443a5f4be7da65ac5ee5bd737d9b158dc908708b7689a0a5796b0c8d'
 
   jasper_version: '4.2.9'
+  jasper_sha256sum: 'f71cf643937a5fcaedcfeb30a22ba406912948ad4413148214df280afc425454'
 
   tiff_version: '4.7.2'
+  tiff_sha256sum: '672bd7d10aee4606171afb864f3570b83340f6a33e2c186dc0512f7145ffdf6a'
 
   libwebp_version: '1.6.0'
+  libwebp_sha256sum: 'e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564'
 
   libusb_version: '1.0.30'
+  libusb_sha256sum: 'fea36f34f9156400209595e300840767ab1a385ede1dc7ee893015aea9c6dbaf'
 
   libogg_version: '1.3.6'
+  libogg_sha256sum: '5c8253428e181840cd20d41f3ca16557a9cc04bad4a3d04cce84808677fa1061'
 
   libvorbis_version: '1.3.7'
+  libvorbis_sha256sum: '0e982409a9c3fc82ee06e08205b1355e5c6aa4c36bca58146ef399621b0ce5ab'
 
   flac_version: '1.5.0'
+  flac_sha256sum: 'f2c1c76592a82ffff8413ba3c4a1299b6c7ab06c734dee03fd88630485c2b920'
 
   wavpack_version: '5.9.0'
+  wavpack_sha256sum: 'b0038f515d322042aaa6bd352d437729c6f5f904363cc85bbc9b0d8bd4a81927'
 
   opus_version: '1.6.1'
+  opus_sha256sum: '6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1'
 
   opusfile_version: '0.12'
+  opusfile_sha256sum: '118d8601c12dd6a44f52423e68ca9083cc9f2bfe72da7a8c1acb22a80ae3550b'
 
   speex_version: '1.2.1'
+  speex_sha256sum: 'beaf2642e81a822eaade4d9ebf92e1678f301abfc74a29159c4e721ee70fdce0'
 
   mpg123_version: '1.33.7'
+  mpg123_sha256sum: '31d0e35a4ca567ec9b5ebda6c3062bb4435d6d3eacd6ef0d95cadd7854dc03ee'
 
   lame_version: '4.0'
+  lame_sha256sum: '3df5124d5ad3a98312ffd7ba6a9b36230e4f8a3e66d3ce0f425e336c32d216eb'
 
   musepack_version: '475'
+  musepack_sha256sum: 'a4b1742f997f83e1056142d556a8c20845ba764b70365ff9ccf2e3f81c427b2b'
 
   libopenmpt_version: '0.8.10'
+  libopenmpt_sha256sum: '976d259288c40cd285771f77d09eff3d02514511d5677ecfcfb53be5013317e2'
 
   libgme_version: '0.6.5'
+  libgme_sha256sum: 'a133f19278222136ba0d8c27b64a07987ba05fec9d2e6d293ccd8cabdd97ddbb'
 
   faad2_version: '2.11.4'
+  faad2_sha256sum: '2783ea0f06ccdf553fee6d6558d457e9e1458ec977e306d6d0a1bfed90a8d040'
 
   faac_version: '2.2'
+  faac_sha256sum: 'a93963573907c83e26e8cfabbf80d3a9c360f06ea4ecf1ea6cb74a202494d8d9'
 
   fdk_aac_version: '3.0.0'
+  fdk_aac_sha256sum: '70b95857b958fb8f794489307a87845dde4cc1fcea060f3f29f40e4b2fe16c82'
 
   utfcpp_version: '4.2.1'
+  utfcpp_sha256sum: '6d6a5493a111884cc085ee31babfe6d9960c8fb08fc80a64852eaeea8323dbc1'
 
   taglib_version: '2.3.2'
+  taglib_sha256sum: '3ca2d8afaa7f1cf7f6ed10e511ebc368bfacd6dcaa3dbfa690b89e502e8963dc'
 
   libbs2b_version: '3.1.0'
+  libbs2b_sha256sum: '4799974becdeeedf0db00115bc63f60ea3fe4b25f1dfdb6903505839a720e46f'
 
   libebur128_version: '1.2.6'
+  libebur128_sha256sum: 'baa7fc293a3d4651e244d8022ad03ab797ca3c2ad8442c43199afe8059faa613'
 
   fftw_version: '3.3.11'
+  fftw_sha256sum: '5630c24cdeb33b131612f7eb4b1a9934234754f9f388ff8617458d0be6f239a1'
 
   ffmpeg_version: '9.0.2'
+  ffmpeg_sha256sum: 'ee80a25a5621df84498cef46917be87eab3b4f01951e85c2c7cbe5c94914ee70'
 
   chromaprint_version: '1.6.2'
+  chromaprint_sha256sum: 'd54ada62c16b2db396d3251ec54fc7a58909c163131a1cfcf7fa6407dbc14360'
 
   gstreamer_version: '1.28.9'
+  gstreamer_sha256sum: '6dbf744f583131a34845cc641e803843766a9ba80ce00378a9043fd6d8d5fb38'
+  gst_plugins_base_sha256sum: 'c1fda668b520e6aef763c0eb962c032c9fe52bce322e8b00c69b4e9e847bddc1'
+  gst_plugins_good_sha256sum: 'e518cd97483706a252e95e60312a22d23dec6f5e7673af6f5bde719c3a9ca7f4'
+  gst_plugins_bad_sha256sum: '4a4e0b7bf84f868378c48f143a7ac3a98923b488a5b74f1a35ba46bc3c43f6b1'
+  gst_plugins_ugly_sha256sum: '550a52536962186f5488e06b5c08f31ae0f18400aee32a3385156d31cb4b1189'
+  gst_libav_sha256sum: '4b3df21fa70972a80891d2298cf32c14a62c3db4483d545c7ac018230399186b'
 
   gstreamer_plugins_rs_version: '0.15.4'
 
   libplist_version: '2.8.1'
+  libplist_sha256sum: '2a1792e5820e1657c173735fde75baeebd6dd967d2ac47be1e3891ddc64ebefa'
 
   libmtp_version: '1.1.23'
+  libmtp_sha256sum: '74a2b6e8cb4a0304e95b995496ea3ac644c29371649b892b856e22f12a0bdeed'
 
   libcdio_version: '2.4.0'
+  libcdio_sha256sum: '8e6a305f81e45a78b41ce696d34497cc208d97075469d7304c11a6d44bf006ac'
 
   libgpod_version: '69ad3dcb64f7f38410bfb4078f5441eb0b7ddf48'
 
   qt_version: '6.12.0'
+  qtbase_sha256sum: 'a951bd163c7b80fc6b8c88d7668fb56abf91c152373e13c10666763238131307'
+  qttools_sha256sum: '8dab8f3611496486a470ad5f115ceea584f36bc22a2b8b6f6ebdbafbb8160693'
+  qtimageformats_sha256sum: '0943132b5db8de6b6a7f1d162682173e8763c7ed94e80fd39113292845f67762'
 
   qt_version_compat: '6.4.3'
+  qtbase_compat_sha256sum: '5087c9e5b0165e7bc3c1a4ab176b35d0cd8f52636aea903fa377bdba00891a60'
+  qttools_compat_sha256sum: '867df829cd5cd3ae8efe62e825503123542764b13c96953511e567df70c5a091'
+  qtimageformats_compat_sha256sum: '0aff58062e74b84617c5da8325d8cdad5368d8f4d2a11ceafcd58329fe99b798'
 
   kdsingleapplication_version: '1.2.1'
+  kdsingleapplication_sha256sum: 'e3254ce9dc5ecf6d61ef83264bc61d486a307f0e3c9ed1bb2176f068cdbcbe09'
 
   macdeploytool_version: 'ce0f075298d580eb0e92d0ccdcb5300365dde732'
 
   sparkle_version: '2.10.1'
+  sparkle_sha256sum: '1a856d2a9edb8e628de88121d7be04cf0e2167f8641650b78fca00b14244cf27'
 
   sparsehash_version: '2.0.4'
+  sparsehash_sha256sum: '8cd1a95827dfd8270927894eb77f62b4087735cbede953884647f16c521c7e58'
 
   max_releases: '6'
 
@@ -261,6 +352,9 @@ jobs:
         shell: bash
         run: |
           echo "qt_version=${{env.qt_version_compat}}" >> $GITHUB_ENV
+          echo "qtbase_sha256sum=${{env.qtbase_compat_sha256sum}}" >> $GITHUB_ENV
+          echo "qttools_sha256sum=${{env.qttools_compat_sha256sum}}" >> $GITHUB_ENV
+          echo "qtimageformats_sha256sum=${{env.qtimageformats_compat_sha256sum}}" >> $GITHUB_ENV
 
       - name: Set MACOSX_DEPLOYMENT_TARGET
         shell: bash
@@ -354,7 +448,8 @@ jobs:
         shell: bash
         run: |
           if ! command -v ccache &> /dev/null; then
-            curl -L -o ccache.tar.gz https://github.com/ccache/ccache/releases/download/v${{env.ccache_version}}/ccache-${{env.ccache_version}}-darwin.tar.gz
+            curl -f -L -o ccache.tar.gz https://github.com/ccache/ccache/releases/download/v${{env.ccache_version}}/ccache-${{env.ccache_version}}-darwin.tar.gz
+            echo "${{env.ccache_sha256sum}} *ccache.tar.gz" | shasum -a 256 -c -
             tar -xf ccache.tar.gz
             sudo cp ccache-${{env.ccache_version}}-darwin/ccache ${{env.prefix_path}}/bin/
             sudo chmod +x ${{env.prefix_path}}/bin/ccache
@@ -447,12 +542,13 @@ jobs:
         working-directory: build
         run: |
           case "${{env.arch}}" in
-            x86_64) ghcli_arch=amd64 ;;
-            arm64) ghcli_arch=arm64 ;;
+            x86_64) ghcli_arch=amd64; ghcli_sha256sum="${{env.ghcli_amd64_sha256sum}}" ;;
+            arm64) ghcli_arch=arm64; ghcli_sha256sum="${{env.ghcli_arm64_sha256sum}}" ;;
             *) echo "Unsupported arch: ${{env.arch}}"; exit 1 ;;
           esac
           curl ${{env.curl_options}} https://github.com/cli/cli/releases/download/v${{env.ghcli_version}}/gh_${{env.ghcli_version}}_macOS_${ghcli_arch}.zip || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gh_${{env.ghcli_version}}_macOS_${ghcli_arch}.zip
+          echo "${ghcli_sha256sum} *gh_${{env.ghcli_version}}_macOS_${ghcli_arch}.zip" | shasum -a 256 -c -
           unzip -o gh_${{env.ghcli_version}}_macOS_${ghcli_arch}.zip
           sudo cp gh_${{env.ghcli_version}}_macOS_${ghcli_arch}/bin/gh /usr/local/bin/
 
@@ -481,6 +577,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/pkgconf/pkgconf/archive/refs/tags/pkgconf-${{env.pkgconf_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/pkgconf-${{env.pkgconf_version}}.tar.gz
+
+      - name: Verify pkgconf
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.pkgconf_sha256sum}} *pkgconf-${{env.pkgconf_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract pkgconf
         if: env.skip_lib != 'true'
@@ -553,6 +655,12 @@ jobs:
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/m4/m4-${{env.m4_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/m4-${{env.m4_version}}.tar.gz
 
+      - name: Verify m4
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.m4_sha256sum}} *m4-${{env.m4_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract m4
         if: env.skip_lib != 'true'
         shell: bash
@@ -613,6 +721,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/bison/bison-${{env.bison_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/bison-${{env.bison_version}}.tar.gz
+
+      - name: Verify bison
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.bison_sha256sum}} *bison-${{env.bison_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract bison
         if: env.skip_lib != 'true'
@@ -675,6 +789,12 @@ jobs:
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/autoconf/autoconf-${{env.autoconf_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/autoconf-${{env.autoconf_version}}.tar.gz
 
+      - name: Verify autoconf
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.autoconf_sha256sum}} *autoconf-${{env.autoconf_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract autoconf
         if: env.skip_lib != 'true'
         shell: bash
@@ -736,6 +856,12 @@ jobs:
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/automake/automake-${{env.automake_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/automake-${{env.automake_version}}.tar.gz
 
+      - name: Verify automake
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.automake_sha256sum}} *automake-${{env.automake_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract automake
         if: env.skip_lib != 'true'
         shell: bash
@@ -796,6 +922,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libtool/libtool-${{env.libtool_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libtool-${{env.libtool_version}}.tar.gz
+
+      - name: Verify libtool
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libtool_sha256sum}} *libtool-${{env.libtool_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract libtool
         if: env.skip_lib != 'true'
@@ -861,6 +993,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/frida/proxy-libintl/archive/refs/tags/${{env.proxy_libintl_version}}/proxy-libintl-${{env.proxy_libintl_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/proxy-libintl-${{env.proxy_libintl_version}}.tar.gz
 
+      - name: Verify proxy-libintl
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.proxy_libintl_sha256sum}} *proxy-libintl-${{env.proxy_libintl_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract proxy-libintl
         if: env.skip_lib != 'true'
         shell: bash
@@ -920,6 +1058,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/sparsehash/sparsehash/archive/refs/tags/sparsehash-${{env.sparsehash_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/sparsehash-${{env.sparsehash_version}}.tar.gz
+
+      - name: Verify sparsehash
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.sparsehash_sha256sum}} *sparsehash-${{env.sparsehash_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract sparsehash
         if: env.skip_lib != 'true'
@@ -982,6 +1126,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/Kitware/CMake/releases/download/v${{env.cmake_version}}/cmake-${{env.cmake_version}}-macos-universal.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/cmake-${{env.cmake_version}}-macos-universal.tar.gz
 
+      - name: Verify cmake
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.cmake_sha256sum}} *cmake-${{env.cmake_version}}-macos-universal.tar.gz" | shasum -a 256 -c -
+
       - name: Extract cmake
         if: env.skip_lib != 'true'
         shell: bash
@@ -1032,6 +1182,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://gmplib.org/download/gmp/gmp-${{env.gmp_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gmp-${{env.gmp_version}}.tar.xz
+
+      - name: Verify gmp
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.gmp_sha256sum}} *gmp-${{env.gmp_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract gmp
         if: env.skip_lib != 'true'
@@ -1098,6 +1254,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://www.nasm.us/pub/nasm/releasebuilds/${{env.nasm_version}}/nasm-${{env.nasm_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/nasm-${{env.nasm_version}}.tar.xz
+
+      - name: Verify nasm
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.nasm_sha256sum}} *nasm-${{env.nasm_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract nasm
         if: env.skip_lib != 'true'
@@ -1166,6 +1328,12 @@ jobs:
           curl ${{env.curl_options}} https://www.tortall.net/projects/yasm/releases/yasm-${{env.yasm_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/yasm-${{env.yasm_version}}.tar.gz
 
+      - name: Verify yasm
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.yasm_sha256sum}} *yasm-${{env.yasm_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract yasm
         if: env.skip_lib != 'true'
         shell: bash
@@ -1232,6 +1400,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/madler/zlib/releases/download/v${{env.zlib_version}}/zlib-${{env.zlib_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/zlib-${{env.zlib_version}}.tar.gz
 
+      - name: Verify zlib
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.zlib_sha256sum}} *zlib-${{env.zlib_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract zlib
         if: env.skip_lib != 'true'
         shell: bash
@@ -1296,6 +1470,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/openssl/openssl/releases/download/openssl-${{env.openssl_version}}/openssl-${{env.openssl_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/openssl-${{env.openssl_version}}.tar.gz
+
+      - name: Verify openssl
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.openssl_sha256sum}} *openssl-${{env.openssl_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract openssl
         if: env.skip_lib != 'true'
@@ -1364,6 +1544,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/libpng/libpng16/${{env.libpng_version}}/libpng-${{env.libpng_version}}.tar.xz || \
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/libpng/libpng16/${{env.libpng_version}}/libpng-${{env.libpng_version}}.tar.xz
+
+      - name: Verify libpng
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libpng_sha256sum}} *libpng-${{env.libpng_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract libpng
         if: env.skip_lib != 'true'
@@ -1437,6 +1623,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/${{env.libjpeg_turbo_version}}/libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz
 
+      - name: Verify libjpeg-turbo
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libjpeg_turbo_sha256sum}} *libjpeg-turbo-${{env.libjpeg_turbo_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract libjpeg-turbo
         if: env.skip_lib != 'true'
         shell: bash
@@ -1501,6 +1693,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/PCRE2Project/pcre2/releases/download/pcre2-${{env.pcre2_version}}/pcre2-${{env.pcre2_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/pcre2-${{env.pcre2_version}}.tar.bz2
+
+      - name: Verify pcre2
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.pcre2_sha256sum}} *pcre2-${{env.pcre2_version}}.tar.bz2" | shasum -a 256 -c -
 
       - name: Extract pcre2
         if: env.skip_lib != 'true'
@@ -1570,6 +1768,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://sourceware.org/pub/bzip2/bzip2-${{env.bzip2_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/bzip2-${{env.bzip2_version}}.tar.gz
+
+      - name: Verify bzip2
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.bzip2_sha256sum}} *bzip2-${{env.bzip2_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract bzip2
         if: env.skip_lib != 'true'
@@ -1642,6 +1846,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/tukaani-project/xz/releases/download/v${{env.xz_version}}/xz-${{env.xz_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/xz-${{env.xz_version}}.tar.xz
 
+      - name: Verify xz
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.xz_sha256sum}} *xz-${{env.xz_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract xz
         if: env.skip_lib != 'true'
         shell: bash
@@ -1707,6 +1917,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/google/brotli/archive/refs/tags/v${{env.brotli_version}}/brotli-${{env.brotli_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/brotli-${{env.brotli_version}}.tar.gz
+
+      - name: Verify brotli
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.brotli_sha256sum}} *brotli-${{env.brotli_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract brotli
         if: env.skip_lib != 'true'
@@ -1775,6 +1991,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/facebook/zstd/releases/download/v${{env.zstd_version}}/zstd-${{env.zstd_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/zstd-${{env.zstd_version}}.tar.gz
 
+      - name: Verify zstd
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.zstd_sha256sum}} *zstd-${{env.zstd_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract zstd
         if: env.skip_lib != 'true'
         shell: bash
@@ -1840,6 +2062,12 @@ jobs:
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libunistring/libunistring-${{env.libunistring_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libunistring-${{env.libunistring_version}}.tar.xz
 
+      - name: Verify libunistring
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libunistring_sha256sum}} *libunistring-${{env.libunistring_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract libunistring
         if: env.skip_lib != 'true'
         shell: bash
@@ -1900,6 +2128,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/westes/flex/releases/download/v${{env.flex_version}}/flex-${{env.flex_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/flex-${{env.flex_version}}.tar.gz
+
+      - name: Verify flex
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.flex_sha256sum}} *flex-${{env.flex_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract flex
         if: env.skip_lib != 'true'
@@ -1968,6 +2202,12 @@ jobs:
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libtasn1/libtasn1-${{env.libtasn1_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libtasn1-${{env.libtasn1_version}}.tar.gz
 
+      - name: Verify libtasn1
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libtasn1_sha256sum}} *libtasn1-${{env.libtasn1_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract libtasn1
         if: env.skip_lib != 'true'
         shell: bash
@@ -2034,6 +2274,12 @@ jobs:
           curl ${{env.curl_options}} https://mirrors.ocf.berkeley.edu/gnu/libidn/libidn2-${{env.libidn2_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libidn2-${{env.libidn2_version}}.tar.gz
 
+      - name: Verify libidn2
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libidn2_sha256sum}} *libidn2-${{env.libidn2_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract libidn2
         if: env.skip_lib != 'true'
         shell: bash
@@ -2099,6 +2345,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://www.lysator.liu.se/~nisse/archive/nettle-${{env.nettle_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/nettle-${{env.nettle_version}}.tar.gz
+
+      - name: Verify nettle
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.nettle_sha256sum}} *nettle-${{env.nettle_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract nettle
         if: env.skip_lib != 'true'
@@ -2167,6 +2419,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://www.gnupg.org/ftp/gcrypt/gnutls/v${{env.gnutls_version_short}}/gnutls-${{env.gnutls_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gnutls-${{env.gnutls_version}}.tar.xz
+
+      - name: Verify GnuTLS
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.gnutls_sha256sum}} *gnutls-${{env.gnutls_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract GnuTLS
         if: env.skip_lib != 'true'
@@ -2242,6 +2500,12 @@ jobs:
           curl ${{env.curl_options}} https://www.freedesktop.org/software/uchardet/releases/uchardet-${{env.uchardet_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/uchardet-${{env.uchardet_version}}.tar.xz
 
+      - name: Verify uchardet
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.uchardet_sha256sum}} *uchardet-${{env.uchardet_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract uchardet
         if: env.skip_lib != 'true'
         shell: bash
@@ -2306,6 +2570,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/unicode-org/icu/releases/download/release-${{env.icu4c_version}}/icu4c-${{env.icu4c_version}}-sources.tgz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/icu4c-${{env.icu4c_version}}-sources.tgz
+
+      - name: Verify icu
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.icu4c_sha256sum}} *icu4c-${{env.icu4c_version}}-sources.tgz" | shasum -a 256 -c -
 
       - name: Extract icu
         if: env.skip_lib != 'true'
@@ -2376,6 +2646,12 @@ jobs:
           curl ${{env.curl_options}} https://www.cairographics.org/releases/pixman-${{env.pixman_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/pixman-${{env.pixman_version}}.tar.gz
 
+      - name: Verify pixman
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.pixman_sha256sum}} *pixman-${{env.pixman_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract pixman
         if: env.skip_lib != 'true'
         shell: bash
@@ -2440,6 +2716,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/libexpat/libexpat/releases/download/R_${{env.expat_version_underscore}}/expat-${{env.expat_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/expat-${{env.expat_version}}.tar.xz
+
+      - name: Verify expat
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.expat_sha256sum}} *expat-${{env.expat_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract expat
         if: env.skip_lib != 'true'
@@ -2513,6 +2795,12 @@ jobs:
           curl ${{env.curl_options}} https://download.gnome.org/sources/libxml2/${{env.libxml2_version_short}}/libxml2-${{env.libxml2_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libxml2-${{env.libxml2_version}}.tar.xz
 
+      - name: Verify libxml2
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libxml2_sha256sum}} *libxml2-${{env.libxml2_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract libxml2
         if: env.skip_lib != 'true'
         shell: bash
@@ -2578,6 +2866,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/nghttp2/nghttp2/releases/download/v${{env.nghttp2_version}}/nghttp2-${{env.nghttp2_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/nghttp2-${{env.nghttp2_version}}.tar.xz
 
+      - name: Verify nghttp2
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.nghttp2_sha256sum}} *nghttp2-${{env.nghttp2_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract nghttp2
         if: env.skip_lib != 'true'
         shell: bash
@@ -2642,6 +2936,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/libffi/libffi/releases/download/v${{env.libffi_version}}/libffi-${{env.libffi_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libffi-${{env.libffi_version}}.tar.gz
+
+      - name: Verify libffi
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libffi_sha256sum}} *libffi-${{env.libffi_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract libffi
         if: env.skip_lib != 'true'
@@ -2709,6 +3009,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/rockdaboot/libpsl/releases/download/${{env.libpsl_version}}/libpsl-${{env.libpsl_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libpsl-${{env.libpsl_version}}.tar.gz
 
+      - name: Verify libpsl
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libpsl_sha256sum}} *libpsl-${{env.libpsl_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract libpsl
         if: env.skip_lib != 'true'
         shell: bash
@@ -2774,6 +3080,12 @@ jobs:
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/orc/orc-${{env.orc_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/orc-${{env.orc_version}}.tar.xz
 
+      - name: Verify orc
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.orc_sha256sum}} *orc-${{env.orc_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract orc
         if: env.skip_lib != 'true'
         shell: bash
@@ -2831,8 +3143,14 @@ jobs:
         shell: bash
         working-directory: downloads
         run: |
-          curl ${{env.curl_options}} https://sqlite.org/2026/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://sqlite.org/${{env.sqlite3_year}}/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/sqlite-autoconf-${{env.sqlite3_version}}.tar.gz
+
+      - name: Verify SQLite
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.sqlite3_sha256sum}} *sqlite-autoconf-${{env.sqlite3_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract SQLite
         if: env.skip_lib != 'true'
@@ -2907,6 +3225,12 @@ jobs:
           curl ${{env.curl_options}} https://download.gnome.org/sources/glib/${{env.glib_version_short}}/glib-${{env.glib_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/glib-${{env.glib_version}}.tar.xz
 
+      - name: Verify GLib
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.glib_sha256sum}} *glib-${{env.glib_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract GLib
         if: env.skip_lib != 'true'
         shell: bash
@@ -2975,6 +3299,12 @@ jobs:
           curl ${{env.curl_options}} https://download.gnome.org/sources/gdk-pixbuf/${{env.gdk_pixbuf_version_short}}/gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz
 
+      - name: Verify gdk-pixbuf
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.gdk_pixbuf_sha256sum}} *gdk-pixbuf-${{env.gdk_pixbuf_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract gdk-pixbuf
         if: env.skip_lib != 'true'
         shell: bash
@@ -3039,6 +3369,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://download.gnome.org/sources/libsoup/${{env.libsoup_version_short}}/libsoup-${{env.libsoup_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libsoup-${{env.libsoup_version}}.tar.xz
+
+      - name: Verify libsoup
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libsoup_sha256sum}} *libsoup-${{env.libsoup_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract libsoup
         if: env.skip_lib != 'true'
@@ -3105,6 +3441,12 @@ jobs:
           curl ${{env.curl_options}} https://download.gnome.org/sources/glib-networking/${{env.glib_networking_version_short}}/glib-networking-${{env.glib_networking_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/glib-networking-${{env.glib_networking_version}}.tar.xz
 
+      - name: Verify glib-networking
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.glib_networking_sha256sum}} *glib-networking-${{env.glib_networking_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract glib-networking
         if: env.skip_lib != 'true'
         shell: bash
@@ -3170,6 +3512,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/freetype/freetype2/${{env.freetype_version}}/freetype-${{env.freetype_version}}.tar.gz || \
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/freetype/freetype2/${{env.freetype_version}}/freetype-${{env.freetype_version}}.tar.gz
+
+      - name: Verify freetype
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.freetype_sha256sum}} *freetype-${{env.freetype_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract freetype (bootstrap)
         if: env.skip_lib != 'true'
@@ -3239,6 +3587,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/harfbuzz/harfbuzz/releases/download/${{env.harfbuzz_version}}/harfbuzz-${{env.harfbuzz_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/harfbuzz-${{env.harfbuzz_version}}.tar.xz
+
+      - name: Verify harfbuzz
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.harfbuzz_sha256sum}} *harfbuzz-${{env.harfbuzz_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract harfbuzz
         if: env.skip_lib != 'true'
@@ -3370,6 +3724,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/jasper-software/jasper/releases/download/version-${{env.jasper_version}}/jasper-${{env.jasper_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/jasper-${{env.jasper_version}}.tar.gz
 
+      - name: Verify jasper
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.jasper_sha256sum}} *jasper-${{env.jasper_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract jasper
         if: env.skip_lib != 'true'
         shell: bash
@@ -3435,6 +3795,12 @@ jobs:
           curl ${{env.curl_options}} https://download.osgeo.org/libtiff/tiff-${{env.tiff_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/tiff-${{env.tiff_version}}.tar.gz
 
+      - name: Verify tiff
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.tiff_sha256sum}} *tiff-${{env.tiff_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract tiff
         if: env.skip_lib != 'true'
         shell: bash
@@ -3499,6 +3865,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-${{env.libwebp_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libwebp-${{env.libwebp_version}}.tar.gz
+
+      - name: Verify libwebp
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libwebp_sha256sum}} *libwebp-${{env.libwebp_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract libwebp
         if: env.skip_lib != 'true'
@@ -3572,6 +3944,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/libusb/libusb/releases/download/v${{env.libusb_version}}/libusb-${{env.libusb_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libusb-${{env.libusb_version}}.tar.bz2
 
+      - name: Verify libusb
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libusb_sha256sum}} *libusb-${{env.libusb_version}}.tar.bz2" | shasum -a 256 -c -
+
       - name: Extract libusb
         if: env.skip_lib != 'true'
         shell: bash
@@ -3638,6 +4016,12 @@ jobs:
           curl ${{env.curl_options}} https://downloads.xiph.org/releases/ogg/libogg-${{env.libogg_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libogg-${{env.libogg_version}}.tar.xz
 
+      - name: Verify libogg
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libogg_sha256sum}} *libogg-${{env.libogg_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract libogg
         if: env.skip_lib != 'true'
         shell: bash
@@ -3703,6 +4087,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://downloads.xiph.org/releases/vorbis/libvorbis-${{env.libvorbis_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libvorbis-${{env.libvorbis_version}}.tar.gz
+
+      - name: Verify libvorbis
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libvorbis_sha256sum}} *libvorbis-${{env.libvorbis_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract libvorbis
         if: env.skip_lib != 'true'
@@ -3782,6 +4172,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/xiph/flac/releases/download/${{env.flac_version}}/flac-${{env.flac_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/flac-${{env.flac_version}}.tar.xz
 
+      - name: Verify flac
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.flac_sha256sum}} *flac-${{env.flac_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract flac
         if: env.skip_lib != 'true'
         shell: bash
@@ -3847,6 +4243,12 @@ jobs:
           curl ${{env.curl_options}} https://www.wavpack.com/wavpack-${{env.wavpack_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/wavpack-${{env.wavpack_version}}.tar.bz2
 
+      - name: Verify wavpack
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.wavpack_sha256sum}} *wavpack-${{env.wavpack_version}}.tar.bz2" | shasum -a 256 -c -
+
       - name: Extract wavpack
         if: env.skip_lib != 'true'
         shell: bash
@@ -3911,6 +4313,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://downloads.xiph.org/releases/opus/opus-${{env.opus_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/opus-${{env.opus_version}}.tar.gz
+
+      - name: Verify opus
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.opus_sha256sum}} *opus-${{env.opus_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract opus
         if: env.skip_lib != 'true'
@@ -3983,6 +4391,12 @@ jobs:
           curl ${{env.curl_options}} https://downloads.xiph.org/releases/opus/opusfile-${{env.opusfile_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/opusfile-${{env.opusfile_version}}.tar.gz
 
+      - name: Verify opusfile
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.opusfile_sha256sum}} *opusfile-${{env.opusfile_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract opusfile
         if: env.skip_lib != 'true'
         shell: bash
@@ -4048,6 +4462,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://gitlab.xiph.org/xiph/speex/-/archive/Speex-${{env.speex_version}}/speex-Speex-${{env.speex_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/speex-Speex-${{env.speex_version}}.tar.gz
+
+      - name: Verify speex
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.speex_sha256sum}} *speex-Speex-${{env.speex_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract speex
         if: env.skip_lib != 'true'
@@ -4122,6 +4542,12 @@ jobs:
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/mpg123/mpg123/${{env.mpg123_version}}/mpg123-${{env.mpg123_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://www.mpg123.de/download/mpg123-${{env.mpg123_version}}.tar.bz2
 
+      - name: Verify mpg123
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.mpg123_sha256sum}} *mpg123-${{env.mpg123_version}}.tar.bz2" | shasum -a 256 -c -
+
       - name: Extract mpg123
         if: env.skip_lib != 'true'
         shell: bash
@@ -4194,6 +4620,12 @@ jobs:
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/lame/lame/${{env.lame_version}}/lame-${{env.lame_version}}.tar.gz || \
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/lame/lame/${{env.lame_version}}/lame-${{env.lame_version}}.tar.gz
 
+      - name: Verify lame
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.lame_sha256sum}} *lame-${{env.lame_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract lame
         if: env.skip_lib != 'true'
         shell: bash
@@ -4254,6 +4686,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://files.musepack.net/source/musepack_src_r${{env.musepack_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/musepack_src_r${{env.musepack_version}}.tar.gz
+
+      - name: Verify musepack
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.musepack_sha256sum}} *musepack_src_r${{env.musepack_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract musepack
         if: env.skip_lib != 'true'
@@ -4333,6 +4771,12 @@ jobs:
           curl ${{env.curl_options}} https://lib.openmpt.org/files/libopenmpt/src/libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz
 
+      - name: Verify libopenmpt
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libopenmpt_sha256sum}} *libopenmpt-${{env.libopenmpt_version}}+release.autotools.tar.gz" | shasum -a 256 -c -
+
       - name: Extract libopenmpt
         if: env.skip_lib != 'true'
         shell: bash
@@ -4399,6 +4843,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/libgme/game-music-emu/releases/download/${{env.libgme_version}}/libgme-${{env.libgme_version}}-src.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libgme-${{env.libgme_version}}-src.tar.gz
 
+      - name: Verify libgme
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libgme_sha256sum}} *libgme-${{env.libgme_version}}-src.tar.gz" | shasum -a 256 -c -
+
       - name: Extract libgme
         if: env.skip_lib != 'true'
         shell: bash
@@ -4463,6 +4913,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/knik0/faad2/tarball/${{env.faad2_version}}/faad2-${{env.faad2_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/faad2-${{env.faad2_version}}.tar.gz
+
+      - name: Verify faad2
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.faad2_sha256sum}} *faad2-${{env.faad2_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract faad2
         if: env.skip_lib != 'true'
@@ -4531,6 +4987,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/knik0/faac/archive/refs/tags/faac-${{env.faac_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/faac-${{env.faac_version}}.tar.gz
 
+      - name: Verify faac
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.faac_sha256sum}} *faac-${{env.faac_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract faac
         if: env.skip_lib != 'true'
         shell: bash
@@ -4595,6 +5057,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/opencore-amr/fdk-aac/fdk-aac-${{env.fdk_aac_version}}.tar.gz || \
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/opencore-amr/fdk-aac/fdk-aac-${{env.fdk_aac_version}}.tar.gz
+
+      - name: Verify fdk-aac
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.fdk_aac_sha256sum}} *fdk-aac-${{env.fdk_aac_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract fdk-aac
         if: env.skip_lib != 'true'
@@ -4661,6 +5129,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/nemtrif/utfcpp/archive/refs/tags/v${{env.utfcpp_version}}/utfcpp-${{env.utfcpp_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/utfcpp-${{env.utfcpp_version}}.tar.gz
 
+      - name: Verify utfcpp
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.utfcpp_sha256sum}} *utfcpp-${{env.utfcpp_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract utfcpp
         if: env.skip_lib != 'true'
         shell: bash
@@ -4720,6 +5194,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://taglib.org/releases/taglib-${{env.taglib_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/taglib-${{env.taglib_version}}.tar.gz
+
+      - name: Verify TagLib
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.taglib_sha256sum}} *taglib-${{env.taglib_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract TagLib
         if: env.skip_lib != 'true'
@@ -4785,6 +5265,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror}}/project/bs2b/libbs2b/${{env.libbs2b_version}}/libbs2b-${{env.libbs2b_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://${{env.sourceforge_mirror2}}/project/bs2b/libbs2b/${{env.libbs2b_version}}/libbs2b-${{env.libbs2b_version}}.tar.bz2
+
+      - name: Verify libbs2b
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libbs2b_sha256sum}} *libbs2b-${{env.libbs2b_version}}.tar.bz2" | shasum -a 256 -c -
 
       - name: Extract libbs2b
         if: env.skip_lib != 'true'
@@ -4870,6 +5356,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/jiixyj/libebur128/archive/refs/tags/v${{env.libebur128_version}}/libebur128-${{env.libebur128_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libebur128-${{env.libebur128_version}}.tar.gz
 
+      - name: Verify libebur128
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libebur128_sha256sum}} *libebur128-${{env.libebur128_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract libebur128
         if: env.skip_lib != 'true'
         shell: bash
@@ -4938,6 +5430,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://www.fftw.org/fftw-${{env.fftw_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/fftw-${{env.fftw_version}}.tar.gz
+
+      - name: Verify fftw
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.fftw_sha256sum}} *fftw-${{env.fftw_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract fftw
         if: env.skip_lib != 'true'
@@ -5012,6 +5510,12 @@ jobs:
           curl ${{env.curl_options}} https://ffmpeg.org/releases/ffmpeg-${{env.ffmpeg_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/ffmpeg-${{env.ffmpeg_version}}.tar.bz2
 
+      - name: Verify ffmpeg
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.ffmpeg_sha256sum}} *ffmpeg-${{env.ffmpeg_version}}.tar.bz2" | shasum -a 256 -c -
+
       - name: Extract ffmpeg
         if: env.skip_lib != 'true'
         shell: bash
@@ -5082,6 +5586,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/acoustid/chromaprint/releases/download/v${{env.chromaprint_version}}/chromaprint-${{env.chromaprint_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/chromaprint-${{env.chromaprint_version}}.tar.gz
 
+      - name: Verify Chromaprint
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.chromaprint_sha256sum}} *chromaprint-${{env.chromaprint_version}}.tar.gz" | shasum -a 256 -c -
+
       - name: Extract Chromaprint
         if: env.skip_lib != 'true'
         shell: bash
@@ -5146,6 +5656,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/libcdio/libcdio/releases/download/${{env.libcdio_version}}/libcdio-${{env.libcdio_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libcdio-${{env.libcdio_version}}.tar.bz2
+
+      - name: Verify libcdio
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libcdio_sha256sum}} *libcdio-${{env.libcdio_version}}.tar.bz2" | shasum -a 256 -c -
 
       - name: Extract libcdio
         if: env.skip_lib != 'true'
@@ -5220,6 +5736,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gstreamer/gstreamer-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gstreamer-${{env.gstreamer_version}}.tar.xz
+
+      - name: Verify GStreamer
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.gstreamer_sha256sum}} *gstreamer-${{env.gstreamer_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract GStreamer
         if: env.skip_lib != 'true'
@@ -5304,6 +5826,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-base/gst-plugins-base-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-base-${{env.gstreamer_version}}.tar.xz
+
+      - name: Verify gst-plugins-base
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.gst_plugins_base_sha256sum}} *gst-plugins-base-${{env.gstreamer_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract gst-plugins-base
         if: env.skip_lib != 'true'
@@ -5395,6 +5923,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-good/gst-plugins-good-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-good-${{env.gstreamer_version}}.tar.xz
+
+      - name: Verify gst-plugins-good
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.gst_plugins_good_sha256sum}} *gst-plugins-good-${{env.gstreamer_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract gst-plugins-good
         if: env.skip_lib != 'true'
@@ -5499,6 +6033,12 @@ jobs:
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-bad/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-bad-${{env.gstreamer_version}}.tar.xz
 
+      - name: Verify gst-plugins-bad
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.gst_plugins_bad_sha256sum}} *gst-plugins-bad-${{env.gstreamer_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract gst-plugins-bad
         if: env.skip_lib != 'true'
         shell: bash
@@ -5587,6 +6127,12 @@ jobs:
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-plugins-ugly/gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz
 
+      - name: Verify gst-plugins-ugly
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.gst_plugins_ugly_sha256sum}} *gst-plugins-ugly-${{env.gstreamer_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract gst-plugins-ugly
         if: env.skip_lib != 'true'
         shell: bash
@@ -5661,6 +6207,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://gstreamer.freedesktop.org/src/gst-libav/gst-libav-${{env.gstreamer_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/gst-libav-${{env.gstreamer_version}}.tar.xz
+
+      - name: Verify gst-libav
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.gst_libav_sha256sum}} *gst-libav-${{env.gstreamer_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract gst-libav
         if: env.skip_lib != 'true'
@@ -5794,6 +6346,12 @@ jobs:
           curl ${{env.curl_options}} https://github.com/libimobiledevice/libplist/releases/download/${{env.libplist_version}}/libplist-${{env.libplist_version}}.tar.bz2 || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libplist-${{env.libplist_version}}.tar.bz2
 
+      - name: Verify libplist
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libplist_sha256sum}} *libplist-${{env.libplist_version}}.tar.bz2" | shasum -a 256 -c -
+
       - name: Extract libplist
         if: env.skip_lib != 'true'
         shell: bash
@@ -5859,6 +6417,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/libmtp/libmtp/releases/download/v${{env.libmtp_version}}/libmtp-${{env.libmtp_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/libmtp-${{env.libmtp_version}}.tar.gz
+
+      - name: Verify libmtp
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.libmtp_sha256sum}} *libmtp-${{env.libmtp_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract libmtp
         if: env.skip_lib != 'true'
@@ -5997,6 +6561,12 @@ jobs:
             curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtbase-everywhere-src-${{env.qt_version}}.tar.xz
           fi
 
+      - name: Verify qtbase
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.qtbase_sha256sum}} *qtbase-everywhere-src-${{env.qt_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract qtbase
         if: env.skip_lib != 'true'
         shell: bash
@@ -6127,6 +6697,12 @@ jobs:
             curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qttools-everywhere-src-${{env.qt_version}}.tar.xz
           fi
 
+      - name: Verify qttools
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.qttools_sha256sum}} *qttools-everywhere-src-${{env.qt_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract qttools
         if: env.skip_lib != 'true'
         shell: bash
@@ -6211,6 +6787,12 @@ jobs:
             curl ${{env.curl_options}} https://download.qt.io/official_releases/qt/${{env.qt_version_short}}/${{env.qt_version}}/submodules/qtimageformats-everywhere-src-${{env.qt_version}}.tar.xz
           fi
 
+      - name: Verify qtimageformats
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.qtimageformats_sha256sum}} *qtimageformats-everywhere-src-${{env.qt_version}}.tar.xz" | shasum -a 256 -c -
+
       - name: Extract qtimageformats
         if: env.skip_lib != 'true'
         shell: bash
@@ -6284,6 +6866,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/KDAB/KDSingleApplication/releases/download/v${{env.kdsingleapplication_version}}/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz
+
+      - name: Verify KDSingleApplication
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.kdsingleapplication_sha256sum}} *kdsingleapplication-${{env.kdsingleapplication_version}}.tar.gz" | shasum -a 256 -c -
 
       - name: Extract KDSingleApplication
         if: env.skip_lib != 'true'
@@ -6452,6 +7040,12 @@ jobs:
         run: |
           curl ${{env.curl_options}} https://github.com/sparkle-project/Sparkle/releases/download/${{env.sparkle_version}}/Sparkle-${{env.sparkle_version}}.tar.xz || \
           curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/Sparkle-${{env.sparkle_version}}.tar.xz
+
+      - name: Verify sparkle
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.sparkle_sha256sum}} *Sparkle-${{env.sparkle_version}}.tar.xz" | shasum -a 256 -c -
 
       - name: Extract sparkle
         if: env.skip_lib != 'true'
