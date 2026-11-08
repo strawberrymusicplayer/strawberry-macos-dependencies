@@ -257,6 +257,9 @@ env:
   sparsehash_version: '2.0.4'
   sparsehash_sha256sum: '8cd1a95827dfd8270927894eb77f62b4087735cbede953884647f16c521c7e58'
 
+  googletest_version: '1.18.0'
+  googletest_sha256sum: '6e3191c1455468b3fc35a417fb565c1c5071aee1b7e7f85e30cf48a98d37d8b5'
+
   max_releases: '6'
 
   curl_options: '-f -O -L --connect-timeout 60 -m 900 --retry 15 --retry-delay 10 --retry-max-time 300 --retry-all-errors'
@@ -6912,6 +6915,72 @@ jobs:
           echo "${lib_index}" > "${{env.prefix_path}}/.built/kdsingleapplication-${{env.kdsingleapplication_version}}"
 
 
+      - name: Check if googletest is already built
+        if: env.runner == 'macos-intel'
+        shell: bash
+        run: |
+          lib_index=$((${lib_index:-0} + 1))
+          echo "lib_index=${lib_index}" >> $GITHUB_ENV
+          if [ -s "${{env.prefix_path}}/.built/googletest-${{env.googletest_version}}" ]; then
+            echo "googletest ${{env.googletest_version}} is already built, skipping."
+            echo "skip_lib=true" >> $GITHUB_ENV
+          else
+            echo "skip_lib=false" >> $GITHUB_ENV
+          fi
+
+      - name: Download googletest
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: |
+          curl ${{env.curl_options}} https://github.com/google/googletest/releases/download/v${{env.googletest_version}}/googletest-${{env.googletest_version}}.tar.gz || \
+          curl ${{env.curl_options}} https://packages.strawberrymusicplayer.org/googletest-${{env.googletest_version}}.tar.gz
+
+      - name: Verify googletest
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: downloads
+        run: echo "${{env.googletest_sha256sum}} *googletest-${{env.googletest_version}}.tar.gz" | shasum -a 256 -c -
+
+      - name: Extract googletest
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: build
+        run: tar -xf ../downloads/googletest-${{env.googletest_version}}.tar.gz
+
+      - name: Configure googletest
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: build/googletest-${{env.googletest_version}}
+        run: cmake --log-level="${{env.cmake_loglevel}}" -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="${{env.cmake_buildtype}}" -DCMAKE_INSTALL_PREFIX="${{env.prefix_path}}" -DBUILD_SHARED_LIBS=ON -DBUILD_GMOCK=ON -DINSTALL_GTEST=ON
+
+      - name: Build googletest
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: build/googletest-${{env.googletest_version}}/build
+        run: cmake --build . --parallel ${{env.make_jobs}}
+
+      - name: Install googletest
+        if: env.skip_lib != 'true'
+        shell: bash
+        working-directory: build/googletest-${{env.googletest_version}}/build
+        run: cmake --install .
+
+      - name: Mark googletest as built
+        if: env.runner == 'macos-intel' && env.skip_lib != 'true'
+        shell: bash
+        run: |
+          # Libraries later in the build order may depend on this one, clear them so they are rebuilt.
+          mkdir -p "${{env.prefix_path}}/.built"
+          for marker in "${{env.prefix_path}}/.built"/*; do
+            if [ -f "${marker}" ] && [ "$(cat "${marker}")" -gt "${lib_index}" ] 2>/dev/null; then
+              echo "Clearing $(basename "${marker}")"
+              rm -f "${marker}"
+            fi
+          done
+          echo "${lib_index}" > "${{env.prefix_path}}/.built/googletest-${{env.googletest_version}}"
+
+
       - name: Check if macdeploytool is already built
         if: env.runner == 'macos-intel'
         shell: bash
@@ -7184,6 +7253,7 @@ jobs:
           echo "* libgpod ${{env.libgpod_version}}" >> "${{env.release_notes_file}}"
           echo "* Qt ${{env.qt_version}}" >> "${{env.release_notes_file}}"
           echo "* KDSingleApplication ${{env.kdsingleapplication_version}}" >> "${{env.release_notes_file}}"
+          echo "* googletest ${{env.googletest_version}}" >> "${{env.release_notes_file}}"
           echo "* Sparkle ${{env.sparkle_version}}" >> "${{env.release_notes_file}}"
 
       - name: Create new release

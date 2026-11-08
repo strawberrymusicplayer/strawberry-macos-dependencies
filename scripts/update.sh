@@ -469,6 +469,9 @@ function update_package() {
     "sparsehash")
       package_version_latest=$(latest_github_release "sparsehash" "sparsehash")
       ;;
+    "googletest")
+      package_version_latest=$(latest_github_release "google" "googletest")
+      ;;
     "libgpod")
       package_version_latest=$(latest_git_commit "https://github.com/strawberrymusicplayer/strawberry-libgpod.git")
       package_git=1
@@ -718,6 +721,7 @@ function package_downloads() {
       ;;
     "kdsingleapplication") echo "kdsingleapplication_sha256sum https://github.com/KDAB/KDSingleApplication/releases/download/v${v}/kdsingleapplication-${v}.tar.gz" ;;
     "sparkle") echo "sparkle_sha256sum https://github.com/sparkle-project/Sparkle/releases/download/${v}/Sparkle-${v}.tar.xz" ;;
+    "googletest") echo "googletest_sha256sum https://github.com/google/googletest/releases/download/v${v}/googletest-${v}.tar.gz" ;;
     "sparsehash") echo "sparsehash_sha256sum https://github.com/sparsehash/sparsehash/archive/refs/tags/sparsehash-${v}.tar.gz" ;;
     # Git repositories don't have checksums.
     *) ;;
