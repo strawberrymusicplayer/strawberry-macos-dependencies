@@ -27,8 +27,8 @@ env:
   cmake_version: '4.4.5'
   cmake_sha256sum: '679e77a96b9ef9484cc6c1445255fc4f84206b48a65420efbedf16bdab55fbff'
 
-  ccache_version: '4.14.2'
-  ccache_sha256sum: 'cf240009630b605b775c7c5c7b7105a3b196c79f31af322c1557969aa28003fc'
+  ccache_version: '4.14.3'
+  ccache_sha256sum: '764dd2a8100ff83e6bbd7b9a1e2016cc401be34bee8a70ea99698186622c34d5'
 
   gmp_version: '6.3.0'
   gmp_sha256sum: 'a3c2b80201b89e68616f4ad30bc66aee4927c3ce50e33929ca819d5c43538898'
