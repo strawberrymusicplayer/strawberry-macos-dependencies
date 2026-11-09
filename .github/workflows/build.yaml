@@ -6586,6 +6586,12 @@ jobs:
             patch -p1 < "${patch}"
           done
 
+      - name: Patch qtbase
+        if: env.skip_lib != 'true' && (env.runner != 'macos-intel')
+        shell: bash
+        working-directory: build/qtbase-everywhere-src-${{env.qt_version}}
+        run: patch -p1 < ../../patches/qtbase-qcryptographichash.patch
+
       - name: Configure qtbase
         if: env.skip_lib != 'true'
         shell: bash
