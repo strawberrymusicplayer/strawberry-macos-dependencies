@@ -24,8 +24,8 @@ env:
   libtool_version: '2.6.2'
   libtool_sha256sum: '24adb3aa9ae035c70faba344af57d73215eb89281045af6c7ccd307751f8b0bf'
 
-  cmake_version: '4.4.5'
-  cmake_sha256sum: '679e77a96b9ef9484cc6c1445255fc4f84206b48a65420efbedf16bdab55fbff'
+  cmake_version: '4.5.0'
+  cmake_sha256sum: 'a645d69fd21e521759cc0c64e7c60462d43faf0c7214ac05f75c80f7c5037dde'
 
   ccache_version: '4.14.3'
   ccache_sha256sum: '764dd2a8100ff83e6bbd7b9a1e2016cc401be34bee8a70ea99698186622c34d5'
