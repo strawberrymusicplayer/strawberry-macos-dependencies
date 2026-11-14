@@ -105,8 +105,8 @@ env:
   nghttp2_version: '1.71.0'
   nghttp2_sha256sum: 'c0f55121d88650e4b9227aec28cebaf664d2417ca60fe70be0f8d38829f52116'
 
-  libffi_version: '3.8.0'
-  libffi_sha256sum: '7da3e2d9a171eb0a038f592ecad3ff2bb2550f3496d87b3b29ad0cf4430c0db4'
+  libffi_version: '3.8.1'
+  libffi_sha256sum: '81e879c094cc5ec3186c48510c6385ac6b3e866192e8bc71a35245703757ee40'
 
   libpsl_version: '0.23.3'
   libpsl_sha256sum: '93941f85a1e7bd593fa94f299233cb5dfc91cd144fd9a78a6ceb75001c5b03be'
