@@ -2,9 +2,9 @@ name: Build
 on: push
 
 env:
-  ghcli_version: '2.104.0'
-  ghcli_amd64_sha256sum: 'a8c2a708dbae89dc7c05ba7b0beafc95bd8d09ab4a3505467b77d32ebf364dc6'
-  ghcli_arm64_sha256sum: '23b12706219b9892e44236f988444a24adcf29284e16b35e03ba5b863fb6eb8e'
+  ghcli_version: '2.105.0'
+  ghcli_amd64_sha256sum: '23602cbccbbdc6285a8520745b714cb927ce2ca621779373c2a20cd8e33fda66'
+  ghcli_arm64_sha256sum: '2a5d03103ae444927383b93d9ffd65579a26e2eb900ce1cf11f55258d5319ded'
 
   pkgconf_version: '3.0.11'
   pkgconf_sha256sum: 'd2c8a0965d5b80dcc454cc999ad5edb8bfbc4d8e65cde7a6f19a5cb7ecaf3377'
