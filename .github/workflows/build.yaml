@@ -84,8 +84,8 @@ env:
   nettle_version: '4.0'
   nettle_sha256sum: '3addbc00da01846b232fb3bc453538ea5468da43033f21bb345cb1e9073f5094'
 
-  gnutls_version: '3.8.13'
-  gnutls_sha256sum: 'ffed8ec1bf09c2426d4f14aae377de4753b53e537d685e604e99a8b16ca9c97e'
+  gnutls_version: '3.8.14'
+  gnutls_sha256sum: '7e2d258071f5db9620aa7ff34259331d004f7beafa3eb18560cfaf60acfbf02a'
 
   uchardet_version: '0.0.8'
   uchardet_sha256sum: 'e97a60cfc00a1c147a674b097bb1422abd9fa78a2d9ce3f3fdcc2e78a34ac5f0'
@@ -2434,12 +2434,6 @@ jobs:
         shell: bash
         working-directory: build
         run: tar -xf ../downloads/gnutls-${{env.gnutls_version}}.tar.xz
-
-      - name: Patch GnuTLS
-        if: env.skip_lib != 'true'
-        shell: bash
-        working-directory: build/gnutls-${{env.gnutls_version}}
-        run: patch -p1 < ../../patches/gnutls-crau-maybe-unused.patch
 
       - name: Configure GnuTLS
         if: env.skip_lib != 'true'
