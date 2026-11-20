@@ -209,8 +209,8 @@ env:
   fftw_version: '3.3.11'
   fftw_sha256sum: '5630c24cdeb33b131612f7eb4b1a9934234754f9f388ff8617458d0be6f239a1'
 
-  ffmpeg_version: '9.0.2'
-  ffmpeg_sha256sum: 'ee80a25a5621df84498cef46917be87eab3b4f01951e85c2c7cbe5c94914ee70'
+  ffmpeg_version: '9.1'
+  ffmpeg_sha256sum: '1ba978f21a9cdf3506a98afb6b410f62c42a7225b08952ff437204156dfe7bef'
 
   chromaprint_version: '1.6.2'
   chromaprint_sha256sum: 'd54ada62c16b2db396d3251ec54fc7a58909c163131a1cfcf7fa6407dbc14360'
