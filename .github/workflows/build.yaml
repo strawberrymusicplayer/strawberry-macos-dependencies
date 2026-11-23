@@ -63,8 +63,8 @@ env:
   brotli_version: '1.2.1'
   brotli_sha256sum: '98d35d11a78dc453aebb7d10c3748f3f73ff78c8267c0dc697b8631f67bf7e8f'
 
-  zstd_version: '1.5.7'
-  zstd_sha256sum: 'eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3'
+  zstd_version: '1.6.0'
+  zstd_sha256sum: '2ba599ae2a257976278e7e71e998433a387bfd18aa7b78678229fd5d84f5e9b8'
 
   libunistring_version: '1.5'
   libunistring_sha256sum: 'fe89007a8a414ae4790b816b86859e877d3ab135db3c37f06541ff7e85ac344b'
