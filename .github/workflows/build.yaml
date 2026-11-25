@@ -119,8 +119,8 @@ env:
 
   sqlite3_year: '2026'
 
-  glib_version: '2.90.2'
-  glib_sha256sum: 'edf473b4f5ee70a31d2410622ee605dc4a2c8c46dbc0ec53c9abbaf3960232fd'
+  glib_version: '2.91.0'
+  glib_sha256sum: 'f1bd54b70a58aabd408adf9bb48c5e9e2dfa7894c4c5be26ba508f088a704dcf'
 
   gdk_pixbuf_version: '2.44.8'
   gdk_pixbuf_sha256sum: '919f529512961a12e81cd4b4b466a48c3933469e7f9a310c6513cd4fb252ba3c'
