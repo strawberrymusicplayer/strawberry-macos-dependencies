@@ -72,8 +72,8 @@ env:
   proxy_libintl_version: '0.5'
   proxy_libintl_sha256sum: 'f7a1cbd7579baaf575c66f9d99fb6295e9b0684a28b095967cfda17857595303'
 
-  flex_version: '2.7.11'
-  flex_sha256sum: '99a3ede5f61b63bef3136c5cae16d0f453e8d887c18ddc9e50bb01a4db561ace'
+  flex_version: '2.7.12'
+  flex_sha256sum: '4a9de7f658d6e6c07cc6d309a6bb99395db0d1980a03ff05255126c070142c99'
 
   libtasn1_version: '4.21.0'
   libtasn1_sha256sum: '1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87'
